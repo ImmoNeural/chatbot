@@ -1271,11 +1271,180 @@ function setupEventListeners() {
     if (typeFilter) {
         typeFilter.addEventListener('change', filterLeads);
     }
+
+    // Form de novo lead
+    const newLeadForm = document.getElementById('newLeadForm');
+    if (newLeadForm) {
+        newLeadForm.addEventListener('submit', salvarNovoLead);
+    }
 }
 
 function filterLeads() {
-    // Implementar filtro de leads
-    renderLeadsTable();
+    const searchInput = document.getElementById('lead-search');
+    const statusFilter = document.getElementById('lead-status-filter');
+    const typeFilter = document.getElementById('lead-type-filter');
+
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const statusValue = statusFilter ? statusFilter.value : '';
+    const typeValue = typeFilter ? typeFilter.value : '';
+
+    const filteredLeads = leads.filter(lead => {
+        // Filtro de busca
+        const matchesSearch = !searchTerm ||
+            (lead.nome && lead.nome.toLowerCase().includes(searchTerm)) ||
+            (lead.email && lead.email.toLowerCase().includes(searchTerm)) ||
+            (lead.phone && lead.phone.toLowerCase().includes(searchTerm));
+
+        // Filtro de status
+        const matchesStatus = !statusValue || lead.status === statusValue;
+
+        // Filtro de tipo
+        const matchesType = !typeValue || lead.tipo_cliente === typeValue;
+
+        return matchesSearch && matchesStatus && matchesType;
+    });
+
+    renderFilteredLeadsTable(filteredLeads);
+}
+
+function renderFilteredLeadsTable(filteredLeads) {
+    const tbody = document.getElementById('leads-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = filteredLeads.map(lead => `
+        <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
+            <td class="px-6 py-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                        ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>
+                        <p class="text-sm text-gray-600">${lead.email}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4">
+                <span class="badge badge-${lead.tipo_cliente === 'empresarial' ? 'info' : 'gray'}">
+                    ${lead.tipo_cliente === 'empresarial' ? 'Empresarial' : 'Residencial'}
+                </span>
+            </td>
+            <td class="px-6 py-4">${lead.consumo_mensal || 0} kWh</td>
+            <td class="px-6 py-4">
+                <div class="flex items-center">
+                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: ${lead.lead_score || 0}%"></div>
+                    </div>
+                    <span class="text-sm font-semibold">${lead.lead_score || 0}</span>
+                </div>
+            </td>
+            <td class="px-6 py-4">
+                <span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">
+                ${lead.users ? lead.users.nome : 'Não atribuído'}
+            </td>
+            <td class="px-6 py-4">
+                <button onclick="event.stopPropagation(); openLeadModal('${lead.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="7" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
+}
+
+function showNewLeadModal() {
+    document.getElementById('newLeadModal').classList.remove('hidden');
+    document.getElementById('newLeadForm').reset();
+}
+
+function closeNewLeadModal() {
+    document.getElementById('newLeadModal').classList.add('hidden');
+}
+
+async function salvarNovoLead(event) {
+    event.preventDefault();
+
+    try {
+        const novoLead = {
+            nome: document.getElementById('new-lead-nome').value,
+            email: document.getElementById('new-lead-email').value,
+            phone: document.getElementById('new-lead-phone').value || null,
+            tipo_cliente: document.getElementById('new-lead-tipo').value,
+            consumo_mensal: parseFloat(document.getElementById('new-lead-consumo').value) || 0,
+            status: document.getElementById('new-lead-status').value,
+            origem: 'manual',
+            lead_score: 0
+        };
+
+        const { error } = await supabase
+            .from('leads')
+            .insert([novoLead]);
+
+        if (error) throw error;
+
+        showNotification('Lead criado com sucesso!', 'success');
+        closeNewLeadModal();
+        await loadLeads();
+        renderLeadsTable();
+    } catch (error) {
+        console.error('Erro ao criar lead:', error);
+        showNotification('Erro ao criar lead: ' + error.message, 'danger');
+    }
+}
+
+async function deleteLead(leadId) {
+    if (!confirm('Tem certeza que deseja deletar este lead?')) return;
+
+    try {
+        const { error } = await supabase
+            .from('leads')
+            .delete()
+            .eq('id', leadId);
+
+        if (error) throw error;
+
+        showNotification('Lead deletado com sucesso!', 'success');
+        await loadLeads();
+        renderLeadsTable();
+    } catch (error) {
+        console.error('Erro ao deletar lead:', error);
+        showNotification('Erro ao deletar lead', 'danger');
+    }
+}
+
+function exportLeads() {
+    if (leads.length === 0) {
+        showNotification('Nenhum lead para exportar', 'warning');
+        return;
+    }
+
+    // Criar CSV
+    const headers = ['Nome', 'Email', 'Telefone', 'Tipo', 'Consumo (kWh)', 'Score', 'Status', 'Origem'];
+    const rows = leads.map(lead => [
+        lead.nome || '',
+        lead.email || '',
+        lead.phone || '',
+        lead.tipo_cliente || '',
+        lead.consumo_mensal || 0,
+        lead.lead_score || 0,
+        lead.status || '',
+        lead.origem || ''
+    ]);
+
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `leads_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+
+    showNotification('Leads exportados com sucesso!', 'success');
 }
 
 function logout() {
@@ -1291,10 +1460,11 @@ window.showTab = showTab;
 window.toggleSidebar = toggleSidebar;
 window.refreshData = refreshData;
 window.filterKanban = (tipo) => console.log('Filtrar kanban:', tipo);
-window.exportLeads = () => showNotification('Exportação em desenvolvimento', 'info');
-window.showNewLeadModal = () => showNotification('Novo lead em desenvolvimento', 'info');
-window.editLead = (id) => showNotification('Edição em desenvolvimento', 'info');
-window.deleteLead = (id) => showNotification('Exclusão em desenvolvimento', 'info');
+window.exportLeads = exportLeads;
+window.showNewLeadModal = showNewLeadModal;
+window.closeNewLeadModal = closeNewLeadModal;
+window.editLead = (id) => openLeadModal(id);
+window.deleteLead = deleteLead;
 window.trackProposta = trackProposta;
 window.concluirTarefa = concluirTarefa;
 window.logout = logout;

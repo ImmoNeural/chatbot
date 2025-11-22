@@ -227,6 +227,8 @@
                     .select(`
                         *,
                         oportunidades:oportunidade_id (
+                            id,
+                            lead_id,
                             leads:lead_id (nome, email)
                         )
                     `)
@@ -234,6 +236,7 @@
                     .single();
 
                 if (error || !data) {
+                    console.error('Erro ao buscar proposta:', error);
                     mostrarErro();
                     return;
                 }

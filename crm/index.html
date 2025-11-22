@@ -567,6 +567,63 @@
         </div>
     </div>
 
+    <!-- Modal: Novo Lead -->
+    <div id="newLeadModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 flex justify-between items-center">
+                <h3 class="text-2xl font-bold">➕ Novo Lead</h3>
+                <button onclick="closeNewLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="newLeadForm" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                        <input type="text" id="new-lead-nome" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" id="new-lead-email" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                        <input type="tel" id="new-lead-phone" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+                        <select id="new-lead-tipo" required class="w-full border rounded-lg px-3 py-2">
+                            <option value="residencial">Residencial</option>
+                            <option value="empresarial">Empresarial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Consumo Mensal (kWh)</label>
+                        <input type="number" id="new-lead-consumo" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="new-lead-status" class="w-full border rounded-lg px-3 py-2">
+                            <option value="novo">Novo</option>
+                            <option value="qualificado">Qualificado</option>
+                            <option value="em_nutricao">Em Nutrição</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end pt-4 border-t">
+                    <button type="button" onclick="closeNewLeadModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        <i class="fas fa-save mr-2"></i>Salvar Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Chatbot Widget -->
     <script>
         window.ChatWidgetConfig = {
@@ -590,7 +647,7 @@
             suggestedQuestions: []
         };
     </script>
-    <script src="https://cdn.jsdelivr.net/gh/ImmoNeural/chatbot@main/chat/chat-widget-pastro-v236.js"></script>
+    <script src="../chat/chat-widget-pastro-v236.js"></script>
 
     <!-- JavaScript -->
     <script src="./crm.js"></script>
