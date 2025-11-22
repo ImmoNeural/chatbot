@@ -1,8 +1,4 @@
-
-
-
-
-// Interactive Chat Widget for n8n
+// Interactive Chat Widget for n8n - Versão com Funil de Qualificação
 (function() {
     // Initialize widget only once
     if (window.N8nChatWidgetLoaded) return;
@@ -130,12 +126,12 @@
         .chat-assist-widget .chat-body.active {
             display: flex;
         }
-        
+
         .chat-assist-widget {
-            --chat-widget-primarybubble: #3498db; /* Azul mais claro */
-            --chat-widget-secondarybubble: #2980b9; /* Azul médio */
+            --chat-widget-primarybubble: #3498db;
+            --chat-widget-secondarybubble: #2980b9;
         }
-        
+
         .chat-assist-widget .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -158,7 +154,7 @@
             background-color: rgba(16, 185, 129, 0.3);
             border-radius: var(--chat-radius-full);
         }
-        
+
         .chat-assist-widget .file-name {
             font-size: 12px;
             color: #ffffff;
@@ -168,7 +164,7 @@
             text-overflow: ellipsis;
             max-width: 200px;
         }
-        
+
         .chat-assist-widget .chat-bubble {
             max-width: calc(100% - 40px);
             padding: 12px 16px;
@@ -209,7 +205,7 @@
             flex-shrink: 0;
             margin-top: 4px;
         }
-        
+
         .chat-assist-widget .timestamp {
             display: block;
             font-size: 10px;
@@ -225,7 +221,7 @@
             margin-bottom: 26px;
             width: 100%;
         }
-        
+
         .chat-assist-widget .message-container.bot-message {
             justify-content: flex-start;
         }
@@ -234,7 +230,7 @@
             text-align: left;
             margin-left: 8px;
         }
-        
+
         .chat-assist-widget .message-container.user-message {
             justify-content: flex-end;
         }
@@ -289,7 +285,7 @@
             border-top: 1px solid var(--chat-color-light);
             display: flex;
             gap: 10px;
-            align-items: center; /* Align items for consistent height  */
+            align-items: center;
         }
 
         .chat-assist-widget .file-upload-container {
@@ -306,8 +302,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 48px; /* Changed size */
-            height: 48px; /* Changed size */
+            width: 48px;
+            height: 48px;
             background: var(--chat-color-light);
             border-radius: var(--chat-radius-md);
             cursor: pointer;
@@ -320,8 +316,8 @@
         }
 
         .chat-assist-widget .file-upload-label svg {
-            width: 22px; /* Adjusted icon size */
-            height: 22px; /* Adjusted icon size */
+            width: 22px;
+            height: 22px;
         }
 
         .chat-assist-widget .chat-textarea {
@@ -337,7 +333,7 @@
             line-height: 1.5;
             max-height: 120px;
             min-height: 48px;
-            box-sizing: border-box; /* Ensures padding is included in height */
+            box-sizing: border-box;
             transition: var(--chat-transition);
         }
 
@@ -350,13 +346,13 @@
         .chat-assist-widget .chat-textarea::placeholder {
             color: var(--chat-color-text-light);
         }
-        
-		    .chat-assist-widget .chat-submit {
+
+	    .chat-assist-widget .chat-submit {
             width: 48px;
             height: 48px;
             align-items: center;
             background-color: var(--chat-color-light);
-			      border: 1px solid var(--chat-color-border);
+		      border: 1px solid var(--chat-color-border);
             border-radius: var(--chat-radius-md);
             color: gray;
             display: flex;
@@ -364,19 +360,19 @@
             justify-content: center;
             padding: 0;
         }
-        
+
         .chat-assist-widget .chat-submit:hover {
           background: var(--chat-color-primary);
-          color: white; /* ícone fica branco no hover */
+          color: white;
           fill: none;
         }
-        
+
         .chat-assist-widget .chat-submit svg {
           width: 22px;
           height: 22px;
-          display: block; 
+          display: block;
         }
-    
+
         .chat-assist-widget .chat-launcher {
             position: fixed;
             bottom: 20px;
@@ -386,7 +382,6 @@
             color: white;
             border: none;
             cursor: pointer;
-            //box-shadow: var(--chat-shadow-md);
             z-index: 999;
             transition: var(--chat-transition);
             display: flex;
@@ -412,7 +407,7 @@
             width: 24px;
             height: 24px;
         }
-        
+
         .chat-assist-widget .chat-launcher-text {
             font-weight: 600;
             font-size: 15px;
@@ -477,7 +472,7 @@
             gap: 8px;
             margin-top: 12px;
         }
-        
+
         .action-button {
             flex: 1 1 calc(50% - 4px);
             min-width: 120px;
@@ -494,28 +489,28 @@
             justify-content: center;
             opacity: 0.9;
         }
-        
+
         .action-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
             opacity: 1;
         }
-        
+
         .blue-button {
             background-color: rgba(100, 149, 237, 0.7);
             color: white;
         }
-        
+
         .green-button {
             background-color: rgba(144, 238, 144, 0.7);
             color: #333;
         }
-        
+
         .orange-button {
             background-color: rgba(255, 182, 193, 0.7);
             color: #333;
         }
-        
+
         .yellow-button {
             background-color: rgba(255, 255, 153, 0.7);
             color: #333;
@@ -523,11 +518,11 @@
 
         .dynamic-buttons-container {
             display: flex;
-            flex-wrap: wrap; 
+            flex-wrap: wrap;
             gap: 8px;
             margin-top: 12px;
-            align-self: flex-start; 
-        } 
+            align-self: flex-start;
+        }
 
         .dynamic-button {
             padding: 7px 9px;
@@ -553,18 +548,25 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
+        .solar-panel-image {
+            max-width: 100%;
+            border-radius: var(--chat-radius-sm);
+            margin: 12px 0;
+            box-shadow: var(--chat-shadow-md);
+        }
+
         @media (max-width: 1500px) {
             .chat-assist-widget .chat-window {
                 width: 98vw !important;
                 max-width: 400px !important;
-                padding: 0 !important; /* Remova o padding que pode estar causando o problema */
+                padding: 0 !important;
                 height: 70vh !important;
                 bottom: 10px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
                 border-radius: 16px !important;
                 box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                overflow: hidden; /* Garante que o conteúdo respeite as bordas arredondadas */
+                overflow: hidden;
             }
         }
 
@@ -616,12 +618,20 @@
     // Session tracking
     let conversationId = '';
     let isWaitingForResponse = false;
-    let isChatInitialized = false; // <-- New flag to track if chat has started
+    let isChatInitialized = false;
+
+    // Qualification funnel data
+    let qualificationData = {
+        energyBill: null,
+        familySize: null,
+        roofType: null
+    };
+    let qualificationStep = 0;
 
     // Create widget DOM structure
     const widgetRoot = document.createElement('div');
     widgetRoot.className = 'chat-assist-widget';
-    
+
     // Apply custom colors from settings
     widgetRoot.style.setProperty('--chat-widget-primary', settings.style.primaryColor);
     widgetRoot.style.setProperty('--chat-widget-secondary', settings.style.secondaryColor);
@@ -631,8 +641,8 @@
     // Create chat panel
     const chatWindow = document.createElement('div');
     chatWindow.className = `chat-window ${settings.style.position === 'left' ? 'left-side' : 'right-side'}`;
-    
-    // Create header HTML (removed the welcome screen part)
+
+    // Create header HTML
     const headerHTML = `
         <div class="chat-header">
             <img class="chat-header-logo" src="${settings.branding.logo}" alt="${settings.branding.name}">
@@ -641,26 +651,25 @@
         </div>
     `;
 
-    // Create main chat interface HTML (now active by default)
+    // Create main chat interface HTML
     const chatInterfaceHTML = `
         <div class="chat-body active">
             <div class="chat-messages"></div>
             <div class="chat-controls">
             <div class="file-upload-container">
                 <label for="chat-file-upload" class="file-upload-label">
-                    <!-- Ícone de clipe de papel para anexar -->
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                 </label>
                 <input type="file" id="chat-file-upload" class="file-upload-input" accept=".pdf,.doc,.docx,.jpg,.png,.jpeg,.gif">
             </div>
                 <textarea class="chat-textarea" placeholder="Digite aqui..." rows="1"></textarea>
                   <button class="chat-submit">
-                      <svg xmlns="http://www.w3.org/2000/svg" 
-                           viewBox="0 0 24 24" 
-                           fill="none" 
-                           stroke="currentColor" 
-                           stroke-width="2" 
-                           stroke-linecap="round" 
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                           viewBox="0 0 24 24"
+                           fill="none"
+                           stroke="currentColor"
+                           stroke-width="2"
+                           stroke-linecap="round"
                            stroke-linejoin="round">
                         <path d="M22 2L11 13" />
                         <path d="M22 2L15 22L11 13L2 9L22 2Z" />
@@ -672,16 +681,16 @@
             </div>
         </div>
     `;
-    
+
     chatWindow.innerHTML = headerHTML + chatInterfaceHTML;
-    
+
     // Create launcher button
     const launchButton = document.createElement('button');
     launchButton.className = `chat-launcher ${settings.style.position === 'left' ? 'left-side' : 'right-side'}`;
     launchButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
         <span class="chat-launcher-text">Ajuda?</span>`;
-    
+
     // Add elements to DOM
     widgetRoot.appendChild(chatWindow);
     widgetRoot.appendChild(launchButton);
@@ -701,7 +710,6 @@
     const resetFileInput = () => {
         fileInput.value = '';
         if (fileNameDisplay) fileNameDisplay.textContent = '';
-        // No need to reset background color as it's not being set anymore
     };
 
     // Helper to create the "typing..." animation element
@@ -723,13 +731,56 @@
         const imgPattern = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?\S*)?)/gi;
         return text.replace(imgPattern, url => `<div class="image-container"><img src="${url}" class="chat-image" alt="Image from link"><span class="image-caption">Image</span></div>`);
     };
-    
+
     // Helper to render basic markdown
     const renderMarkdown = (text) => {
         return text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')       // Italic
-            .replace(/^- (.*)$/gm, '<li>$1</li>');     // List items
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/^- (.*)$/gm, '<li>$1</li>');
+    };
+
+    // Function to add bot message
+    const addBotMessage = (content, includeImage = false, imageUrl = '') => {
+        const messageContainer = document.createElement('div');
+        messageContainer.className = 'message-container bot-message';
+
+        let imageHTML = '';
+        if (includeImage && imageUrl) {
+            imageHTML = `<img src="${imageUrl}" class="solar-panel-image" alt="Painel Solar">`;
+        }
+
+        messageContainer.innerHTML = `
+            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            <div class="message-content">
+                <div class="chat-bubble bot-bubble">
+                    ${imageHTML}
+                    ${content}
+                </div>
+                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+            </div>
+        `;
+        messagesContainer.appendChild(messageContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return messageContainer;
+    };
+
+    // Function to add user message
+    const addUserMessage = (text) => {
+        const userMessageContainer = document.createElement('div');
+        userMessageContainer.className = 'message-container user-message';
+
+        userMessageContainer.innerHTML = `
+            <div class="message-content">
+                <div class="chat-bubble user-bubble">
+                    <p>${text}</p>
+                </div>
+                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+            </div>
+            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
+        `;
+        messagesContainer.appendChild(userMessageContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
 
     // Function to add the calendar iframe to the conversation
@@ -740,9 +791,9 @@
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
-                    <iframe 
-                        src="https://calendar.app.google/tps9rXCFtW3VUoiBA" 
-                        width="470" height="1800" frameborder="0" 
+                    <iframe
+                        src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
+                        width="470" height="1800" frameborder="0"
                         style="border-radius: 8px; margin-top: 8px;">
                     </iframe>
                 </div>
@@ -801,27 +852,128 @@
         });
     };
 
+    // Qualification funnel functions
+    const startQualificationFunnel = () => {
+        qualificationStep = 1;
+
+        // Step 1: Ask about energy bill
+        const solarPanelImage = 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500';
+
+        setTimeout(() => {
+            const messageContainer = addBotMessage(`
+                <p>Ótimo! Vou fazer algumas perguntas rápidas para entender melhor sua necessidade. ☀️</p>
+                <p><strong>Qual é o valor médio da sua conta de luz mensal?</strong></p>
+                <div class="dynamic-buttons-container">
+                    <button class="dynamic-button" data-bill="Até R$ 200">Até R$ 200</button>
+                    <button class="dynamic-button" data-bill="R$ 200 a R$ 400">R$ 200 a R$ 400</button>
+                    <button class="dynamic-button" data-bill="R$ 400 a R$ 600">R$ 400 a R$ 600</button>
+                    <button class="dynamic-button" data-bill="R$ 600 a R$ 1000">R$ 600 a R$ 1000</button>
+                    <button class="dynamic-button" data-bill="Acima de R$ 1000">Acima de R$ 1000</button>
+                </div>
+            `, true, solarPanelImage);
+
+            messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    qualificationData.energyBill = btn.dataset.bill;
+                    addUserMessage(btn.dataset.bill);
+                    askFamilySize();
+                });
+            });
+        }, 500);
+    };
+
+    const askFamilySize = () => {
+        qualificationStep = 2;
+
+        const solarInstallationImage = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500';
+
+        setTimeout(() => {
+            const messageContainer = addBotMessage(`
+                <p><strong>Quantas pessoas moram na sua casa?</strong></p>
+                <div class="dynamic-buttons-container">
+                    <button class="dynamic-button" data-family="1-2 pessoas">1-2 pessoas</button>
+                    <button class="dynamic-button" data-family="3-4 pessoas">3-4 pessoas</button>
+                    <button class="dynamic-button" data-family="5-6 pessoas">5-6 pessoas</button>
+                    <button class="dynamic-button" data-family="Mais de 6 pessoas">Mais de 6 pessoas</button>
+                </div>
+            `, true, solarInstallationImage);
+
+            messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    qualificationData.familySize = btn.dataset.family;
+                    addUserMessage(btn.dataset.family);
+                    askRoofType();
+                });
+            });
+        }, 500);
+    };
+
+    const askRoofType = () => {
+        qualificationStep = 3;
+
+        const roofPanelsImage = 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=500';
+
+        setTimeout(() => {
+            const messageContainer = addBotMessage(`
+                <p><strong>Que tipo de telhado você tem?</strong></p>
+                <div class="dynamic-buttons-container">
+                    <button class="dynamic-button" data-roof="Cerâmica/Telha">Cerâmica/Telha</button>
+                    <button class="dynamic-button" data-roof="Fibrocimento">Fibrocimento</button>
+                    <button class="dynamic-button" data-roof="Metálico">Metálico</button>
+                    <button class="dynamic-button" data-roof="Laje">Laje</button>
+                    <button class="dynamic-button" data-roof="Não sei">Não sei</button>
+                </div>
+            `, true, roofPanelsImage);
+
+            messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    qualificationData.roofType = btn.dataset.roof;
+                    addUserMessage(btn.dataset.roof);
+                    showQualificationResult();
+                });
+            });
+        }, 500);
+    };
+
+    const showQualificationResult = () => {
+        const savingsImage = 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500';
+
+        setTimeout(() => {
+            addBotMessage(`
+                <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
+                <p>✅ Conta de luz: ${qualificationData.energyBill}<br>
+                ✅ Pessoas na casa: ${qualificationData.familySize}<br>
+                ✅ Tipo de telhado: ${qualificationData.roofType}</p>
+                <p>💰 <strong>Você tem potencial de reduzir até 95% do valor da sua conta de luz!</strong></p>
+                <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
+                <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
+            `, true, savingsImage);
+
+            setTimeout(() => {
+                addBotMessage(`
+                    <p>📅 <strong>Escolha o melhor horário para você:</strong></p>
+                `);
+                addCalendarToChat();
+            }, 1000);
+        }, 500);
+    };
+
     // Main function to start the chat and display the initial message
     const startChat = () => {
         conversationId = createSessionId();
-        
+
         const welcomeContainer = document.createElement('div');
         welcomeContainer.className = 'message-container bot-message';
         welcomeContainer.innerHTML = `
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
-                    <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Confira o que posso fazer por você:<br>
-                    1. Responder dúvidas sobre energia solar ☀️<br>
-                    2. Agendar uma reunião no calendário 📅<br>
-                    3. Criar um chamado para falar com alguém 👨‍💼<br>
-                    4. Analisar sua conta de luz e estimar quanto você pode economizar usando painéis solares 💡💰<br>
-                    Do que você precisa?</p>
+                    <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
                     <div class="action-buttons-container">
-                        <button class="action-button blue-button" data-action="Dúvida">Dúvida</button>
-                        <button class="action-button green-button" data-action="Agendamento">Agendamento</button>
-                        <button class="action-button orange-button" data-action="Ticket">Ticket</button>
-                        <button class="action-button yellow-button" data-action="Energia">Energia</button>
+                        <button class="action-button blue-button" data-action="Qualificar">Quero economizar na luz</button>
+                        <button class="action-button green-button" data-action="Agendamento">Agendar reunião</button>
+                        <button class="action-button orange-button" data-action="Ticket">Falar com alguém</button>
+                        <button class="action-button yellow-button" data-action="Dúvida">Tenho dúvidas</button>
                     </div>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -834,18 +986,18 @@
         welcomeContainer.querySelectorAll('.action-button').forEach(button => {
             button.addEventListener('click', () => {
                 const action = button.dataset.action;
-                if (action === 'Dúvida') {
-                    submitMessage('Dúvida', true); // Send user message first
-                    showDoubtTopics(); // Then show options
+                if (action === 'Qualificar') {
+                    addUserMessage('Quero economizar na luz');
+                    startQualificationFunnel();
+                } else if (action === 'Dúvida') {
+                    addUserMessage('Tenho dúvidas');
+                    showDoubtTopics();
                 } else if (action === 'Agendamento') {
-                    submitMessage('Agendamento');
+                    addUserMessage('Agendar reunião');
                     addCalendarToChat();
-                } else {
-                    const messageMap = {
-                        'Ticket': 'Ticket de suporte',
-                        'Energia': 'Análise de energia'
-                    };
-                    submitMessage(messageMap[action] || action);
+                } else if (action === 'Ticket') {
+                    addUserMessage('Falar com alguém');
+                    submitMessage('Ticket de suporte');
                 }
             });
         });
@@ -854,28 +1006,28 @@
     // Function to handle sending a message (user or internal)
     async function submitMessage(messageText, isInternal = false) {
         if (isWaitingForResponse && !isInternal) return;
-        
+
         const trimmedMessage = messageText.trim();
         if (!trimmedMessage && fileInput.files.length === 0) return;
 
-        // Display user message bubble
-        const userMessageContainer = document.createElement('div');
-        userMessageContainer.className = 'message-container user-message';
-        let fileInfo = fileInput.files.length > 0 ? `<div class="file-name">Arquivo: ${fileInput.files[0].name}</div>` : '';
-        
-        userMessageContainer.innerHTML = `
-            <div class="message-content">
-                <div class="chat-bubble user-bubble">
-                    <p>${renderImages(trimmedMessage)}</p>
-                    ${fileInfo}
-                </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
-            </div>
-            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
-        `;
-        messagesContainer.appendChild(userMessageContainer);
-        
+        // Display user message bubble (only if not already displayed)
         if (!isInternal) {
+            const userMessageContainer = document.createElement('div');
+            userMessageContainer.className = 'message-container user-message';
+            let fileInfo = fileInput.files.length > 0 ? `<div class="file-name">Arquivo: ${fileInput.files[0].name}</div>` : '';
+
+            userMessageContainer.innerHTML = `
+                <div class="message-content">
+                    <div class="chat-bubble user-bubble">
+                        <p>${renderImages(trimmedMessage)}</p>
+                        ${fileInfo}
+                    </div>
+                    <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                </div>
+                <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
+            `;
+            messagesContainer.appendChild(userMessageContainer);
+
             messageTextarea.value = '';
             autoResizeTextarea();
         }
@@ -899,19 +1051,13 @@
             formData.append('file', fileInput.files[0]);
         }
 
-        // Do not send to webhook if it's an internal action (like showing topics)
-        if (isInternal) {
-            resetFileInput();
-            return;
-        }
-
         try {
             const response = await fetch(settings.webhook.url, {
                 method: 'POST',
                 body: formData
             });
             const responseData = await response.json();
-            
+
             // Remove typing indicator
             if (typingIndicator) messagesContainer.removeChild(typingIndicator);
 
@@ -962,18 +1108,18 @@
 
     // Close chat window
     chatWindow.querySelector('.chat-close-btn').addEventListener('click', () => chatWindow.classList.remove('visible'));
-    
+
     // Handle file selection
     fileInput.addEventListener('change', () => {
         if (fileInput.files.length > 0) {
-            fileNameDisplay.textContent = fileInput.files[0].name;
+            if (fileNameDisplay) fileNameDisplay.textContent = fileInput.files[0].name;
             messageTextarea.focus();
         }
     });
-    
+
     // Send message on button click
     sendButton.addEventListener('click', () => submitMessage(messageTextarea.value));
-    
+
     // Send message on Enter key press (but not Shift+Enter)
     messageTextarea.addEventListener('keypress', (event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
@@ -981,16 +1127,14 @@
             submitMessage(messageTextarea.value);
         }
     });
- 
+
     // Auto-resize textarea height based on content
     function autoResizeTextarea() {
         messageTextarea.style.height = 'auto';
         const newHeight = Math.min(messageTextarea.scrollHeight, 120);
         messageTextarea.style.height = `${newHeight}px`;
     }
-    
-// Versão minimizada testada - cole no final do seu arquivo
-    
+
     // Adjust textarea size on input
     messageTextarea.addEventListener('input', autoResizeTextarea);
 
