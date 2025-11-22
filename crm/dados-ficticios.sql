@@ -4,14 +4,15 @@
 -- =========================================
 
 -- Limpar dados existentes (CUIDADO: Remove tudo!)
--- DELETE FROM interacoes;
--- DELETE FROM propostas;
--- DELETE FROM oportunidades;
--- DELETE FROM clientes_instalados;
--- DELETE FROM tarefas;
--- DELETE FROM qualificacao;
--- DELETE FROM leads;
--- DELETE FROM users WHERE email != 'admin@energia-solar.com';
+-- Ordem correta respeitando foreign keys (do mais dependente ao menos dependente)
+DELETE FROM clientes_instalados;
+DELETE FROM tarefas;
+DELETE FROM interacoes;
+DELETE FROM propostas;
+DELETE FROM oportunidades;
+DELETE FROM qualificacao;
+DELETE FROM leads;
+DELETE FROM users WHERE email NOT IN ('admin@energia-solar.com', 'admin@energiasolar.com');
 
 -- =========================================
 -- 1. USUÁRIOS (Vendedores)
