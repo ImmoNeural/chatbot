@@ -167,13 +167,13 @@ INSERT INTO propostas (id, oportunidade_id, numero_proposta, versao, num_modulos
 -- Proposta visualizada
 ('0b222222-2222-2222-2222-222222222222', '0a666666-6666-6666-6666-666666666666', 'PROP-2025-002', 1, 48, 21.6, 'Fronius 20kW', 'Jinko Solar', 195000, 5, 185250, 5200, 36, 1560000, 'visualizada', 15, NOW() - INTERVAL '2 days'),
 
--- Proposta em negociação (v2 com desconto)
+-- Proposta em negociação (v1 e v2 com desconto)
 ('0b333333-3333-3333-3333-333333333333', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-003', 1, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 0, 310000, 8500, 36, 2550000, 'visualizada', 15, NOW() - INTERVAL '5 days'),
-('0b444444-4444-4444-4444-444444444444', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-003', 2, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 8, 285200, 8500, 34, 2550000, 'enviada', 15, NOW() - INTERVAL '12 hours'),
+('0b444444-4444-4444-4444-444444444444', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-005', 2, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 8, 285200, 8500, 34, 2550000, 'enviada', 15, NOW() - INTERVAL '12 hours'),
 
 -- Proposta aceita (cliente convertido)
 ('0b555555-5555-5555-5555-555555555555', '0a999999-9999-9999-9999-999999999999', 'PROP-2025-004', 1, 14, 6.3, 'Growatt 6kW', 'Jinko Solar', 35000, 5, 33250, 920, 36, 276000, 'aceita', 15, NOW() - INTERVAL '30 days')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (numero_proposta) DO NOTHING;
 
 -- =========================================
 -- 7. CLIENTES INSTALADOS
