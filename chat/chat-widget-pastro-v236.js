@@ -622,11 +622,53 @@
 
     // Qualification funnel data
     let qualificationData = {
-        energyBill: null,
+        email: null,
+        phone: null,
         familySize: null,
+        kwhConsumption: null,
         roofType: null
     };
     let qualificationStep = 0;
+
+    // Supabase configuration
+    const SUPABASE_URL = 'https://seu-projeto.supabase.co';
+    const SUPABASE_KEY = 'sua-chave-publica-aqui';
+
+    // Function to save lead to Supabase
+    async function saveLeadToSupabase(data) {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    phone: data.phone,
+                    family_size: data.familySize,
+                    kwh_consumption: data.kwhConsumption,
+                    roof_type: data.roofType,
+                    created_at: new Date().toISOString()
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Erro ao salvar lead:', error);
+            return false;
+        }
+    }
+
+    // Validation functions
+    const validateEmail = (email) => {
+        return email.includes('@') && email.includes('.');
+    };
+
+    const validatePhone = (phone) => {
+        const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/;
+        return phoneRegex.test(phone);
+    };
 
     // Create widget DOM structure
     const widgetRoot = document.createElement('div');
@@ -656,25 +698,19 @@
         <div class="chat-body active">
             <div class="chat-messages"></div>
             <div class="chat-controls">
-            <div class="file-upload-container">
-                <label for="chat-file-upload" class="file-upload-label">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                </label>
-                <input type="file" id="chat-file-upload" class="file-upload-input" accept=".pdf,.doc,.docx,.jpg,.png,.jpeg,.gif">
-            </div>
                 <textarea class="chat-textarea" placeholder="Digite aqui..." rows="1"></textarea>
-                  <button class="chat-submit">
-                      <svg xmlns="http://www.w3.org/2000/svg"
-                           viewBox="0 0 24 24"
-                           fill="none"
-                           stroke="currentColor"
-                           stroke-width="2"
-                           stroke-linecap="round"
-                           stroke-linejoin="round">
-                        <path d="M22 2L11 13" />
-                        <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-                      </svg>
-                  </button>
+                <button class="chat-submit">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+                      <path d="M22 2L11 13" />
+                      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                    </svg>
+                </button>
             </div>
             <div class="chat-footer">
                 <a class="chat-footer-link" href="${settings.branding.poweredBy.link}" target="_blank">${settings.branding.poweredBy.text}</a>
@@ -700,17 +736,9 @@
     const messagesContainer = chatWindow.querySelector('.chat-messages');
     const messageTextarea = chatWindow.querySelector('.chat-textarea');
     const sendButton = chatWindow.querySelector('.chat-submit');
-    const fileInput = chatWindow.querySelector('#chat-file-upload');
-    const fileNameDisplay = chatWindow.querySelector('.file-name-display');
 
     // Helper to generate a unique session ID
     const createSessionId = () => crypto.randomUUID();
-
-    // Helper to reset the file input after sending a message
-    const resetFileInput = () => {
-        fileInput.value = '';
-        if (fileNameDisplay) fileNameDisplay.textContent = '';
-    };
 
     // Helper to create the "typing..." animation element
     const createTypingIndicator = () => {
@@ -855,37 +883,44 @@
     // Qualification funnel functions
     const startQualificationFunnel = () => {
         qualificationStep = 1;
+        askEmail();
+    };
 
-        // Step 1: Ask about energy bill
-        const solarPanelImage = 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500';
+    // Step 1: Ask for email
+    const askEmail = () => {
+        const emailImage = 'https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=500';
 
         setTimeout(() => {
-            const messageContainer = addBotMessage(`
+            addBotMessage(`
                 <p>Ótimo! Vou fazer algumas perguntas rápidas para entender melhor sua necessidade. ☀️</p>
-                <p><strong>Qual é o valor médio da sua conta de luz mensal?</strong></p>
-                <div class="dynamic-buttons-container">
-                    <button class="dynamic-button" data-bill="Até R$ 200">Até R$ 200</button>
-                    <button class="dynamic-button" data-bill="R$ 200 a R$ 400">R$ 200 a R$ 400</button>
-                    <button class="dynamic-button" data-bill="R$ 400 a R$ 600">R$ 400 a R$ 600</button>
-                    <button class="dynamic-button" data-bill="R$ 600 a R$ 1000">R$ 600 a R$ 1000</button>
-                    <button class="dynamic-button" data-bill="Acima de R$ 1000">Acima de R$ 1000</button>
-                </div>
-            `, true, solarPanelImage);
+                <p><strong>Primeiro, qual é o seu e-mail?</strong></p>
+                <p style="font-size: 12px; color: #6b7280;">Digite seu e-mail no campo abaixo 👇</p>
+            `, true, emailImage);
 
-            messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    qualificationData.energyBill = btn.dataset.bill;
-                    addUserMessage(btn.dataset.bill);
-                    askFamilySize();
-                });
-            });
+            messageTextarea.placeholder = "exemplo@email.com";
+            messageTextarea.focus();
         }, 500);
     };
 
-    const askFamilySize = () => {
-        qualificationStep = 2;
+    // Step 2: Ask for phone
+    const askPhone = () => {
+        const phoneImage = 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500';
 
-        const solarInstallationImage = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500';
+        setTimeout(() => {
+            addBotMessage(`
+                <p>Perfeito! Agora me informe seu telefone com DDD.</p>
+                <p><strong>Qual é o seu telefone?</strong></p>
+                <p style="font-size: 12px; color: #6b7280;">Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX</p>
+            `, true, phoneImage);
+
+            messageTextarea.placeholder = "(11) 91234-5678";
+            messageTextarea.focus();
+        }, 500);
+    };
+
+    // Step 3: Ask for family size
+    const askFamilySize = () => {
+        const familyImage = 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=500';
 
         setTimeout(() => {
             const messageContainer = addBotMessage(`
@@ -896,34 +931,94 @@
                     <button class="dynamic-button" data-family="5-6 pessoas">5-6 pessoas</button>
                     <button class="dynamic-button" data-family="Mais de 6 pessoas">Mais de 6 pessoas</button>
                 </div>
-            `, true, solarInstallationImage);
+            `, true, familyImage);
 
             messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
                 btn.addEventListener('click', () => {
                     qualificationData.familySize = btn.dataset.family;
                     addUserMessage(btn.dataset.family);
+                    messageTextarea.placeholder = "Digite aqui...";
+                    askKwhConsumption();
+                });
+            });
+        }, 500);
+    };
+
+    // Step 4: Ask for kWh consumption based on family size
+    const askKwhConsumption = () => {
+        const energyBillImage = 'https://images.unsplash.com/photo-1554224311-beee813c201f?w=500';
+
+        // Determine kWh ranges based on family size
+        let kwhOptions = [];
+        if (qualificationData.familySize === '1-2 pessoas') {
+            kwhOptions = [
+                { label: 'Até 150 kWh/mês', value: 'Até 150 kWh' },
+                { label: '150-250 kWh/mês', value: '150-250 kWh' },
+                { label: '250-350 kWh/mês', value: '250-350 kWh' },
+                { label: 'Acima de 350 kWh/mês', value: 'Acima de 350 kWh' }
+            ];
+        } else if (qualificationData.familySize === '3-4 pessoas') {
+            kwhOptions = [
+                { label: 'Até 250 kWh/mês', value: 'Até 250 kWh' },
+                { label: '250-400 kWh/mês', value: '250-400 kWh' },
+                { label: '400-550 kWh/mês', value: '400-550 kWh' },
+                { label: 'Acima de 550 kWh/mês', value: 'Acima de 550 kWh' }
+            ];
+        } else if (qualificationData.familySize === '5-6 pessoas') {
+            kwhOptions = [
+                { label: 'Até 400 kWh/mês', value: 'Até 400 kWh' },
+                { label: '400-600 kWh/mês', value: '400-600 kWh' },
+                { label: '600-800 kWh/mês', value: '600-800 kWh' },
+                { label: 'Acima de 800 kWh/mês', value: 'Acima de 800 kWh' }
+            ];
+        } else {
+            kwhOptions = [
+                { label: 'Até 600 kWh/mês', value: 'Até 600 kWh' },
+                { label: '600-900 kWh/mês', value: '600-900 kWh' },
+                { label: '900-1200 kWh/mês', value: '900-1200 kWh' },
+                { label: 'Acima de 1200 kWh/mês', value: 'Acima de 1200 kWh' }
+            ];
+        }
+
+        setTimeout(() => {
+            const buttonHTML = kwhOptions.map(opt =>
+                `<button class="dynamic-button" data-kwh="${opt.value}">${opt.label}</button>`
+            ).join('');
+
+            const messageContainer = addBotMessage(`
+                <p><strong>Qual é o consumo mensal de energia elétrica da sua casa?</strong></p>
+                <p style="font-size: 12px; color: #6b7280;">Você pode verificar essa informação na sua conta de luz (em kWh)</p>
+                <div class="dynamic-buttons-container">
+                    ${buttonHTML}
+                </div>
+            `, true, energyBillImage);
+
+            messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    qualificationData.kwhConsumption = btn.dataset.kwh;
+                    addUserMessage(btn.dataset.kwh);
                     askRoofType();
                 });
             });
         }, 500);
     };
 
+    // Step 5: Ask for roof type
     const askRoofType = () => {
-        qualificationStep = 3;
-
-        const roofPanelsImage = 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=500';
+        const roofTypesImage = 'https://images.unsplash.com/photo-1632246123516-219c0b7c5b53?w=500';
 
         setTimeout(() => {
             const messageContainer = addBotMessage(`
                 <p><strong>Que tipo de telhado você tem?</strong></p>
+                <p style="font-size: 12px; color: #6b7280;">Escolha o tipo mais próximo do seu telhado</p>
                 <div class="dynamic-buttons-container">
-                    <button class="dynamic-button" data-roof="Cerâmica/Telha">Cerâmica/Telha</button>
-                    <button class="dynamic-button" data-roof="Fibrocimento">Fibrocimento</button>
-                    <button class="dynamic-button" data-roof="Metálico">Metálico</button>
-                    <button class="dynamic-button" data-roof="Laje">Laje</button>
-                    <button class="dynamic-button" data-roof="Não sei">Não sei</button>
+                    <button class="dynamic-button" data-roof="Cerâmica/Telha">🏠 Cerâmica/Telha</button>
+                    <button class="dynamic-button" data-roof="Fibrocimento">🏭 Fibrocimento</button>
+                    <button class="dynamic-button" data-roof="Metálico">🔩 Metálico</button>
+                    <button class="dynamic-button" data-roof="Laje">🏢 Laje</button>
+                    <button class="dynamic-button" data-roof="Não sei">❓ Não sei</button>
                 </div>
-            `, true, roofPanelsImage);
+            `, true, roofTypesImage);
 
             messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -935,15 +1030,21 @@
         }, 500);
     };
 
-    const showQualificationResult = () => {
-        const savingsImage = 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500';
+    // Step 6: Show result and save to Supabase
+    const showQualificationResult = async () => {
+        const savingsImage = 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=500';
+
+        // Save to Supabase
+        const saved = await saveLeadToSupabase(qualificationData);
 
         setTimeout(() => {
             addBotMessage(`
                 <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
-                <p>✅ Conta de luz: ${qualificationData.energyBill}<br>
-                ✅ Pessoas na casa: ${qualificationData.familySize}<br>
-                ✅ Tipo de telhado: ${qualificationData.roofType}</p>
+                <p>📧 E-mail: ${qualificationData.email}<br>
+                📱 Telefone: ${qualificationData.phone}<br>
+                👥 Pessoas na casa: ${qualificationData.familySize}<br>
+                ⚡ Consumo mensal: ${qualificationData.kwhConsumption}<br>
+                🏠 Tipo de telhado: ${qualificationData.roofType}</p>
                 <p>💰 <strong>Você tem potencial de reduzir até 95% do valor da sua conta de luz!</strong></p>
                 <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
                 <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
@@ -997,7 +1098,15 @@
                     addCalendarToChat();
                 } else if (action === 'Ticket') {
                     addUserMessage('Falar com alguém');
-                    submitMessage('Ticket de suporte');
+                    setTimeout(() => {
+                        addBotMessage(`
+                            <p>📱 Perfeito! Você será redirecionado para o nosso WhatsApp.</p>
+                            <p>Nossa equipe está pronta para te atender!</p>
+                        `);
+                        setTimeout(() => {
+                            window.open('https://wa.me/4901799044322', '_blank');
+                        }, 1000);
+                    }, 500);
                 }
             });
         });
@@ -1008,19 +1117,58 @@
         if (isWaitingForResponse && !isInternal) return;
 
         const trimmedMessage = messageText.trim();
-        if (!trimmedMessage && fileInput.files.length === 0) return;
+        if (!trimmedMessage) return;
 
-        // Display user message bubble (only if not already displayed)
+        // Handle qualification funnel input
+        if (qualificationStep === 1 && !qualificationData.email) {
+            // Validating email
+            if (!validateEmail(trimmedMessage)) {
+                addUserMessage(trimmedMessage);
+                setTimeout(() => {
+                    addBotMessage(`
+                        <p>❌ E-mail inválido! Por favor, digite um e-mail válido.</p>
+                        <p style="font-size: 12px; color: #6b7280;">Exemplo: seunome@email.com</p>
+                    `);
+                }, 300);
+                messageTextarea.value = '';
+                return;
+            }
+            qualificationData.email = trimmedMessage;
+            addUserMessage(trimmedMessage);
+            messageTextarea.value = '';
+            askPhone();
+            return;
+        }
+
+        if (qualificationStep === 1 && qualificationData.email && !qualificationData.phone) {
+            // Validating phone
+            if (!validatePhone(trimmedMessage)) {
+                addUserMessage(trimmedMessage);
+                setTimeout(() => {
+                    addBotMessage(`
+                        <p>❌ Telefone inválido! Por favor, digite no formato correto.</p>
+                        <p style="font-size: 12px; color: #6b7280;">Exemplo: (11) 91234-5678 ou (11) 1234-5678</p>
+                    `);
+                }, 300);
+                messageTextarea.value = '';
+                return;
+            }
+            qualificationData.phone = trimmedMessage;
+            addUserMessage(trimmedMessage);
+            messageTextarea.value = '';
+            askFamilySize();
+            return;
+        }
+
+        // Display user message bubble (only if not in funnel)
         if (!isInternal) {
             const userMessageContainer = document.createElement('div');
             userMessageContainer.className = 'message-container user-message';
-            let fileInfo = fileInput.files.length > 0 ? `<div class="file-name">Arquivo: ${fileInput.files[0].name}</div>` : '';
 
             userMessageContainer.innerHTML = `
                 <div class="message-content">
                     <div class="chat-bubble user-bubble">
                         <p>${renderImages(trimmedMessage)}</p>
-                        ${fileInfo}
                     </div>
                     <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
                 </div>
@@ -1047,9 +1195,6 @@
         formData.append('sessionId', conversationId);
         formData.append('route', settings.webhook.route);
         formData.append('chatInput', trimmedMessage);
-        if (fileInput.files.length > 0) {
-            formData.append('file', fileInput.files[0]);
-        }
 
         try {
             const response = await fetch(settings.webhook.url, {
@@ -1090,7 +1235,6 @@
             messagesContainer.appendChild(errorMessage);
         } finally {
             isWaitingForResponse = false;
-            resetFileInput();
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
     }
@@ -1108,14 +1252,6 @@
 
     // Close chat window
     chatWindow.querySelector('.chat-close-btn').addEventListener('click', () => chatWindow.classList.remove('visible'));
-
-    // Handle file selection
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            if (fileNameDisplay) fileNameDisplay.textContent = fileInput.files[0].name;
-            messageTextarea.focus();
-        }
-    });
 
     // Send message on button click
     sendButton.addEventListener('click', () => submitMessage(messageTextarea.value));
