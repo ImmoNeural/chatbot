@@ -548,10 +548,44 @@
                 <!-- Tab: Timeline -->
                 <div id="tab-timeline" class="tab-content hidden">
                     <div class="mb-4">
-                        <button onclick="showAddInteractionForm()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                        <button id="btn-show-interaction-form" onclick="showAddInteractionForm()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
                             <i class="fas fa-plus mr-2"></i>Nova Interação
                         </button>
                     </div>
+
+                    <!-- Form Nova Interação -->
+                    <div id="interaction-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg border">
+                        <h4 class="font-bold mb-3">Adicionar Interação</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Tipo *</label>
+                                <select id="new-interaction-type" class="w-full border rounded px-3 py-2">
+                                    <option value="ligacao">Ligação</option>
+                                    <option value="email">Email</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="visita">Visita</option>
+                                    <option value="nota">Nota</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Título *</label>
+                                <input type="text" id="new-interaction-title" class="w-full border rounded px-3 py-2" placeholder="Ex: Primeira ligação">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Descrição</label>
+                            <textarea id="new-interaction-desc" rows="3" class="w-full border rounded px-3 py-2" placeholder="Detalhes da interação..."></textarea>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="salvarNovaInteracao()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                <i class="fas fa-save mr-2"></i>Salvar
+                            </button>
+                            <button onclick="hideAddInteractionForm()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+
                     <div id="timeline-container" class="space-y-4">
                         <!-- Timeline inserida via JS -->
                     </div>
@@ -624,6 +658,52 @@
         </div>
     </div>
 
+    <!-- Modal: Editar Tarefa -->
+    <div id="editTaskModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+                <h3 class="text-2xl font-bold">✏️ Editar Tarefa</h3>
+                <button onclick="closeEditTaskModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                    <input type="text" id="edit-task-title" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <textarea id="edit-task-desc" rows="3" class="w-full border rounded-lg px-3 py-2"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Vencimento *</label>
+                        <input type="date" id="edit-task-date" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
+                        <select id="edit-task-priority" class="w-full border rounded-lg px-3 py-2">
+                            <option value="baixa">Baixa</option>
+                            <option value="media">Média</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end pt-4 border-t">
+                    <button onclick="closeEditTaskModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button onclick="salvarEdicaoTarefa()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-save mr-2"></i>Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chatbot Widget -->
     <script>
         window.ChatWidgetConfig = {
@@ -647,7 +727,7 @@
             suggestedQuestions: []
         };
     </script>
-    <script src="../chat/chat-widget-pastro-v236.js"></script>
+    <script src="./chat-widget-pastro-v236.js"></script>
 
     <!-- JavaScript -->
     <script src="./crm.js"></script>

@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Carregar dados iniciais
     await loadAllData();
 
+    // Carregar informações do usuário
+    await loadCurrentUser();
+
     // Inicializar Kanban Drag & Drop
     initializeKanban();
 
@@ -79,6 +82,31 @@ async function loadAllData() {
         showNotification('Erro ao carregar dados', 'danger');
     } finally {
         showLoading(false);
+    }
+}
+
+async function loadCurrentUser() {
+    try {
+        // Buscar primeiro usuário ativo (para demo)
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('ativo', true)
+            .limit(1)
+            .single();
+
+        if (data) {
+            document.getElementById('user-name').textContent = data.nome || 'Vendedor';
+            document.getElementById('user-role').textContent = data.role === 'gestor' ? 'Gestor' : 'Vendedor';
+        } else {
+            // Valores padrão se não houver usuário
+            document.getElementById('user-name').textContent = 'Demo User';
+            document.getElementById('user-role').textContent = 'Vendedor';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+        document.getElementById('user-name').textContent = 'Vendedor';
+        document.getElementById('user-role').textContent = 'Vendedor';
     }
 }
 
@@ -610,6 +638,54 @@ async function openLeadModal(leadId) {
 function closeLeadModal() {
     document.getElementById('leadModal').classList.add('hidden');
     currentLead = null;
+    hideAddInteractionForm();
+}
+
+function showAddInteractionForm() {
+    document.getElementById('interaction-form').classList.remove('hidden');
+    document.getElementById('btn-show-interaction-form').classList.add('hidden');
+}
+
+function hideAddInteractionForm() {
+    document.getElementById('interaction-form').classList.add('hidden');
+    document.getElementById('btn-show-interaction-form').classList.remove('hidden');
+    // Limpar campos
+    document.getElementById('new-interaction-type').value = 'ligacao';
+    document.getElementById('new-interaction-title').value = '';
+    document.getElementById('new-interaction-desc').value = '';
+}
+
+async function salvarNovaInteracao() {
+    if (!currentLead) return;
+
+    const tipo = document.getElementById('new-interaction-type').value;
+    const titulo = document.getElementById('new-interaction-title').value.trim();
+    const descricao = document.getElementById('new-interaction-desc').value.trim();
+
+    if (!titulo) {
+        showNotification('Por favor, preencha o título', 'warning');
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('interacoes')
+            .insert([{
+                lead_id: currentLead.id,
+                tipo: tipo,
+                titulo: titulo,
+                descricao: descricao || null
+            }]);
+
+        if (error) throw error;
+
+        showNotification('Interação adicionada com sucesso!', 'success');
+        hideAddInteractionForm();
+        await renderLeadTimeline(currentLead.id);
+    } catch (error) {
+        console.error('Erro ao salvar interação:', error);
+        showNotification('Erro ao salvar interação', 'danger');
+    }
 }
 
 async function renderLeadInfo(lead) {
@@ -927,12 +1003,14 @@ function renderPropostas() {
 }
 
 function abrirProposta(token) {
-    const url = `${window.location.origin}/crm/proposta.html?t=${token}`;
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    const url = `${baseUrl}proposta.html?t=${token}`;
     window.open(url, '_blank');
 }
 
 function copiarLinkProposta(token) {
-    const url = `${window.location.origin}/crm/proposta.html?t=${token}`;
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    const url = `${baseUrl}proposta.html?t=${token}`;
     navigator.clipboard.writeText(url);
     showNotification('Link copiado para área de transferência!', 'success');
 }
@@ -1058,29 +1136,59 @@ async function concluirTarefa(tarefaId) {
     }
 }
 
+let currentTaskId = null;
+
 function editarTarefa(tarefaId) {
     const tarefa = tarefas.find(t => t.id === tarefaId);
     if (!tarefa) return;
 
-    const titulo = prompt('Título da tarefa:', tarefa.titulo);
-    if (!titulo) return;
+    currentTaskId = tarefaId;
 
-    const descricao = prompt('Descrição:', tarefa.descricao || '');
-    const dataVencimento = prompt('Data de vencimento (YYYY-MM-DD):', tarefa.data_vencimento ? tarefa.data_vencimento.split('T')[0] : '');
+    // Preencher formulário
+    document.getElementById('edit-task-title').value = tarefa.titulo || '';
+    document.getElementById('edit-task-desc').value = tarefa.descricao || '';
+    document.getElementById('edit-task-date').value = tarefa.data_vencimento ? tarefa.data_vencimento.split('T')[0] : '';
+    document.getElementById('edit-task-priority').value = tarefa.prioridade || 'media';
 
-    salvarTarefaEditada(tarefaId, { titulo, descricao, data_vencimento: dataVencimento });
+    // Mostrar modal
+    document.getElementById('editTaskModal').classList.remove('hidden');
 }
 
-async function salvarTarefaEditada(tarefaId, dados) {
+function closeEditTaskModal() {
+    document.getElementById('editTaskModal').classList.add('hidden');
+    currentTaskId = null;
+}
+
+async function salvarEdicaoTarefa() {
+    if (!currentTaskId) return;
+
+    const titulo = document.getElementById('edit-task-title').value.trim();
+    const descricao = document.getElementById('edit-task-desc').value.trim();
+    const dataVencimento = document.getElementById('edit-task-date').value;
+    const prioridade = document.getElementById('edit-task-priority').value;
+
+    if (!titulo) {
+        showNotification('Por favor, preencha o título', 'warning');
+        return;
+    }
+
     try {
+        const dados = {
+            titulo,
+            descricao: descricao || null,
+            data_vencimento: dataVencimento || new Date().toISOString(),
+            prioridade
+        };
+
         const { error } = await supabase
             .from('tarefas')
             .update(dados)
-            .eq('id', tarefaId);
+            .eq('id', currentTaskId);
 
         if (error) throw error;
 
         showNotification('Tarefa atualizada!', 'success');
+        closeEditTaskModal();
         await loadTarefas();
         renderTarefas();
     } catch (error) {
