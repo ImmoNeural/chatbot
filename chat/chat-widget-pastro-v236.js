@@ -631,8 +631,8 @@
     let qualificationStep = 0;
 
     // Supabase configuration
-    const SUPABASE_URL = 'https://seu-projeto.supabase.co';
-    const SUPABASE_KEY = 'sua-chave-publica-aqui';
+    const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8';
 
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
