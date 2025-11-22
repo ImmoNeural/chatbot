@@ -22,8 +22,8 @@
 
     <style>
         :root {
-            --primary: #10b981;
-            --secondary: #059669;
+            --primary: #309086;
+            --secondary: #267269;
             --danger: #ef4444;
             --warning: #f59e0b;
             --info: #3b82f6;
@@ -236,7 +236,7 @@
     <aside id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-64 text-white z-50">
         <div class="p-6">
             <div class="flex items-center gap-3 mb-8">
-                <i class="fas fa-solar-panel text-3xl"></i>
+                <i class="fas fa-sun text-3xl"></i>
                 <div>
                     <h1 class="text-xl font-bold">CRM Solar</h1>
                     <p class="text-xs opacity-80">Funil Completo</p>
@@ -555,6 +555,31 @@
             </div>
         </div>
     </div>
+
+    <!-- Chatbot Widget -->
+    <script>
+        window.ChatWidgetConfig = {
+            webhook: {
+                url: 'https://seu-webhook.n8n.cloud/webhook/chat',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            },
+            branding: {
+                name: 'Assistente Solar',
+                logo: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png'
+            },
+            style: {
+                primaryColor: '#309086',
+                secondaryColor: '#267269',
+                position: 'right',
+                backgroundColor: '#ffffff',
+                fontColor: '#1f2937'
+            },
+            suggestedQuestions: []
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/gh/ImmoNeural/chatbot@main/chat/chat-widget-pastro-v236.js"></script>
 
     <!-- JavaScript -->
     <script src="./crm.js"></script>
