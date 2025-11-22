@@ -480,6 +480,12 @@
 
         <!-- Tarefas Module -->
         <div id="module-tarefas" class="module hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Tarefas</h2>
+                <button onclick="novaTarefa()" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Nova Tarefa
+                </button>
+            </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="module-card p-6">
                     <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -515,9 +521,14 @@
                     <h3 class="text-2xl font-bold" id="modal-lead-name">Nome do Lead</h3>
                     <p class="text-green-100" id="modal-lead-email">email@example.com</p>
                 </div>
-                <button onclick="closeLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="toggleEditLead()" id="btn-edit-lead" class="text-white hover:bg-white/20 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-edit mr-2"></i>Editar
+                    </button>
+                    <button onclick="closeLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="flex border-b">
@@ -566,8 +577,8 @@
                 }
             },
             branding: {
-                name: 'Assistente Solar',
-                logo: 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png'
+                name: 'Solarbot',
+                logo: 'https://i.imgur.com/9HgZWJa.png'
             },
             style: {
                 primaryColor: '#309086',

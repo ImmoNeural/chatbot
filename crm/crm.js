@@ -471,14 +471,12 @@ async function atualizarEtapaOportunidade(id, novaEtapa) {
             })
             .eq('id', id);
 
-        if (error) throw error;
-
-        // Se moveu para "fechamento", abrir modal de fechamento
-        if (novaEtapa === 'fechamento') {
-            showFechamentoModal(id);
+        if (error) {
+            console.error('Erro do Supabase:', error);
+            throw error;
         }
 
-        showNotification('Oportunidade movida com sucesso!', 'success');
+        showNotification(`Oportunidade movida para ${novaEtapa}!`, 'success');
         await loadOportunidades();
         renderKanban();
     } catch (error) {
@@ -649,6 +647,102 @@ async function renderLeadInfo(lead) {
     `;
 }
 
+let editModeActive = false;
+
+function toggleEditLead() {
+    editModeActive = !editModeActive;
+    const btn = document.getElementById('btn-edit-lead');
+
+    if (editModeActive) {
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i>Salvar';
+        btn.onclick = saveLead;
+        renderLeadInfoEdit(currentLead);
+    } else {
+        btn.innerHTML = '<i class="fas fa-edit mr-2"></i>Editar';
+        btn.onclick = toggleEditLead;
+        renderLeadInfo(currentLead);
+    }
+}
+
+function renderLeadInfoEdit(lead) {
+    const container = document.getElementById('lead-info-grid');
+
+    container.innerHTML = `
+        <div>
+            <label class="text-sm text-gray-600">Nome</label>
+            <input type="text" id="edit-nome" value="${lead.nome || ''}" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Email</label>
+            <input type="email" id="edit-email" value="${lead.email || ''}" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Telefone</label>
+            <input type="text" id="edit-phone" value="${lead.phone || ''}" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Tipo</label>
+            <select id="edit-tipo" class="w-full border rounded px-3 py-2 mt-1">
+                <option value="residencial" ${lead.tipo_cliente === 'residencial' ? 'selected' : ''}>Residencial</option>
+                <option value="empresarial" ${lead.tipo_cliente === 'empresarial' ? 'selected' : ''}>Empresarial</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Consumo Mensal (kWh)</label>
+            <input type="number" id="edit-consumo" value="${lead.consumo_mensal || 0}" class="w-full border rounded px-3 py-2 mt-1">
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Status</label>
+            <select id="edit-status" class="w-full border rounded px-3 py-2 mt-1">
+                <option value="novo" ${lead.status === 'novo' ? 'selected' : ''}>Novo</option>
+                <option value="qualificado" ${lead.status === 'qualificado' ? 'selected' : ''}>Qualificado</option>
+                <option value="em_nutricao" ${lead.status === 'em_nutricao' ? 'selected' : ''}>Em Nutrição</option>
+                <option value="nao_qualificado" ${lead.status === 'nao_qualificado' ? 'selected' : ''}>Não Qualificado</option>
+                <option value="convertido" ${lead.status === 'convertido' ? 'selected' : ''}>Convertido</option>
+                <option value="perdido" ${lead.status === 'perdido' ? 'selected' : ''}>Perdido</option>
+            </select>
+        </div>
+    `;
+}
+
+async function saveLead() {
+    try {
+        const updatedData = {
+            nome: document.getElementById('edit-nome').value,
+            email: document.getElementById('edit-email').value,
+            phone: document.getElementById('edit-phone').value,
+            tipo_cliente: document.getElementById('edit-tipo').value,
+            consumo_mensal: parseFloat(document.getElementById('edit-consumo').value),
+            status: document.getElementById('edit-status').value
+        };
+
+        const { error } = await supabase
+            .from('leads')
+            .update(updatedData)
+            .eq('id', currentLead.id);
+
+        if (error) throw error;
+
+        showNotification('Lead atualizado com sucesso!', 'success');
+
+        // Atualizar lead atual e recarregar dados
+        Object.assign(currentLead, updatedData);
+        await loadLeads();
+        renderLeadsTable();
+
+        // Voltar para modo visualização
+        editModeActive = false;
+        const btn = document.getElementById('btn-edit-lead');
+        btn.innerHTML = '<i class="fas fa-edit mr-2"></i>Editar';
+        btn.onclick = toggleEditLead;
+        renderLeadInfo(currentLead);
+
+    } catch (error) {
+        console.error('Erro ao salvar lead:', error);
+        showNotification('Erro ao salvar alterações', 'danger');
+    }
+}
+
 async function renderLeadTimeline(leadId) {
     const container = document.getElementById('timeline-container');
 
@@ -809,13 +903,16 @@ function renderPropostas() {
                 </div>
 
                 <div class="flex gap-2">
+                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition text-sm">
+                        <i class="fas fa-eye mr-1"></i> Visualizar
+                    </button>
                     ${proposta.arquivo_pdf_url ? `
                         <a href="${proposta.arquivo_pdf_url}" target="_blank" class="flex-1 bg-blue-500 text-white text-center py-2 rounded-lg hover:bg-blue-600 transition text-sm">
-                            <i class="fas fa-file-pdf mr-1"></i> Ver PDF
+                            <i class="fas fa-file-pdf mr-1"></i> PDF
                         </a>
                     ` : ''}
-                    <button onclick="trackProposta('${proposta.token_rastreio}')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition text-sm">
-                        <i class="fas fa-link mr-1"></i> Link
+                    <button onclick="copiarLinkProposta('${proposta.token_rastreio}')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition text-sm">
+                        <i class="fas fa-link mr-1"></i> Copiar Link
                     </button>
                 </div>
 
@@ -829,7 +926,12 @@ function renderPropostas() {
     }).join('') || '<p class="text-gray-500 col-span-3 text-center py-8">Nenhuma proposta encontrada</p>';
 }
 
-function trackProposta(token) {
+function abrirProposta(token) {
+    const url = `${window.location.origin}/crm/proposta.html?t=${token}`;
+    window.open(url, '_blank');
+}
+
+function copiarLinkProposta(token) {
     const url = `${window.location.origin}/crm/proposta.html?t=${token}`;
     navigator.clipboard.writeText(url);
     showNotification('Link copiado para área de transferência!', 'success');
@@ -910,9 +1012,17 @@ function renderTarefasColumn(containerId, tarefas, color) {
         <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-${color}-500">
             <div class="flex items-start justify-between mb-2">
                 <h4 class="font-semibold text-gray-800 text-sm">${tarefa.titulo}</h4>
-                <button onclick="concluirTarefa('${tarefa.id}')" class="text-green-600 hover:text-green-800">
-                    <i class="fas fa-check"></i>
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="concluirTarefa('${tarefa.id}')" class="text-green-600 hover:text-green-800" title="Concluir">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button onclick="editarTarefa('${tarefa.id}')" class="text-blue-600 hover:text-blue-800" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deletarTarefa('${tarefa.id}')" class="text-red-600 hover:text-red-800" title="Deletar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
             <p class="text-xs text-gray-600 mb-2">${tarefa.descricao || ''}</p>
             <div class="flex items-center justify-between">
@@ -945,6 +1055,90 @@ async function concluirTarefa(tarefaId) {
     } catch (error) {
         console.error('Erro ao concluir tarefa:', error);
         showNotification('Erro ao concluir tarefa', 'danger');
+    }
+}
+
+function editarTarefa(tarefaId) {
+    const tarefa = tarefas.find(t => t.id === tarefaId);
+    if (!tarefa) return;
+
+    const titulo = prompt('Título da tarefa:', tarefa.titulo);
+    if (!titulo) return;
+
+    const descricao = prompt('Descrição:', tarefa.descricao || '');
+    const dataVencimento = prompt('Data de vencimento (YYYY-MM-DD):', tarefa.data_vencimento ? tarefa.data_vencimento.split('T')[0] : '');
+
+    salvarTarefaEditada(tarefaId, { titulo, descricao, data_vencimento: dataVencimento });
+}
+
+async function salvarTarefaEditada(tarefaId, dados) {
+    try {
+        const { error } = await supabase
+            .from('tarefas')
+            .update(dados)
+            .eq('id', tarefaId);
+
+        if (error) throw error;
+
+        showNotification('Tarefa atualizada!', 'success');
+        await loadTarefas();
+        renderTarefas();
+    } catch (error) {
+        console.error('Erro ao atualizar tarefa:', error);
+        showNotification('Erro ao atualizar tarefa', 'danger');
+    }
+}
+
+async function deletarTarefa(tarefaId) {
+    if (!confirm('Tem certeza que deseja deletar esta tarefa?')) return;
+
+    try {
+        const { error } = await supabase
+            .from('tarefas')
+            .delete()
+            .eq('id', tarefaId);
+
+        if (error) throw error;
+
+        showNotification('Tarefa deletada!', 'success');
+        await loadTarefas();
+        renderTarefas();
+    } catch (error) {
+        console.error('Erro ao deletar tarefa:', error);
+        showNotification('Erro ao deletar tarefa', 'danger');
+    }
+}
+
+async function novaTarefa() {
+    const titulo = prompt('Título da tarefa:');
+    if (!titulo) return;
+
+    const descricao = prompt('Descrição (opcional):');
+    const dataVencimento = prompt('Data de vencimento (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    const prioridade = prompt('Prioridade (baixa/media/alta):', 'media');
+
+    try {
+        const novaTarefaData = {
+            titulo,
+            descricao: descricao || null,
+            data_vencimento: dataVencimento || new Date().toISOString(),
+            prioridade: prioridade || 'media',
+            status: 'pendente',
+            tipo: 'geral'
+        };
+
+        const { error } = await supabase
+            .from('tarefas')
+            .insert([novaTarefaData]);
+
+        if (error) throw error;
+
+        showNotification('Tarefa criada com sucesso!', 'success');
+        await loadTarefas();
+        renderTarefas();
+    } catch (error) {
+        console.error('Erro ao criar tarefa:', error);
+        showNotification('Erro ao criar tarefa', 'danger');
     }
 }
 
