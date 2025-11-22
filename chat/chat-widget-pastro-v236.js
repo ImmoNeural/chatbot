@@ -1005,30 +1005,12 @@
 
     // Step 5: Ask for roof type
     const askRoofType = () => {
-        const roofTypesImage = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500';
+        const roofTypesImage = 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=500';
 
         setTimeout(() => {
             const messageContainer = addBotMessage(`
                 <p><strong>Que tipo de telhado você tem?</strong></p>
-                <p style="font-size: 12px; color: #6b7280;">Veja os exemplos abaixo e escolha o mais próximo do seu:</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0;">
-                    <div style="text-align: center;">
-                        <img src="https://images.unsplash.com/photo-1604909052743-94e838986d24?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
-                        <span style="font-size: 11px; color: #6b7280;">Cerâmica/Telha</span>
-                    </div>
-                    <div style="text-align: center;">
-                        <img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
-                        <span style="font-size: 11px; color: #6b7280;">Fibrocimento</span>
-                    </div>
-                    <div style="text-align: center;">
-                        <img src="https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
-                        <span style="font-size: 11px; color: #6b7280;">Metálico</span>
-                    </div>
-                    <div style="text-align: center;">
-                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
-                        <span style="font-size: 11px; color: #6b7280;">Laje</span>
-                    </div>
-                </div>
+                <p style="font-size: 12px; color: #6b7280;">Escolha o tipo mais próximo do seu:</p>
                 <div class="dynamic-buttons-container">
                     <button class="dynamic-button" data-roof="Cerâmica/Telha">🏠 Cerâmica/Telha</button>
                     <button class="dynamic-button" data-roof="Fibrocimento">🏭 Fibrocimento</button>
