@@ -622,6 +622,7 @@
 
     // Qualification funnel data
     let qualificationData = {
+        name: null,
         email: null,
         phone: null,
         familySize: null,
@@ -645,11 +646,14 @@
                     'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
+                    nome: data.name,
                     email: data.email,
                     phone: data.phone,
                     family_size: data.familySize,
                     kwh_consumption: data.kwhConsumption,
                     roof_type: data.roofType,
+                    origem: 'chatbot',
+                    status: 'novo',
                     created_at: new Date().toISOString()
                 })
             });
@@ -883,10 +887,21 @@
     // Qualification funnel functions
     const startQualificationFunnel = () => {
         qualificationStep = 1;
-        askEmail();
+        askName();
     };
 
-    // Step 1: Ask for email
+    // Step 1: Ask for name
+    const askName = () => {
+        setTimeout(() => {
+            addBotMessage(`
+                <div>
+                    <p>Olá! Para começar, qual é o seu nome? 😊</p>
+                </div>
+            `);
+        }, 500);
+    };
+
+    // Step 2: Ask for email
     const askEmail = () => {
         const emailImage = 'https://images.unsplash.com/photo-1560264280-88b68371db39?w=500';
 
@@ -1142,7 +1157,31 @@
         if (!trimmedMessage) return;
 
         // Handle qualification funnel input
-        if (qualificationStep === 1 && !qualificationData.email) {
+        if (qualificationStep === 1 && !qualificationData.name) {
+            // Validating name
+            if (trimmedMessage.length < 2) {
+                addUserMessage(trimmedMessage);
+                setTimeout(() => {
+                    addBotMessage(`
+                        <p>❌ Por favor, digite um nome válido.</p>
+                    `);
+                }, 300);
+                messageTextarea.value = '';
+                return;
+            }
+            qualificationData.name = trimmedMessage;
+            addUserMessage(trimmedMessage);
+            messageTextarea.value = '';
+            setTimeout(() => {
+                addBotMessage(`
+                    <p>Prazer em conhecê-lo, ${trimmedMessage}! 👋</p>
+                `);
+            }, 300);
+            askEmail();
+            return;
+        }
+
+        if (qualificationStep === 1 && qualificationData.name && !qualificationData.email) {
             // Validating email
             if (!validateEmail(trimmedMessage)) {
                 addUserMessage(trimmedMessage);
@@ -1162,7 +1201,7 @@
             return;
         }
 
-        if (qualificationStep === 1 && qualificationData.email && !qualificationData.phone) {
+        if (qualificationStep === 1 && qualificationData.name && qualificationData.email && !qualificationData.phone) {
             // Validating phone
             if (!validatePhone(trimmedMessage)) {
                 addUserMessage(trimmedMessage);
