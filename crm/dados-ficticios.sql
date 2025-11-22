@@ -165,17 +165,17 @@ ON CONFLICT DO NOTHING;
 -- =========================================
 INSERT INTO propostas (id, oportunidade_id, numero_proposta, versao, num_modulos, potencia_total_kwp, tipo_inversor, marca_modulos, valor_total, desconto_percentual, valor_final, economia_mensal_prevista, payback_meses, economia_25_anos, status, validade_dias, created_at) VALUES
 -- Proposta enviada (aguardando)
-('0b111111-1111-1111-1111-111111111', '0a555555-5555-5555-5555-555555555555', 'PROP-2025-001', 1, 12, 5.4, 'Growatt 5kW', 'Canadian Solar', 29000, 0, 29000, 850, 34, 255000, 'enviada', 15, NOW() - INTERVAL '1 day'),
+('0b111111-1111-1111-1111-111111111111', '0a555555-5555-5555-5555-555555555555', 'PROP-2025-001', 1, 12, 5.4, 'Growatt 5kW', 'Canadian Solar', 29000, 0, 29000, 850, 34, 255000, 'enviada', 15, NOW() - INTERVAL '1 day'),
 
 -- Proposta visualizada
-('0b222222-2222-2222-2222-222222222', '0a666666-6666-6666-6666-666666666666', 'PROP-2025-002', 1, 48, 21.6, 'Fronius 20kW', 'Jinko Solar', 195000, 5, 185250, 5200, 36, 1560000, 'visualizada', 15, NOW() - INTERVAL '2 days'),
+('0b222222-2222-2222-2222-222222222222', '0a666666-6666-6666-6666-666666666666', 'PROP-2025-002', 1, 48, 21.6, 'Fronius 20kW', 'Jinko Solar', 195000, 5, 185250, 5200, 36, 1560000, 'visualizada', 15, NOW() - INTERVAL '2 days'),
 
 -- Proposta em negociação (v2 com desconto)
-('0b333333-3333-3333-3333-333333333', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-003', 1, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 0, 310000, 8500, 36, 2550000, 'visualizada', 15, NOW() - INTERVAL '5 days'),
-('0b444444-4444-4444-4444-444444444', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-003', 2, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 8, 285200, 8500, 34, 2550000, 'enviada', 15, NOW() - INTERVAL '12 hours'),
+('0b333333-3333-3333-3333-333333333333', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-003', 1, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 0, 310000, 8500, 36, 2550000, 'visualizada', 15, NOW() - INTERVAL '5 days'),
+('0b444444-4444-4444-4444-444444444444', '0a777777-7777-7777-7777-777777777777', 'PROP-2025-003', 2, 72, 32.4, 'Fronius 30kW', 'Canadian Solar', 310000, 8, 285200, 8500, 34, 2550000, 'enviada', 15, NOW() - INTERVAL '12 hours'),
 
 -- Proposta aceita (cliente convertido)
-('0b555555-5555-5555-5555-555555555', '0a999999-9999-9999-9999-999999999999', 'PROP-2025-004', 1, 14, 6.3, 'Growatt 6kW', 'Jinko Solar', 35000, 5, 33250, 920, 36, 276000, 'aceita', 15, NOW() - INTERVAL '30 days')
+('0b555555-5555-5555-5555-555555555555', '0a999999-9999-9999-9999-999999999999', 'PROP-2025-004', 1, 14, 6.3, 'Growatt 6kW', 'Jinko Solar', 35000, 5, 33250, 920, 36, 276000, 'aceita', 15, NOW() - INTERVAL '30 days')
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================
@@ -183,13 +183,13 @@ ON CONFLICT (id) DO NOTHING;
 -- =========================================
 INSERT INTO clientes_instalados (id, lead_id, oportunidade_id, proposta_final_id, numero_contrato, valor_final_negociado, data_assinatura, data_instalacao, potencia_instalada_kwp, num_modulos_instalados, garantia_modulos_anos, garantia_inversor_anos, garantia_instalacao_anos, economia_real_mensal, geracao_media_mensal_kwh, nps, feedback) VALUES
 -- Roberto Alves
-('0d111111-1111-1111-1111-111111111', 'e1111111-1111-1111-1111-111111111111', '0a999999-9999-9999-9999-999999999999', '0b555555-5555-5555-5555-555555555', 'CONT-2025-001', 33250, '2025-10-20', '2025-11-05', 6.3, 14, 25, 5, 2, 920, 780, 9, 'Excelente serviço! Sistema funcionando perfeitamente. Economia já apareceu na primeira conta.'),
+('0d111111-1111-1111-1111-111111111111', 'e1111111-1111-1111-1111-111111111111', '0a999999-9999-9999-9999-999999999999', '0b555555-5555-5555-5555-555555555555', 'CONT-2025-001', 33250, '2025-10-20', '2025-11-05', 6.3, 14, 25, 5, 2, 920, 780, 9, 'Excelente serviço! Sistema funcionando perfeitamente. Economia já apareceu na primeira conta.'),
 
 -- Patricia Rocha
-('0d222222-2222-2222-2222-222222222', 'e2222222-2222-2222-2222-222222222222', NULL, NULL, 'CONT-2025-002', 27500, '2025-09-15', '2025-10-02', 5.4, 12, 25, 5, 2, 780, 650, 10, 'Recomendo! Equipe profissional e sistema de qualidade.'),
+('0d222222-2222-2222-2222-222222222222', 'e2222222-2222-2222-2222-222222222222', NULL, NULL, 'CONT-2025-002', 27500, '2025-09-15', '2025-10-02', 5.4, 12, 25, 5, 2, 780, 650, 10, 'Recomendo! Equipe profissional e sistema de qualidade.'),
 
 -- Mercado Central
-('0d333333-3333-3333-3333-333333333', 'e3333333-3333-3333-3333-333333333333', NULL, NULL, 'CONT-2024-015', 225000, '2024-08-10', '2024-09-20', 25.2, 56, 25, 5, 2, 6200, 3100, 8, 'Ótimo investimento. Redução significativa na conta de energia.')
+('0d333333-3333-3333-3333-333333333333', 'e3333333-3333-3333-3333-333333333333', NULL, NULL, 'CONT-2024-015', 225000, '2024-08-10', '2024-09-20', 25.2, 56, 25, 5, 2, 6200, 3100, 8, 'Ótimo investimento. Redução significativa na conta de energia.')
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================
@@ -197,17 +197,17 @@ ON CONFLICT (id) DO NOTHING;
 -- =========================================
 INSERT INTO tarefas (id, lead_id, user_id, titulo, descricao, tipo, data_vencimento, prioridade, status) VALUES
 -- Atrasadas
-('0c111111-1111-1111-1111-111111111', 'a1111111-1111-1111-1111-111111111111', '550e8400-e29b-41d4-a716-446655440000', 'Ligar para João Silva', 'Fazer primeiro contato e qualificar', 'ligacao', NOW() - INTERVAL '2 days', 'alta', 'pendente'),
-('0c222222-2222-2222-2222-222222222', 'b2222222-2222-2222-2222-222222222222', '550e8400-e29b-41d4-a716-446655440000', 'Solicitar fotos do telhado', 'Pedir fotos para análise técnica', 'follow_up', NOW() - INTERVAL '1 day', 'media', 'pendente'),
+('0c111111-1111-1111-1111-111111111111', 'a1111111-1111-1111-1111-111111111111', '550e8400-e29b-41d4-a716-446655440000', 'Ligar para João Silva', 'Fazer primeiro contato e qualificar', 'ligacao', NOW() - INTERVAL '2 days', 'alta', 'pendente'),
+('0c222222-2222-2222-2222-222222222222', 'b2222222-2222-2222-2222-222222222222', '550e8400-e29b-41d4-a716-446655440000', 'Solicitar fotos do telhado', 'Pedir fotos para análise técnica', 'follow_up', NOW() - INTERVAL '1 day', 'media', 'pendente'),
 
 -- Hoje
-('0c333333-3333-3333-3333-333333333', 'b3333333-3333-3333-3333-333333333333', '550e8400-e29b-41d4-a716-446655440001', 'Retornar ligação restaurante', 'Cliente pediu para retornar hoje sobre desconto', 'ligacao', NOW() + INTERVAL '4 hours', 'urgente', 'pendente'),
-('0c444444-4444-4444-4444-444444444', '72222222-2222-2222-2222-222222222222', '550e8400-e29b-41d4-a716-446655440001', 'Enviar proposta Camila', 'Finalizar e enviar proposta comercial', 'proposta', NOW() + INTERVAL '6 hours', 'alta', 'pendente'),
+('0c333333-3333-3333-3333-333333333333', 'b3333333-3333-3333-3333-333333333333', '550e8400-e29b-41d4-a716-446655440001', 'Retornar ligação restaurante', 'Cliente pediu para retornar hoje sobre desconto', 'ligacao', NOW() + INTERVAL '4 hours', 'urgente', 'pendente'),
+('0c444444-4444-4444-4444-444444444444', '72222222-2222-2222-2222-222222222222', '550e8400-e29b-41d4-a716-446655440001', 'Enviar proposta Camila', 'Finalizar e enviar proposta comercial', 'proposta', NOW() + INTERVAL '6 hours', 'alta', 'pendente'),
 
 -- Próximas
-('0c555555-5555-5555-5555-555555555', '73333333-3333-3333-3333-333333333333', '550e8400-e29b-41d4-a716-446655440000', 'Visita técnica fábrica XYZ', 'Agendar e realizar visita técnica', 'visita', NOW() + INTERVAL '2 days', 'alta', 'pendente'),
-('0c666666-6666-6666-6666-666666666', 'a2222222-2222-2222-2222-222222222222', '550e8400-e29b-41d4-a716-446655440001', 'Follow-up Maria Santos', 'Verificar interesse após envio de material', 'follow_up', NOW() + INTERVAL '3 days', 'media', 'pendente'),
-('0c777777-7777-7777-7777-777777777', '75555555-5555-5555-5555-555555555555', '550e8400-e29b-41d4-a716-446655440001', 'Follow-up proposta Sabrina', 'Cliente visualizou proposta há 2 dias', 'email', NOW() + INTERVAL '5 days', 'media', 'pendente')
+('0c555555-5555-5555-5555-555555555555', '73333333-3333-3333-3333-333333333333', '550e8400-e29b-41d4-a716-446655440000', 'Visita técnica fábrica XYZ', 'Agendar e realizar visita técnica', 'visita', NOW() + INTERVAL '2 days', 'alta', 'pendente'),
+('0c666666-6666-6666-6666-666666666666', 'a2222222-2222-2222-2222-222222222222', '550e8400-e29b-41d4-a716-446655440001', 'Follow-up Maria Santos', 'Verificar interesse após envio de material', 'follow_up', NOW() + INTERVAL '3 days', 'media', 'pendente'),
+('0c777777-7777-7777-7777-777777777777', '75555555-5555-5555-5555-555555555555', '550e8400-e29b-41d4-a716-446655440001', 'Follow-up proposta Sabrina', 'Cliente visualizou proposta há 2 dias', 'email', NOW() + INTERVAL '5 days', 'media', 'pendente')
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================
