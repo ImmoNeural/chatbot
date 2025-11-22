@@ -4,14 +4,10 @@
 -- =========================================
 
 -- Limpar dados existentes (CUIDADO: Remove tudo!)
--- Ordem correta respeitando foreign keys (do mais dependente ao menos dependente)
-DELETE FROM clientes_instalados;
-DELETE FROM tarefas;
-DELETE FROM interacoes;
-DELETE FROM propostas;
-DELETE FROM oportunidades;
-DELETE FROM qualificacao;
-DELETE FROM leads;
+-- Usando TRUNCATE CASCADE para forçar limpeza completa
+TRUNCATE TABLE clientes_instalados, tarefas, interacoes, propostas, oportunidades, qualificacao, leads CASCADE;
+
+-- Limpar usuários de teste (preservar admin se existir)
 DELETE FROM users WHERE email NOT IN ('admin@energia-solar.com', 'admin@energiasolar.com');
 
 -- =========================================
