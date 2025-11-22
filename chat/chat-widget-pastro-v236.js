@@ -1038,24 +1038,46 @@
         const saved = await saveLeadToSupabase(qualificationData);
 
         setTimeout(() => {
-            addBotMessage(`
-                <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
-                <p>📧 E-mail: ${qualificationData.email}<br>
-                📱 Telefone: ${qualificationData.phone}<br>
-                👥 Pessoas na casa: ${qualificationData.familySize}<br>
-                ⚡ Consumo mensal: ${qualificationData.kwhConsumption}<br>
-                🏠 Tipo de telhado: ${qualificationData.roofType}</p>
-                <p>💰 <strong>Você tem potencial de reduzir até 90% do valor da sua conta de luz!</strong></p>
-                <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
-                <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
-            `, true, savingsImage);
+            const messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container bot-message';
+            messageContainer.innerHTML = `
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+                <div class="message-content">
+                    <div class="chat-bubble bot-bubble">
+                        <img src="${savingsImage}" style="width: 100%; border-radius: 10px; margin-bottom: 10px;" alt="Economia">
+                        <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
+                        <p>📧 E-mail: ${qualificationData.email}<br>
+                        📱 Telefone: ${qualificationData.phone}<br>
+                        👥 Pessoas na casa: ${qualificationData.familySize}<br>
+                        ⚡ Consumo mensal: ${qualificationData.kwhConsumption}<br>
+                        🏠 Tipo de telhado: ${qualificationData.roofType}</p>
+                        <p>💰 <strong>Você tem potencial de reduzir até 90% do valor da sua conta de luz!</strong></p>
+                        <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
+                        <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
+                        <div class="action-buttons-container" style="margin-top: 15px;">
+                            <button class="action-button green-button schedule-btn">📅 Agende aqui</button>
+                        </div>
+                    </div>
+                    <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                </div>
+            `;
 
-            setTimeout(() => {
-                addBotMessage(`
-                    <p>📅 <strong>Escolha o melhor horário para você:</strong></p>
-                `);
-                addCalendarToChat();
-            }, 1000);
+            messagesContainer.appendChild(messageContainer);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Add event listener to the schedule button
+            const scheduleBtn = messageContainer.querySelector('.schedule-btn');
+            scheduleBtn.addEventListener('click', () => {
+                scheduleBtn.disabled = true;
+                scheduleBtn.style.opacity = '0.5';
+
+                setTimeout(() => {
+                    addBotMessage(`
+                        <p>📅 <strong>Escolha o melhor horário para você:</strong></p>
+                    `);
+                    addCalendarToChat();
+                }, 500);
+            });
         }, 500);
     };
 
