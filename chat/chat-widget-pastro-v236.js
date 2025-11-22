@@ -888,7 +888,7 @@
 
     // Step 1: Ask for email
     const askEmail = () => {
-        const emailImage = 'https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=500';
+        const emailImage = 'https://images.unsplash.com/photo-1560264280-88b68371db39?w=500';
 
         setTimeout(() => {
             addBotMessage(`
@@ -946,7 +946,7 @@
 
     // Step 4: Ask for kWh consumption based on family size
     const askKwhConsumption = () => {
-        const energyBillImage = 'https://images.unsplash.com/photo-1554224311-beee813c201f?w=500';
+        const energyBillImage = 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=500';
 
         // Determine kWh ranges based on family size
         let kwhOptions = [];
@@ -1005,12 +1005,30 @@
 
     // Step 5: Ask for roof type
     const askRoofType = () => {
-        const roofTypesImage = 'https://images.unsplash.com/photo-1632246123516-219c0b7c5b53?w=500';
+        const roofTypesImage = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500';
 
         setTimeout(() => {
             const messageContainer = addBotMessage(`
                 <p><strong>Que tipo de telhado você tem?</strong></p>
-                <p style="font-size: 12px; color: #6b7280;">Escolha o tipo mais próximo do seu telhado</p>
+                <p style="font-size: 12px; color: #6b7280;">Veja os exemplos abaixo e escolha o mais próximo do seu:</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0;">
+                    <div style="text-align: center;">
+                        <img src="https://images.unsplash.com/photo-1604909052743-94e838986d24?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 11px; color: #6b7280;">Cerâmica/Telha</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 11px; color: #6b7280;">Fibrocimento</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 11px; color: #6b7280;">Metálico</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200" style="width: 100%; border-radius: 8px; margin-bottom: 4px;">
+                        <span style="font-size: 11px; color: #6b7280;">Laje</span>
+                    </div>
+                </div>
                 <div class="dynamic-buttons-container">
                     <button class="dynamic-button" data-roof="Cerâmica/Telha">🏠 Cerâmica/Telha</button>
                     <button class="dynamic-button" data-roof="Fibrocimento">🏭 Fibrocimento</button>
@@ -1045,7 +1063,7 @@
                 👥 Pessoas na casa: ${qualificationData.familySize}<br>
                 ⚡ Consumo mensal: ${qualificationData.kwhConsumption}<br>
                 🏠 Tipo de telhado: ${qualificationData.roofType}</p>
-                <p>💰 <strong>Você tem potencial de reduzir até 95% do valor da sua conta de luz!</strong></p>
+                <p>💰 <strong>Você tem potencial de reduzir até 90% do valor da sua conta de luz!</strong></p>
                 <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
                 <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
             `, true, savingsImage);
