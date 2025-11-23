@@ -1828,6 +1828,16 @@ function renderResultadosSimulador(resultado) {
         const { configuracao, custos, economia, payback, energiaGerada } = proposta;
         const { placa, numModulos, potenciaRealKwp, area } = configuracao;
 
+        // Compatibilidade: inversor pode estar em custos.inversor (antigo) ou custos.equipamentos.inversor (novo)
+        const inversor = custos.equipamentos?.inversor || custos.inversor;
+
+        // Compatibilidade: payback pode ter estrutura simples ou real
+        const paybackAnos = payback.real?.anos || payback.anos;
+
+        // Compatibilidade: TIR e VPL podem não existir na calculadora antiga
+        const tir = proposta.tir || 0;
+        const vpl = proposta.vpl || 0;
+
         return `
             <div class="bg-white border-2 ${index === 0 ? 'border-green-500' : 'border-gray-200'} rounded-xl p-6 shadow-lg">
                 ${index === 0 ? '<div class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3">RECOMENDADO</div>' : ''}
@@ -1853,7 +1863,7 @@ function renderResultadosSimulador(resultado) {
                         </div>
                         <div class="flex justify-between">
                             <span>Inversor:</span>
-                            <span class="font-semibold text-xs">${custos.inversor.fabricante} ${custos.inversor.potencia_kw}kW</span>
+                            <span class="font-semibold text-xs">${inversor.fabricante} ${inversor.potencia_kw}kW</span>
                         </div>
                     </div>
                 </div>
@@ -1876,17 +1886,17 @@ function renderResultadosSimulador(resultado) {
                         </div>
                         <div class="border-t border-green-200 pt-2 mt-2 space-y-1">
                             <div class="flex justify-between">
-                                <span class="font-bold">Payback Real:</span>
-                                <span class="font-bold text-green-800">${proposta.payback.real.anos} anos</span>
+                                <span class="font-bold">Payback:</span>
+                                <span class="font-bold text-green-800">${paybackAnos} anos</span>
                             </div>
-                            <div class="flex justify-between">
+                            ${tir > 0 ? `<div class="flex justify-between">
                                 <span class="text-xs">TIR:</span>
-                                <span class="font-semibold text-xs">${proposta.tir}% a.a.</span>
-                            </div>
-                            <div class="flex justify-between">
+                                <span class="font-semibold text-xs">${tir}% a.a.</span>
+                            </div>` : ''}
+                            ${vpl !== 0 ? `<div class="flex justify-between">
                                 <span class="text-xs">VPL:</span>
-                                <span class="font-semibold text-xs">${formatCurrency(proposta.vpl)}</span>
-                            </div>
+                                <span class="font-semibold text-xs">${formatCurrency(vpl)}</span>
+                            </div>` : ''}
                         </div>
                     </div>
                 </div>
