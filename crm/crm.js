@@ -1944,8 +1944,8 @@ function verMemoriaCalculo(propostaIndex) {
         propostaIndex
     };
 
-    // Abrir template HTML
-    window.open('./memorial-tecnico-template.html', '_blank', 'width=1200,height=900');
+    // Abrir página React
+    window.open('./memorial-tecnico-react.html', '_blank', 'width=1200,height=900');
 }
 
 async function gerarPropostaComercial(propostaIndex) {
@@ -1968,8 +1968,8 @@ async function gerarPropostaComercial(propostaIndex) {
         propostaIndex
     };
 
-    // Abrir template HTML
-    window.open('./proposta-comercial-template.html', '_blank', 'width=1200,height=900');
+    // Abrir página React
+    window.open('./proposta-comercial-react.html', '_blank', 'width=1200,height=900');
 }
 
 
