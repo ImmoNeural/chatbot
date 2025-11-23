@@ -469,51 +469,88 @@
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 16px;
         }
 
         .action-button {
-            flex: 1 1 calc(50% - 4px);
-            min-width: 120px;
-            padding: 10px 12px;
+            flex: 1 1 calc(50% - 5px);
+            min-width: 130px;
+            padding: 14px 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 14px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.9;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .action-button:hover::before {
             opacity: 1;
         }
 
+        .action-button:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
         .blue-button {
-            background-color: rgba(100, 149, 237, 0.7);
+            background: linear-gradient(135deg, #309086 0%, #267269 100%);
             color: white;
         }
 
+        .blue-button:hover {
+            background: linear-gradient(135deg, #3aa89d 0%, #2e8278 100%);
+        }
+
         .green-button {
-            background-color: rgba(144, 238, 144, 0.7);
-            color: #333;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .green-button:hover {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
         }
 
         .orange-button {
-            background-color: rgba(255, 182, 193, 0.7);
-            color: #333;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+        }
+
+        .orange-button:hover {
+            background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
         }
 
         .yellow-button {
-            background-color: rgba(255, 255, 153, 0.7);
-            color: #333;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+        }
+
+        .yellow-button:hover {
+            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
         }
 
         .dynamic-buttons-container {
