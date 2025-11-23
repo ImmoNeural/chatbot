@@ -831,7 +831,7 @@
                     <iframe
                         src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
                         frameborder="0"
-                        style="width: 115%; height: 600px; border-radius: 8px; margin-top: 8px; border: none;">
+                        style="width: 135%; height: 700px; border-radius: 8px; margin-top: 8px; border: none; transform: scale(0.85); transform-origin: top left;">
                     </iframe>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
