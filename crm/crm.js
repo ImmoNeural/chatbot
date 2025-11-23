@@ -451,8 +451,8 @@ function renderRecentLeads() {
     container.innerHTML = recentLeads.map(lead => `
         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user text-green-600"></i>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background: #309086;">
+                    <i class="fas fa-user"></i>
                 </div>
                 <div>
                     <p class="font-semibold text-gray-800">${lead.nome || lead.email}</p>
@@ -574,7 +574,7 @@ function renderLeadsTable() {
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
                         ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -979,7 +979,7 @@ function renderPropostas() {
                 </div>
 
                 <div class="flex gap-2">
-                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="flex-1 bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition text-sm">
+                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="flex-1 text-white py-2 rounded-lg transition text-sm" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
                         <i class="fas fa-eye mr-1"></i> Visualizar
                     </button>
                     ${proposta.arquivo_pdf_url ? `
@@ -1423,7 +1423,7 @@ function renderFilteredLeadsTable(filteredLeads) {
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
                         ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -1560,6 +1560,457 @@ function logout() {
     window.location.href = '/';
 }
 
+// =========================================
+// FILTRO KANBAN
+// =========================================
+let kanbanFilterType = 'todos';
+
+function filterKanban(tipo) {
+    kanbanFilterType = tipo;
+
+    // Atualizar botões ativos
+    document.querySelectorAll('#module-kanban .tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event?.target.classList.add('active');
+
+    // Renderizar kanban filtrado
+    renderKanbanFiltered();
+}
+
+function renderKanbanFiltered() {
+    const etapas = ['levantamento', 'simulacao', 'proposta', 'negociacao', 'fechamento'];
+
+    etapas.forEach(etapa => {
+        const container = document.querySelector(`.kanban-cards[data-etapa="${etapa}"]`);
+        const countBadge = document.querySelector(`.kanban-column[data-etapa="${etapa}"] .kanban-count`);
+
+        if (!container) return;
+
+        // Filtrar oportunidades por etapa e tipo
+        let oportunidadesEtapa = oportunidades.filter(o => o.etapa === etapa);
+
+        if (kanbanFilterType !== 'todos') {
+            oportunidadesEtapa = oportunidadesEtapa.filter(o =>
+                o.leads?.tipo_cliente === kanbanFilterType
+            );
+        }
+
+        // Atualizar contador
+        if (countBadge) {
+            countBadge.textContent = oportunidadesEtapa.length;
+        }
+
+        container.innerHTML = oportunidadesEtapa.map(oportunidade => {
+            const lead = oportunidade.leads;
+            const diasInativo = calcularDiasInativo(oportunidade.data_ultima_atualizacao);
+            const isInactive = diasInativo > 14;
+
+            return `
+                <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
+                    <div class="flex items-start justify-between mb-2">
+                        <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
+                        ${isInactive ? '<span class="text-red-500 text-xs"><i class="fas fa-exclamation-circle"></i></span>' : ''}
+                    </div>
+                    <p class="text-xs text-gray-600 mb-2">
+                        <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh/mês
+                    </p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-bold text-green-600">${formatCurrency(oportunidade.valor_estimado)}</span>
+                        <span class="badge badge-${lead?.tipo_cliente === 'empresarial' ? 'info' : 'gray'} text-xs">
+                            ${lead?.tipo_cliente === 'empresarial' ? 'EMP' : 'RES'}
+                        </span>
+                    </div>
+                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-clock"></i> ${diasInativo} dias sem atualização</p>` : ''}
+                </div>
+            `;
+        }).join('') || '<p class="text-gray-400 text-sm text-center py-4">Nenhuma oportunidade</p>';
+    });
+}
+
+// =========================================
+// RASTREAMENTO DE PROPOSTA
+// =========================================
+async function trackProposta(token) {
+    try {
+        const { data, error } = await supabase
+            .from('propostas')
+            .select('*, oportunidades:oportunidade_id(lead_id, leads:lead_id(nome, email))')
+            .eq('token_rastreio', token)
+            .single();
+
+        if (error || !data) {
+            showNotification('Proposta não encontrada', 'warning');
+            return null;
+        }
+
+        // Registrar visualização se ainda não foi visualizada
+        if (!data.data_visualizacao) {
+            await supabase
+                .from('propostas')
+                .update({
+                    data_visualizacao: new Date().toISOString(),
+                    status: 'visualizada'
+                })
+                .eq('id', data.id);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Erro ao rastrear proposta:', error);
+        return null;
+    }
+}
+
+// =========================================
+// SIMULADOR SOLAR
+// =========================================
+function abrirSimuladorSolar() {
+    // Preencher com dados do lead se disponível
+    if (currentLead) {
+        if (currentLead.cep) document.getElementById('sim-cep').value = currentLead.cep;
+        if (currentLead.consumo_mensal) document.getElementById('sim-consumo').value = currentLead.consumo_mensal;
+        if (currentLead.tipo_cliente) document.getElementById('sim-tipo').value = currentLead.tipo_cliente;
+    }
+
+    document.getElementById('simuladorSolarModal').classList.remove('hidden');
+    document.getElementById('simulador-resultados').classList.add('hidden');
+}
+
+function closeSimuladorSolar() {
+    document.getElementById('simuladorSolarModal').classList.add('hidden');
+}
+
+async function calcularSistema() {
+    const cep = document.getElementById('sim-cep').value.trim();
+    const consumoMensalKwh = parseFloat(document.getElementById('sim-consumo').value);
+    const percentualReducao = parseFloat(document.getElementById('sim-reducao').value);
+    const tarifaKwh = parseFloat(document.getElementById('sim-tarifa').value);
+    const tipoCliente = document.getElementById('sim-tipo').value;
+
+    if (!cep || !consumoMensalKwh) {
+        showNotification('Preencha CEP e consumo mensal', 'warning');
+        return;
+    }
+
+    showLoading(true);
+
+    try {
+        const resultado = await window.CalculadoraSolar.gerarPropostaCompleta({
+            cep,
+            consumoMensalKwh,
+            percentualReducao,
+            tarifaKwh,
+            tipoCliente
+        });
+
+        renderResultadosSimulador(resultado);
+        document.getElementById('simulador-resultados').classList.remove('hidden');
+
+        // Salvar cálculo no banco de dados (opcional)
+        if (currentLead) {
+            await salvarCalculoNoLead(currentLead.id, resultado);
+        }
+
+    } catch (error) {
+        console.error('Erro ao calcular:', error);
+        showNotification('Erro ao calcular sistema: ' + error.message, 'danger');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderResultadosSimulador(resultado) {
+    const { localizacao, dimensionamento, propostas } = resultado;
+
+    // Localização
+    document.getElementById('sim-localizacao').textContent =
+        `${localizacao.cidade} - ${localizacao.estado} | ${localizacao.bairro}`;
+    document.getElementById('sim-irradiacao').textContent =
+        `☀️ Irradiação Solar: ${localizacao.irradiacao} kWh/m²/dia (excelente para energia solar!)`;
+
+    // Renderizar as 3 propostas
+    const container = document.getElementById('propostas-container');
+    container.innerHTML = propostas.map((proposta, index) => {
+        const { configuracao, custos, economia, payback, energiaGerada } = proposta;
+        const { placa, numModulos, potenciaRealKwp, area } = configuracao;
+
+        return `
+            <div class="bg-white border-2 ${index === 0 ? 'border-green-500' : 'border-gray-200'} rounded-xl p-6 shadow-lg">
+                ${index === 0 ? '<div class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3">RECOMENDADO</div>' : ''}
+
+                <h4 class="text-lg font-bold mb-2">${placa.fabricante}</h4>
+                <p class="text-sm text-gray-600 mb-4">${placa.modelo}</p>
+
+                <!-- Sistema -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h5 class="font-bold text-sm mb-2">📦 Sistema</h5>
+                    <div class="text-sm space-y-1">
+                        <div class="flex justify-between">
+                            <span>Placas ${placa.potencia}Wp:</span>
+                            <span class="font-semibold">${numModulos} unidades</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Potência Total:</span>
+                            <span class="font-semibold">${potenciaRealKwp} kWp</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Área Necessária:</span>
+                            <span class="font-semibold">${area.toFixed(1)} m²</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Inversor:</span>
+                            <span class="font-semibold text-xs">${custos.inversor.fabricante} ${custos.inversor.potencia_kw}kW</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Economia -->
+                <div class="bg-green-50 rounded-lg p-4 mb-4">
+                    <h5 class="font-bold text-sm mb-2 text-green-800">💰 Economia</h5>
+                    <div class="text-sm space-y-1">
+                        <div class="flex justify-between">
+                            <span>Por mês:</span>
+                            <span class="font-bold text-green-600">${formatCurrency(economia.economiaMensal)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Por ano:</span>
+                            <span class="font-bold text-green-600">${formatCurrency(economia.economiaAnual)}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Em 25 anos:</span>
+                            <span class="font-bold text-green-600">${formatCurrency(economia.economia25Anos)}</span>
+                        </div>
+                        <div class="flex justify-between border-t border-green-200 pt-2 mt-2">
+                            <span class="font-bold">Payback:</span>
+                            <span class="font-bold text-green-800">${payback.anos} anos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Valores -->
+                <div class="border-t-2 pt-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-sm text-gray-600">Custo Total:</span>
+                        <span class="text-sm line-through text-gray-400">${formatCurrency(custos.custoTotal)}</span>
+                    </div>
+                    <div class="flex justify-between mb-3">
+                        <span class="font-bold">Valor Final:</span>
+                        <span class="font-bold text-2xl text-green-600">${formatCurrency(custos.valorVenda)}</span>
+                    </div>
+                    <button onclick="verMemoriaCalculo(${index})" class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600 mb-2">
+                        <i class="fas fa-file-invoice mr-2"></i>Ver Memória de Cálculo
+                    </button>
+                    <button onclick="gerarPropostaComercial(${index})" class="w-full text-white py-2 rounded-lg text-sm" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                        <i class="fas fa-file-pdf mr-2"></i>Gerar Proposta
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Armazenar resultado globalmente para uso posterior
+    window.ultimoResultadoSimulador = resultado;
+}
+
+function verMemoriaCalculo(propostaIndex) {
+    const resultado = window.ultimoResultadoSimulador;
+    if (!resultado) return;
+
+    const proposta = resultado.propostas[propostaIndex];
+    const { configuracao, custos, economia } = proposta;
+
+    const html = `
+        <div class="max-w-4xl mx-auto bg-white p-8">
+            <h2 class="text-2xl font-bold mb-6 text-center">MEMÓRIA DE CÁLCULO - SISTEMA FOTOVOLTAICO</h2>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-3 border-b-2 pb-2">1. DADOS DO PROJETO</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong>Local:</strong> ${resultado.localizacao.cidade} - ${resultado.localizacao.estado}
+                    </div>
+                    <div>
+                        <strong>Irradiação Solar:</strong> ${resultado.localizacao.irradiacao} kWh/m²/dia
+                    </div>
+                    <div>
+                        <strong>Potência do Sistema:</strong> ${configuracao.potenciaRealKwp} kWp
+                    </div>
+                    <div>
+                        <strong>Geração Mensal:</strong> ${resultado.dimensionamento.energiaMensalNecessaria} kWh
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-3 border-b-2 pb-2">2. CUSTOS DE MATERIAIS</h3>
+                <table class="w-full text-sm">
+                    <tr class="border-b">
+                        <td class="py-2">Placas Solares (${configuracao.numModulos}x ${configuracao.placa.potencia}Wp)</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.materiais.placas)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Inversor ${custos.inversor.fabricante} ${custos.inversor.potencia_kw}kW</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.materiais.inversor)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Estrutura de Fixação</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.materiais.estrutura)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Cabeamento e Conectores</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.materiais.cabeamento)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">String Box e Proteções</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.materiais.stringBox + custos.materiais.disjuntores)}</td>
+                    </tr>
+                    <tr class="bg-gray-100 font-bold">
+                        <td class="py-2">SUBTOTAL MATERIAIS</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.materiais.total)}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-3 border-b-2 pb-2">3. CUSTOS DE SERVIÇOS</h3>
+                <table class="w-full text-sm">
+                    <tr class="border-b">
+                        <td class="py-2">Mão de Obra (R$ 800/kWp)</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.servicos.maoObra)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Projeto e ART</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.servicos.projeto)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Homologação na Concessionária</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.servicos.homologacao)}</td>
+                    </tr>
+                    <tr class="bg-gray-100 font-bold">
+                        <td class="py-2">SUBTOTAL SERVIÇOS</td>
+                        <td class="py-2 text-right">${formatCurrency(custos.servicos.total)}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-3 border-b-2 pb-2">4. COMPOSIÇÃO DE PREÇO</h3>
+                <table class="w-full text-sm">
+                    <tr class="border-b">
+                        <td class="py-2">Custo Total do Projeto</td>
+                        <td class="py-2 text-right font-bold">${formatCurrency(custos.custoTotal)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Margem de Lucro (${custos.margemPercentual}%)</td>
+                        <td class="py-2 text-right text-green-600 font-bold">+ ${formatCurrency(custos.lucro)}</td>
+                    </tr>
+                    <tr class="bg-green-50 font-bold text-lg">
+                        <td class="py-3">VALOR DE VENDA</td>
+                        <td class="py-3 text-right text-green-600">${formatCurrency(custos.valorVenda)}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-3 border-b-2 pb-2">5. RETORNO DO INVESTIMENTO</h3>
+                <table class="w-full text-sm">
+                    <tr class="border-b">
+                        <td class="py-2">Economia Mensal</td>
+                        <td class="py-2 text-right">${formatCurrency(economia.economiaMensal)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Economia Anual</td>
+                        <td class="py-2 text-right">${formatCurrency(economia.economiaAnual)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Payback do Investimento</td>
+                        <td class="py-2 text-right font-bold text-blue-600">${Math.round(custos.valorVenda / economia.economiaMensal / 12 * 10) / 10} anos</td>
+                    </tr>
+                    <tr class="bg-blue-50">
+                        <td class="py-2 font-bold">Economia Total (25 anos)</td>
+                        <td class="py-2 text-right font-bold text-blue-600">${formatCurrency(economia.economia25Anos)}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <h3 class="font-bold text-yellow-800 mb-2">💡 RESUMO FINANCEIRO PARA O INTEGRADOR</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong>Investimento:</strong> ${formatCurrency(custos.custoTotal)}
+                    </div>
+                    <div>
+                        <strong class="text-green-600">Lucro Bruto:</strong> ${formatCurrency(custos.lucro)}
+                    </div>
+                    <div>
+                        <strong>Valor de Venda:</strong> ${formatCurrency(custos.valorVenda)}
+                    </div>
+                    <div>
+                        <strong class="text-green-600">Margem:</strong> ${custos.margemPercentual}%
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-xs text-gray-500 mt-8">
+                <p>Cálculo gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                <p>Sistema: CRM Solar - Sunbotic Energia Solar</p>
+            </div>
+        </div>
+    `;
+
+    // Abrir em nova janela para impressão
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Memória de Cálculo - ${configuracao.placa.fabricante}</title>
+            <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+            <style>
+                @media print {
+                    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+                }
+            </style>
+        </head>
+        <body class="p-8">
+            ${html}
+            <div class="text-center mt-8 no-print">
+                <button onclick="window.print()" class="bg-blue-500 text-white px-6 py-2 rounded">Imprimir</button>
+                <button onclick="window.close()" class="bg-gray-300 text-gray-700 px-6 py-2 rounded ml-2">Fechar</button>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+async function gerarPropostaComercial(propostaIndex) {
+    showNotification('Gerando proposta comercial...', 'info');
+    // TODO: Integrar com geração de PDF da proposta
+    // Por enquanto, apenas mostra a memória de cálculo
+    verMemoriaCalculo(propostaIndex);
+}
+
+async function salvarCalculoNoLead(leadId, resultado) {
+    try {
+        // Salvar o cálculo na tabela de interações como nota
+        const melhorProposta = resultado.propostas[0];
+
+        await supabase
+            .from('interacoes')
+            .insert([{
+                lead_id: leadId,
+                tipo: 'nota',
+                titulo: `Cálculo Solar - ${melhorProposta.configuracao.potenciaRealKwp} kWp`,
+                descricao: `Sistema calculado: ${melhorProposta.configuracao.numModulos}x ${melhorProposta.configuracao.placa.potencia}Wp | Valor: ${formatCurrency(melhorProposta.custos.valorVenda)} | Payback: ${melhorProposta.payback.anos} anos`
+            }]);
+
+        console.log('Cálculo salvo no lead');
+    } catch (error) {
+        console.error('Erro ao salvar cálculo:', error);
+    }
+}
+
 // Exportar para uso global
 window.showModule = showModule;
 window.openLeadModal = openLeadModal;
@@ -1567,7 +2018,7 @@ window.closeLeadModal = closeLeadModal;
 window.showTab = showTab;
 window.toggleSidebar = toggleSidebar;
 window.refreshData = refreshData;
-window.filterKanban = (tipo) => console.log('Filtrar kanban:', tipo);
+window.filterKanban = filterKanban;
 window.exportLeads = exportLeads;
 window.showNewLeadModal = showNewLeadModal;
 window.closeNewLeadModal = closeNewLeadModal;
@@ -1576,5 +2027,21 @@ window.deleteLead = deleteLead;
 window.trackProposta = trackProposta;
 window.concluirTarefa = concluirTarefa;
 window.logout = logout;
+window.toggleEditLead = toggleEditLead;
+window.showAddInteractionForm = showAddInteractionForm;
+window.hideAddInteractionForm = hideAddInteractionForm;
+window.salvarNovaInteracao = salvarNovaInteracao;
+window.editarTarefa = editarTarefa;
+window.closeEditTaskModal = closeEditTaskModal;
+window.salvarEdicaoTarefa = salvarEdicaoTarefa;
+window.deletarTarefa = deletarTarefa;
+window.novaTarefa = novaTarefa;
+window.abrirProposta = abrirProposta;
+window.copiarLinkProposta = copiarLinkProposta;
+window.abrirSimuladorSolar = abrirSimuladorSolar;
+window.closeSimuladorSolar = closeSimuladorSolar;
+window.calcularSistema = calcularSistema;
+window.verMemoriaCalculo = verMemoriaCalculo;
+window.gerarPropostaComercial = gerarPropostaComercial;
 
 console.log('✅ CRM Solar carregado com sucesso!');

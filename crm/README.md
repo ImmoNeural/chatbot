@@ -1,6 +1,8 @@
-# 🌞 CRM Funil Completo - Energia Solar
+# 🌞 CRM Solar - Sistema Completo de Gestão para Energia Solar
 
-Sistema completo de Customer Relationship Management especializado em Energia Solar, integrado com chatbot e Supabase.
+## ⚡ NOVO: Calculadora Solar com Dimensionamento Automático
+
+Sistema CRM completo desenvolvido para empresas integradoras de energia solar fotovoltaica. Inclui gestão de leads, kanban de oportunidades, propostas comerciais, chatbot qualificador e **calculadora solar profissional com análise de irradiação, dimensionamento automático e memória de cálculo com margem de lucro**.
 
 ## 📋 Índice
 
@@ -79,6 +81,149 @@ O CRM Solar é uma plataforma completa para gestão do ciclo de vida do cliente,
 - Alertas automáticos de follow-up (48h)
 - Integração com leads
 
+### 8. 🆕 **CALCULADORA SOLAR COMPLETA**
+
+Sistema profissional de dimensionamento fotovoltaico com análise de irradiação e memória de cálculo financeiro.
+
+#### 📍 Análise de Irradiação Solar
+- **Base de dados completa** com irradiação de todos os 27 estados brasileiros
+- Dados baseados no **Atlas Solarimétrico do Brasil (CRESESB)**
+- Busca automática de localização por CEP via **API ViaCEP**
+- Irradiação varia de 4.63 kWh/m²/dia (SC) até 5.88 kWh/m²/dia (RN)
+
+#### ⚙️ Dimensionamento Inteligente
+O sistema calcula automaticamente:
+- **Potência necessária (kWp)** baseado em:
+  - Consumo mensal do cliente (kWh)
+  - Percentual de redução desejado (50%, 75%, 95% ou 100%)
+  - Irradiação solar da localidade
+  - Fator de performance (80% - perdas térmicas, sujeira, cabeamento)
+- **Número de placas** necessárias
+- **Área ocupada** no telhado
+- **Inversor adequado** (dimensionamento entre 85% e 110% da potência)
+
+#### 📦 Catálogo de Produtos (Mercado Brasileiro)
+
+**Placas Solares Disponíveis:**
+| Fabricante | Modelo | Potência | Eficiência | Preço Custo | Garantia |
+|-----------|---------|----------|------------|-------------|-----------|
+| Canadian Solar | HiKu6 550MS | 550Wp | 21.2% | R$ 650 | 25 anos |
+| Jinko Solar | Tiger Neo 580 | 580Wp | 22.3% | R$ 720 | 25 anos |
+| Trina Solar | Vertex S+ 440 | 440Wp | 20.8% | R$ 520 | 25 anos |
+| DAH Solar | DHM-550 | 550Wp | 21.0% | R$ 630 | 25 anos |
+| BYD | PHK-370 | 370Wp | 19.1% | R$ 420 | 25 anos |
+
+**Inversores Disponíveis:**
+- Growatt MID 15KTL3-X (15kW) - R$ 6.500
+- Fronius Primo 8.2-1 (8.2kW) - R$ 8.200
+- Solis 10K-5G (10kW) - R$ 5.800
+- Deye SUN-5K (5kW) - R$ 3.200
+- Canadian CSI-3.3KTL (3.3kW) - R$ 2.800
+
+#### 💰 Cálculo de Custos Detalhado
+
+**Materiais:**
+- Placas solares (qtd × preço unitário)
+- Inversor (seleção automática)
+- Estrutura de fixação (R$ 120/placa)
+- Cabeamento e conectores (R$ 150/kWp)
+- String Box (R$ 450 fixo)
+- Disjuntores e proteções (R$ 380 fixo)
+
+**Serviços:**
+- Mão de obra (R$ 800/kWp)
+- Projeto elétrico e ART (R$ 1.200 fixo)
+- Homologação na concessionária (R$ 1.500 fixo)
+
+#### 📊 Margem de Lucro Automática por Perfil
+
+O sistema aplica margens diferenciadas para maximizar lucro mantendo competitividade:
+
+| Segmento | Potência | Margem | Motivo |
+|----------|----------|--------|--------|
+| **Residencial Pequeno** | até 5 kWp | **40%** | Maior complexidade relativa |
+| **Residencial Médio** | 5-10 kWp | **35%** | Equilíbrio escala/customização |
+| **Residencial Grande** | > 10 kWp | **30%** | Maior escala |
+| **Empresarial Pequeno** | até 20 kWp | **28%** | Competitividade B2B |
+| **Empresarial Médio** | 20-50 kWp | **25%** | Negociação corporativa |
+| **Empresarial Grande** | > 50 kWp | **22%** | Projetos grandes, maior concorrência |
+
+**Exemplo Prático:**
+```
+Cliente Residencial - 6 kWp (Margem 35%)
+Custo Total: R$ 30.000,00
+Margem Lucro: 35%
+Lucro Bruto: R$ 10.500,00
+Valor Venda: R$ 40.500,00
+Payback: 5.2 anos
+```
+
+#### 📄 Memória de Cálculo Profissional
+
+Documento técnico completo gerado automaticamente com:
+
+**1. Dados do Projeto**
+- Localização completa (cidade, estado, bairro)
+- Irradiação solar média (kWh/m²/dia)
+- Potência do sistema (kWp)
+- Geração mensal estimada (kWh)
+
+**2. Planilha de Custos de Materiais**
+- Detalhamento item por item
+- Quantidades e valores unitários
+- Subtotal de materiais
+
+**3. Planilha de Custos de Serviços**
+- Mão de obra (por kWp)
+- Projeto e documentação
+- Homologação
+- Subtotal de serviços
+
+**4. Composição de Preço**
+- Custo total do projeto
+- **Margem de lucro (% e R$)** ⭐
+- **Lucro bruto total** ⭐
+- **Valor final de venda** ⭐
+
+**5. Análise de Retorno**
+- Economia mensal estimada (R$)
+- Economia anual (R$)
+- Economia total em 25 anos (R$)
+- **Payback do investimento (anos)**
+- ROI total
+
+**6. Resumo Financeiro para o Integrador** 💡
+- Investimento total
+- Lucro bruto garantido
+- Margem aplicada (%)
+- Valor de venda
+
+#### 🎯 Interface do Simulador
+
+- **Formulário intuitivo** com validações
+- **3 propostas** diferentes geradas automaticamente
+- Comparação lado a lado das opções
+- Badge "RECOMENDADO" na melhor opção
+- Botão **"Ver Memória de Cálculo"** (abre em nova janela para impressão)
+- Botão **"Gerar Proposta"** (integração futura com PDF)
+- **Salvamento automático** do cálculo no histórico do lead
+
+#### 🚀 Como Usar a Calculadora
+
+1. Abra um lead no CRM
+2. Vá para a aba **"Qualificação"**
+3. Clique em **"Calcular Sistema Solar"** ☀️
+4. Preencha os dados:
+   - CEP do imóvel
+   - Consumo mensal (kWh)
+   - % de redução desejada
+   - Tarifa de energia (padrão R$ 0,85/kWh)
+   - Tipo de cliente
+5. Clique em **"Calcular Sistema"**
+6. Analise as **3 propostas** geradas
+7. Clique em **"Ver Memória de Cálculo"** para documento completo
+8. O cálculo é salvo automaticamente na timeline do lead
+
 ## 📦 Instalação
 
 ### 1. Configurar Banco de Dados Supabase
@@ -123,11 +268,13 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
 
 ```
 crm/
-├── schema.sql          # Schema completo do banco de dados
-├── index.html          # Interface principal do CRM
-├── crm.js             # Lógica JavaScript
-├── proposta.html      # Página de rastreamento de propostas
-└── README.md          # Esta documentação
+├── schema.sql               # Schema completo do banco de dados
+├── index.html               # Interface principal do CRM
+├── crm.js                   # Lógica JavaScript principal
+├── calculadora-solar.js     # 🆕 Sistema de cálculo solar (NOVO)
+├── proposta.html            # Página pública de rastreamento de propostas
+├── chat-widget-pastro-v236.js # Widget do chatbot integrado
+└── README.md                # Esta documentação
 ```
 
 ## 🗄️ Configuração do Banco de Dados
