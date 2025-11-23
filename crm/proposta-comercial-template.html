@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta Comercial - Sunbotic Energia Solar</title>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+        body {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+        .bg-solar {
+            background-image: url('https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-8 relative">
+    <!-- Imagem de fundo com transparência -->
+    <div class="bg-solar fixed inset-0 z-0 opacity-50"></div>
+    <div class="fixed inset-0 z-0 bg-white opacity-40"></div>
+
+    <!-- Conteúdo -->
+    <div class="relative z-10 max-w-6xl mx-auto">
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-12 border border-green-200">
+
+            <!-- Cabeçalho -->
+            <div class="text-center mb-12 pb-8 border-b-2 border-emerald-300">
+                <h1 class="text-5xl font-bold text-slate-800 mb-3">💚 Proposta Comercial</h1>
+                <h2 class="text-2xl text-slate-600 mb-2">Sistema de Energia Solar Fotovoltaica</h2>
+                <p class="text-slate-500" id="empresa-data">Sunbotic Energia Solar</p>
+            </div>
+
+            <!-- Conteúdo será preenchido via JavaScript -->
+            <div id="content"></div>
+
+            <!-- Rodapé -->
+            <div class="text-center text-sm text-slate-600 pt-8 mt-8 border-t-2 border-slate-200">
+                <p class="font-bold text-lg mb-2">Sunbotic Energia Solar</p>
+                <p id="data-geracao"></p>
+                <p class="text-xs text-slate-500 mt-2">Este documento é uma proposta comercial. O projeto executivo será elaborado após aprovação.</p>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-center gap-4 mt-8 no-print">
+            <button onclick="window.print()" class="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 flex items-center gap-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Imprimir / Salvar PDF
+            </button>
+            <button onclick="window.close()" class="px-8 py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 flex items-center gap-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Fechar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const dados = window.opener?.dadosPropostaComercial;
+        if (!dados) {
+            document.body.innerHTML = '<div class="text-center mt-20 text-2xl text-slate-600">Erro: Dados não encontrados</div>';
+        } else {
+            renderizarProposta(dados);
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        function renderizarProposta(dados) {
+            const { resultado, propostaIndex } = dados;
+            const proposta = resultado.propostas[propostaIndex];
+            const { configuracao, custos, economia, payback, vpl, tir } = proposta;
+            const inversor = custos.equipamentos?.inversor || custos.inversor;
+            const paybackAnos = payback.real?.anos || payback.anos;
+
+            document.getElementById('data-geracao').textContent = 'Proposta gerada em: ' + new Date().toLocaleString('pt-BR');
+
+            const html = `
+                <!-- Dados do Projeto -->
+                <section class="mb-10 bg-gradient-to-r from-green-50/80 to-emerald-50/80 p-8 rounded-2xl border border-green-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">📍 Dados do Projeto</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        ${criarCard('Localização', `${resultado.localizacao.cidade} - ${resultado.localizacao.estado}`)}
+                        ${criarCard('Consumo Mensal', resultado.dimensionamento.energiaMensalNecessaria + ' kWh')}
+                        ${criarCard('☀️ Irradiação Solar', resultado.localizacao.irradiacao + ' kWh/m²/dia', 'text-orange-600')}
+                        ${criarCard('Data', new Date().toLocaleDateString('pt-BR'))}
+                    </div>
+                </section>
+
+                <!-- Sistema Proposto -->
+                <section class="mb-10 bg-gradient-to-r from-blue-50/80 to-cyan-50/80 p-8 rounded-2xl border border-blue-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">⚡ Sistema Proposto</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white/90 p-6 rounded-lg shadow-sm text-center">
+                            <span class="text-slate-600 block mb-2">Potência Total</span>
+                            <strong class="text-5xl text-green-700 block">${configuracao.potenciaRealKwp}</strong>
+                            <span class="text-slate-500">kWp</span>
+                        </div>
+                        <div class="bg-white/90 p-6 rounded-lg shadow-sm text-center">
+                            <span class="text-slate-600 block mb-2">Geração Mensal Estimada</span>
+                            <strong class="text-5xl text-blue-700 block">${resultado.dimensionamento.energiaMensalNecessaria}</strong>
+                            <span class="text-slate-500">kWh</span>
+                        </div>
+                    </div>
+                    <div class="bg-white/90 p-6 rounded-xl shadow-sm">
+                        <div class="space-y-3 text-slate-700">
+                            ${criarLinhaInfo('Módulos', `${configuracao.numModulos}x ${configuracao.placa.fabricante} ${configuracao.placa.modelo} (${configuracao.placa.potencia}W)`)}
+                            ${criarLinhaInfo('Inversor', `${inversor.fabricante} ${inversor.modelo} (${inversor.potencia_kw}kW)`)}
+                            ${criarLinhaInfo('Área Necessária', `${configuracao.area.toFixed(1)} m²`)}
+                            ${criarLinhaInfo('Garantia', '5 anos nos módulos (25 anos de performance ≥80%)')}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Itens Inclusos -->
+                <section class="mb-10 bg-gradient-to-r from-slate-50/80 to-gray-50/80 p-8 rounded-2xl border border-slate-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">✓ Itens Inclusos na Proposta</h3>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        ${criarItemInclude(`${configuracao.numModulos} módulos fotovoltaicos ${configuracao.placa.potencia}W`)}
+                        ${criarItemInclude(`1 inversor ${inversor.potencia_kw}kW`)}
+                        ${criarItemInclude('Estrutura de fixação completa')}
+                        ${criarItemInclude('Cabos e conectores')}
+                        ${criarItemInclude('Quadro de proteção AC/DC')}
+                        ${criarItemInclude('SPD (proteção contra surtos)')}
+                        ${criarItemInclude('Projeto elétrico + ART')}
+                        ${criarItemInclude('Instalação completa')}
+                        ${criarItemInclude('Homologação na concessionária')}
+                        ${criarItemInclude('Garantia de 5 anos nos módulos')}
+                    </div>
+                </section>
+
+                <!-- Economia -->
+                <section class="mb-10 bg-gradient-to-r from-green-600 to-emerald-700 text-white p-8 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold mb-6">💰 Economia Gerada pelo Sistema</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        ${criarCardEconomia('Economia Mensal', formatCurrency(economia.economiaMensal))}
+                        ${criarCardEconomia('Economia Anual', formatCurrency(economia.economiaAnual))}
+                        ${criarCardEconomia('Em 25 Anos', formatCurrency(economia.economia25Anos))}
+                    </div>
+                </section>
+
+                <!-- Análise de Retorno -->
+                <section class="mb-10 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 p-8 rounded-2xl border border-blue-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">📊 Análise de Retorno do Investimento</h3>
+                    <div class="grid grid-cols-${tir > 0 ? '2' : '1'} gap-4">
+                        <div class="bg-white/90 p-6 rounded-xl shadow-sm text-center">
+                            <span class="text-slate-600 block mb-2">Payback (Retorno)</span>
+                            <strong class="text-6xl text-blue-700 block">${paybackAnos}</strong>
+                            <span class="text-slate-500">anos</span>
+                            <p class="text-xs text-slate-500 mt-3">Tempo para recuperar o investimento</p>
+                        </div>
+                        ${tir > 0 ? `
+                        <div class="bg-white/90 p-6 rounded-xl shadow-sm text-center">
+                            <span class="text-slate-600 block mb-2">TIR (Taxa Interna de Retorno)</span>
+                            <strong class="text-6xl text-purple-700 block">${tir}%</strong>
+                            <span class="text-slate-500">ao ano</span>
+                            <p class="text-xs text-slate-500 mt-3">Rentabilidade anual</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                </section>
+
+                <!-- Investimento Total -->
+                <section class="mb-10 bg-gradient-to-r from-amber-50/80 to-yellow-50/80 p-8 rounded-2xl border-2 border-amber-300/50 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-3xl font-bold text-slate-800">Investimento Total</h3>
+                        <div class="text-right">
+                            <div class="text-6xl font-bold text-green-700">${formatCurrency(custos.valorVenda)}</div>
+                            <p class="text-sm text-slate-600 mt-2">À vista ou parcelado (consultar condições)</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Observações -->
+                <section class="bg-slate-100/80 p-6 rounded-xl border border-slate-300/50">
+                    <h4 class="font-bold text-slate-800 mb-3">ℹ️ Observações Importantes</h4>
+                    <ul class="text-sm text-slate-700 space-y-1 list-disc list-inside">
+                        <li>Valores considerando instalação padrão em telhado residencial</li>
+                        <li>Geração estimada baseada na irradiação solar local</li>
+                        <li>Sistema dimensionado conforme Norma ABNT NBR 16690</li>
+                        <li>Garantia do fabricante: 5 anos para módulos e inversor</li>
+                        <li>Proposta válida por 30 dias</li>
+                    </ul>
+                </section>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function criarCard(label, value, colorClass = 'text-slate-800') {
+            return `
+                <div class="bg-white/90 p-4 rounded-lg shadow-sm">
+                    <span class="text-slate-600 text-xs block mb-1">${label}</span>
+                    <strong class="text-base ${colorClass}">${value}</strong>
+                </div>
+            `;
+        }
+
+        function criarLinhaInfo(label, value) {
+            return `
+                <div class="flex items-start border-b border-slate-200 pb-2">
+                    <span class="font-semibold min-w-[140px]">${label}:</span>
+                    <span>${value}</span>
+                </div>
+            `;
+        }
+
+        function criarItemInclude(text) {
+            return `
+                <div class="flex items-center gap-2 text-slate-700">
+                    <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <span>${text}</span>
+                </div>
+            `;
+        }
+
+        function criarCardEconomia(label, value) {
+            return `
+                <div class="bg-white/20 backdrop-blur-sm p-5 rounded-lg text-center">
+                    <span class="text-sm opacity-90 block mb-2">${label}</span>
+                    <strong class="text-3xl block">${value}</strong>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorial Técnico - Sunbotic Energia Solar</title>
+    <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        .bg-solar {
+            background-image: url('https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-8 relative">
+    <!-- Imagem de fundo com transparência -->
+    <div class="bg-solar fixed inset-0 z-0 opacity-50"></div>
+    <div class="fixed inset-0 z-0 bg-white opacity-40"></div>
+
+    <!-- Conteúdo -->
+    <div class="relative z-10 max-w-7xl mx-auto">
+        <div class="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-12 border border-slate-200">
+
+            <!-- Cabeçalho -->
+            <div class="text-center mb-12 pb-8 border-b-2 border-slate-300">
+                <h1 class="text-5xl font-bold text-slate-800 mb-3">⚡ Memorial Técnico de Cálculo</h1>
+                <h2 class="text-2xl text-slate-600 mb-2">Sistema de Energia Solar Fotovoltaica</h2>
+                <p class="text-slate-500" id="empresa-data">Sunbotic Energia Solar</p>
+            </div>
+
+            <!-- Seções serão preenchidas via JavaScript -->
+            <div id="content"></div>
+
+            <!-- Rodapé -->
+            <div class="text-center text-sm text-slate-600 pt-8 mt-8 border-t-2 border-slate-200">
+                <p class="font-bold text-lg mb-2">Sunbotic Energia Solar</p>
+                <p id="data-geracao"></p>
+                <p class="text-xs text-slate-500 mt-2">Documento interno - Uso exclusivo da empresa integradora</p>
+                <p class="text-xs text-slate-500">Sistema dimensionado conforme NBR 16690 e NBR 5410</p>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-center gap-4 mt-8 no-print">
+            <button onclick="window.print()" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 flex items-center gap-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Imprimir / Salvar PDF
+            </button>
+            <button onclick="window.close()" class="px-8 py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200 flex items-center gap-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Fechar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Recebe dados do window.opener
+        const dados = window.opener?.dadosMemorialTecnico;
+        if (!dados) {
+            document.body.innerHTML = '<div class="text-center mt-20 text-2xl text-slate-600">Erro: Dados não encontrados</div>';
+        } else {
+            renderizarMemorial(dados);
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        }
+
+        function renderizarMemorial(dados) {
+            const { resultado, propostaIndex } = dados;
+            const proposta = resultado.propostas[propostaIndex];
+            const { configuracao, custos, economia, payback, vpl, tir } = proposta;
+            const inversor = custos.equipamentos?.inversor || custos.inversor;
+            const cabosDC = custos.equipamentos?.cabosDC || {};
+            const cabosAC = custos.equipamentos?.cabosAC || {};
+            const protecoes = custos.equipamentos?.protecoes || {};
+            const tipoSistema = resultado.tipoSistema || 'on-grid';
+            const paybackAnos = payback.real?.anos || payback.anos;
+
+            const tipoSistemaLabel = {
+                'on-grid': 'On-Grid (Conectado à Rede)',
+                'off-grid': 'Off-Grid (Isolado)',
+                'hibrido': 'Híbrido (Grid + Baterias)'
+            };
+
+            document.getElementById('data-geracao').textContent = 'Memorial gerado em: ' + new Date().toLocaleString('pt-BR');
+
+            const html = `
+                <!-- Localização -->
+                <section class="mb-10 bg-gradient-to-r from-blue-50/80 to-cyan-50/80 p-8 rounded-2xl border border-blue-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">📍 1. Localização e Dados Climáticos</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        ${criarCard('Cidade', resultado.localizacao.cidade)}
+                        ${criarCard('Estado', resultado.localizacao.estado)}
+                        ${criarCard('☀️ Irradiação (HSP)', resultado.localizacao.irradiacao + ' kWh/m²/dia', 'text-orange-600')}
+                        ${criarCard('📐 Inclinação', (resultado.dimensionamento.inclinacao || 15) + '°')}
+                        ${criarCard('🧭 Azimute', (resultado.dimensionamento.azimute || 0) + '° (Norte)')}
+                        ${criarCard('⚙️ Tipo de Sistema', tipoSistemaLabel[tipoSistema], 'text-green-700')}
+                    </div>
+                </section>
+
+                <!-- Dimensionamento -->
+                <section class="mb-10 bg-gradient-to-r from-green-50/80 to-emerald-50/80 p-8 rounded-2xl border border-green-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">⚡ 2. Dimensionamento do Sistema</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        ${criarCardGrande('Consumo Mensal', resultado.dimensionamento.energiaMensalNecessaria + ' kWh', 'text-green-700')}
+                        ${criarCardGrande('Potência Instalada', configuracao.potenciaRealKwp + ' kWp', 'text-blue-700')}
+                        ${criarCardGrande('Número de Módulos', configuracao.numModulos + ' placas')}
+                        ${criarCardGrande('Área Total', configuracao.area.toFixed(1) + ' m²')}
+                    </div>
+                    <div class="bg-white/90 p-6 rounded-xl shadow-sm">
+                        <h4 class="font-bold text-slate-800 mb-3 text-lg">📋 Equipamentos Selecionados</h4>
+                        <ul class="space-y-2 text-slate-700">
+                            <li><strong>Módulos:</strong> ${configuracao.numModulos}x ${configuracao.placa.fabricante} ${configuracao.placa.modelo} (${configuracao.placa.potencia}W)</li>
+                            <li><strong>Eficiência dos Módulos:</strong> ${configuracao.placa.eficiencia}%</li>
+                            <li><strong>Inversor:</strong> ${inversor.fabricante} ${inversor.modelo} (${inversor.potencia_kw}kW)</li>
+                            <li><strong>Eficiência do Inversor:</strong> ${inversor.eficiencia}%</li>
+                            <li><strong>Garantia Módulos:</strong> 5 anos (produto) | 25 anos (performance ≥80%)</li>
+                            <li><strong>Garantia Inversor:</strong> 5 anos</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Perdas -->
+                <section class="mb-10 bg-gradient-to-r from-amber-50/80 to-orange-50/80 p-8 rounded-2xl border border-amber-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">⚠️ 3. Perdas do Sistema</h3>
+                    <div class="bg-white/90 p-6 rounded-xl shadow-sm">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b-2 border-amber-200">
+                                    <th class="text-left py-3 text-slate-700">Tipo de Perda</th>
+                                    <th class="text-right py-3 text-slate-700">Percentual</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-slate-600">
+                                ${criarLinhaTabela('🌡️ Temperatura dos módulos', '8%')}
+                                ${criarLinhaTabela('⚡ Inversor (conversão DC/AC)', '3%')}
+                                ${criarLinhaTabela('🔌 Cabeamento (DC + AC)', '1.5%')}
+                                ${criarLinhaTabela('🌳 Sombreamento', '2%')}
+                                ${criarLinhaTabela('💨 Poeira e sujeira', '2%')}
+                                ${criarLinhaTabela('⚠️ Mismatch', '1.5%')}
+                                <tr class="bg-amber-100/80 font-bold text-slate-800 border-t-2 border-amber-300">
+                                    <td class="py-3">TOTAL DE PERDAS</td>
+                                    <td class="text-right">≈ 18%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-xs text-slate-500 mt-3">* Perdas consideradas no dimensionamento</p>
+                    </div>
+                </section>
+
+                <!-- Dimensionamento Elétrico -->
+                <section class="mb-10 bg-gradient-to-r from-purple-50/80 to-pink-50/80 p-8 rounded-2xl border border-purple-200/50">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6">🔌 4. Dimensionamento Elétrico</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-white/90 p-6 rounded-xl shadow-sm">
+                            <h4 class="font-bold text-purple-800 mb-3 text-lg">Lado DC</h4>
+                            <ul class="text-sm space-y-2 text-slate-700">
+                                <li><strong>Cabo DC:</strong> ${cabosDC.secao || 6}mm² (${cabosDC.distancia || 15}m)</li>
+                                <li><strong>Corrente DC:</strong> ${cabosDC.corrente || 'N/A'}A</li>
+                                <li><strong>Queda de Tensão:</strong> ${cabosDC.quedaTensao || '<1'}%</li>
+                                <li><strong>String Box:</strong> Incluso</li>
+                                <li><strong>Disjuntor DC:</strong> ${protecoes.disjuntorDC || '63A'}</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white/90 p-6 rounded-xl shadow-sm">
+                            <h4 class="font-bold text-purple-800 mb-3 text-lg">Lado AC</h4>
+                            <ul class="text-sm space-y-2 text-slate-700">
+                                <li><strong>Cabo AC:</strong> ${cabosAC.secao || 6}mm² (${cabosAC.distancia || 10}m)</li>
+                                <li><strong>Corrente AC:</strong> ${cabosAC.corrente || inversor.corrente_max_ac || 'N/A'}A</li>
+                                <li><strong>Queda de Tensão:</strong> ${cabosAC.quedaTensao || '<1'}%</li>
+                                <li><strong>Disjuntor AC:</strong> ${protecoes.disjuntorAC || '40A'} tripolar</li>
+                                <li><strong>SPD:</strong> Classe II - DC e AC</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Resumo Financeiro -->
+                <section class="mb-10">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-slate-50/80 to-gray-50/80 p-8 rounded-2xl border border-slate-200/50">
+                            <h3 class="text-xl font-bold text-slate-800 mb-4">💰 Composição de Preço</h3>
+                            <div class="space-y-3 text-sm">
+                                ${criarLinhaResumo('Materiais', formatCurrency(custos.materiais.total))}
+                                ${criarLinhaResumo('Serviços', formatCurrency(custos.servicos.total))}
+                                ${criarLinhaResumo('Custo Total', formatCurrency(custos.custoTotal), 'font-bold text-base text-blue-700', 'border-b-2 border-slate-300')}
+                                ${criarLinhaResumo(`Margem (${custos.margemPercentual}%)`, '+ ' + formatCurrency(custos.lucro), 'text-green-700')}
+                                ${criarLinhaResumo('Valor de Venda', formatCurrency(custos.valorVenda), 'text-lg font-bold text-green-700', 'border-t-2 border-green-300 pt-3')}
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 p-8 rounded-2xl border border-blue-200/50">
+                            <h3 class="text-xl font-bold text-slate-800 mb-4">📊 Análise Financeira</h3>
+                            <div class="space-y-3">
+                                ${criarCardAnalise('Economia Mensal', formatCurrency(economia.economiaMensal), 'text-green-700')}
+                                ${criarCardAnalise('Payback', paybackAnos + ' anos', 'text-blue-700')}
+                                ${tir > 0 ? criarCardAnalise('TIR', tir + '% a.a.', 'text-purple-700') : ''}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function criarCard(label, value, colorClass = 'text-slate-800') {
+            return `
+                <div class="bg-white/90 p-4 rounded-lg shadow-sm">
+                    <span class="text-slate-600 text-xs block mb-1">${label}</span>
+                    <strong class="text-base ${colorClass}">${value}</strong>
+                </div>
+            `;
+        }
+
+        function criarCardGrande(label, value, colorClass = 'text-slate-800') {
+            return `
+                <div class="bg-white/90 p-5 rounded-lg shadow-sm text-center">
+                    <span class="text-slate-600 block mb-2">${label}</span>
+                    <strong class="text-4xl ${colorClass}">${value}</strong>
+                </div>
+            `;
+        }
+
+        function criarLinhaTabela(label, value) {
+            return `
+                <tr class="border-b border-slate-200">
+                    <td class="py-2">${label}</td>
+                    <td class="text-right">${value}</td>
+                </tr>
+            `;
+        }
+
+        function criarLinhaResumo(label, value, extraClass = '', borderClass = 'border-b border-slate-200') {
+            return `
+                <div class="flex justify-between pb-2 ${borderClass} ${extraClass}">
+                    <span>${label}</span>
+                    <strong>${value}</strong>
+                </div>
+            `;
+        }
+
+        function criarCardAnalise(label, value, colorClass) {
+            return `
+                <div class="bg-white/90 p-4 rounded-lg shadow-sm">
+                    <span class="text-slate-600 text-xs block mb-1">${label}</span>
+                    <strong class="text-2xl ${colorClass}">${value}</strong>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
