@@ -827,7 +827,7 @@
         iframeContainer.innerHTML = `
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
             <div class="message-content">
-                <div class="chat-bubble bot-bubble" style="max-width: none; width: 150%; overflow-x: auto;">
+                <div class="chat-bubble bot-bubble" style="max-width: none; width: 125%;">
                     <iframe
                         src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
                         frameborder="0"
