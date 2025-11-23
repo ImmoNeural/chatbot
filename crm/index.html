@@ -754,6 +754,15 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium mb-1">Tipo de Sistema *</label>
+                            <select id="sim-tipo-sistema" class="w-full border rounded px-3 py-2">
+                                <option value="on-grid">On-Grid (Conectado à Rede)</option>
+                                <option value="off-grid">Off-Grid (Isolado)</option>
+                                <option value="hibrido">Híbrido (Grid + Baterias)</option>
+                            </select>
+                            <small class="text-gray-500">On-Grid: mais comum, sem baterias. Off-Grid: com baterias.</small>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium mb-1">Inclinação do Telhado (°)</label>
                             <input type="number" id="sim-inclinacao" class="w-full border rounded px-3 py-2" value="15" min="0" max="90">
                             <small class="text-gray-500">Ideal: 15-20° (latitude local)</small>
