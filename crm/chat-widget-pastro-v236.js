@@ -827,11 +827,11 @@
         iframeContainer.innerHTML = `
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
             <div class="message-content">
-                <div class="chat-bubble bot-bubble">
+                <div class="chat-bubble bot-bubble" style="max-width: none; overflow-x: auto;">
                     <iframe
                         src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
                         frameborder="0"
-                        style="width: 100%; height: 750px; border-radius: 8px; margin-top: 8px; border: none; transform: scale(0.80); transform-origin: top left;">
+                        style="width: 125%; height: 1500px; border-radius: 8px; margin-top: 8px; border: none; transform: scale(0.80); transform-origin: top left;">
                     </iframe>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
