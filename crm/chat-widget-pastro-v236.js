@@ -1113,7 +1113,7 @@
                 <div class="chat-bubble bot-bubble">
                     <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
                     <div class="action-buttons-container">
-                        <button class="action-button" data-action="Qualificar">Quero economizar na luz</button>
+                        <button class="action-button" data-action="Qualificar">Quero economizar</button>
                         <button class="action-button" data-action="Agendamento">Agendar reunião</button>
                         <button class="action-button" data-action="Ticket">Falar com alguém</button>
                         <button class="action-button" data-action="Dúvida">Tenho dúvidas</button>
@@ -1130,7 +1130,7 @@
             button.addEventListener('click', () => {
                 const action = button.dataset.action;
                 if (action === 'Qualificar') {
-                    addUserMessage('Quero economizar na luz');
+                    addUserMessage('Quero economizar');
                     startQualificationFunnel();
                 } else if (action === 'Dúvida') {
                     addUserMessage('Tenho dúvidas');
