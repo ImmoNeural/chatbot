@@ -1777,14 +1777,12 @@ async function calcularSistema() {
     showLoading(true);
 
     try {
-        // Verificar qual calculadora usar (completa ou simples)
-        const Calculadora = window.CalculadoraSolarCompleta || window.CalculadoraSolar;
-
-        if (!Calculadora) {
-            throw new Error('Calculadora solar não carregada. Recarregue a página.');
+        // Usar APENAS a calculadora completa
+        if (!window.CalculadoraSolarCompleta) {
+            throw new Error('Calculadora solar completa não carregada. Recarregue a página.');
         }
 
-        const resultado = await Calculadora.gerarPropostaCompleta({
+        const resultado = await window.CalculadoraSolarCompleta.gerarPropostaCompleta({
             cep,
             consumoMensalKwh,
             percentualReducao,
@@ -1928,10 +1926,20 @@ function renderResultadosSimulador(resultado) {
 
 function verMemoriaCalculo(propostaIndex) {
     const resultado = window.ultimoResultadoSimulador;
-    if (!resultado) return;
+    if (!resultado) {
+        showNotification('Nenhum resultado disponível', 'warning');
+        return;
+    }
+
+    if (!window.CalculadoraSolarCompleta) {
+        showNotification('Calculadora solar completa não carregada. Recarregue a página.', 'danger');
+        return;
+    }
 
     const proposta = resultado.propostas[propostaIndex];
     const { configuracao, custos, economia } = proposta;
+    const inversor = custos.equipamentos?.inversor || custos.inversor;
+    const dimensionamentoEletrico = custos.equipamentos || {};
 
     const html = `
         <div class="max-w-4xl mx-auto bg-white p-8">
@@ -1963,7 +1971,7 @@ function verMemoriaCalculo(propostaIndex) {
                         <td class="py-2 text-right">${formatCurrency(custos.materiais.placas)}</td>
                     </tr>
                     <tr class="border-b">
-                        <td class="py-2">Inversor ${custos.inversor.fabricante} ${custos.inversor.potencia_kw}kW</td>
+                        <td class="py-2">Inversor ${inversor.fabricante} ${inversor.potencia_kw}kW</td>
                         <td class="py-2 text-right">${formatCurrency(custos.materiais.inversor)}</td>
                     </tr>
                     <tr class="border-b">
@@ -1971,12 +1979,12 @@ function verMemoriaCalculo(propostaIndex) {
                         <td class="py-2 text-right">${formatCurrency(custos.materiais.estrutura)}</td>
                     </tr>
                     <tr class="border-b">
-                        <td class="py-2">Cabeamento e Conectores</td>
-                        <td class="py-2 text-right">${formatCurrency(custos.materiais.cabeamento)}</td>
+                        <td class="py-2">Cabos DC + AC + Conectores</td>
+                        <td class="py-2 text-right">${formatCurrency((custos.materiais.cabosDC || 0) + (custos.materiais.cabosAC || 0) + (custos.materiais.conectores || 0) + (custos.materiais.eletrodutos || 0))}</td>
                     </tr>
                     <tr class="border-b">
-                        <td class="py-2">String Box e Proteções</td>
-                        <td class="py-2 text-right">${formatCurrency(custos.materiais.stringBox + custos.materiais.disjuntores)}</td>
+                        <td class="py-2">String Box, Disjuntores, SPD e Seccionadores</td>
+                        <td class="py-2 text-right">${formatCurrency((custos.materiais.stringBox || 0) + (custos.materiais.disjuntorAC || 0) + (custos.materiais.disjuntorDC || 0) + (custos.materiais.spd || 0) + (custos.materiais.seccionadores || 0))}</td>
                     </tr>
                     <tr class="bg-gray-100 font-bold">
                         <td class="py-2">SUBTOTAL MATERIAIS</td>
@@ -1989,16 +1997,20 @@ function verMemoriaCalculo(propostaIndex) {
                 <h3 class="text-lg font-bold mb-3 border-b-2 pb-2">3. CUSTOS DE SERVIÇOS</h3>
                 <table class="w-full text-sm">
                     <tr class="border-b">
-                        <td class="py-2">Mão de Obra (R$ 800/kWp)</td>
+                        <td class="py-2">Mão de Obra</td>
                         <td class="py-2 text-right">${formatCurrency(custos.servicos.maoObra)}</td>
                     </tr>
                     <tr class="border-b">
-                        <td class="py-2">Projeto e ART</td>
-                        <td class="py-2 text-right">${formatCurrency(custos.servicos.projeto)}</td>
+                        <td class="py-2">Projeto Elétrico + ART</td>
+                        <td class="py-2 text-right">${formatCurrency((custos.servicos.projeto || 0) + (custos.servicos.art || 0))}</td>
                     </tr>
                     <tr class="border-b">
                         <td class="py-2">Homologação na Concessionária</td>
                         <td class="py-2 text-right">${formatCurrency(custos.servicos.homologacao)}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">Deslocamento + Ferramentas/EPI</td>
+                        <td class="py-2 text-right">${formatCurrency((custos.servicos.deslocamento || 0) + (custos.servicos.ferramentasEPI || 0))}</td>
                     </tr>
                     <tr class="bg-gray-100 font-bold">
                         <td class="py-2">SUBTOTAL SERVIÇOS</td>
@@ -2098,10 +2110,200 @@ function verMemoriaCalculo(propostaIndex) {
 }
 
 async function gerarPropostaComercial(propostaIndex) {
+    const resultado = window.ultimoResultadoSimulador;
+    if (!resultado) {
+        showNotification('Nenhum resultado disponível', 'warning');
+        return;
+    }
+
+    if (!window.CalculadoraSolarCompleta) {
+        showNotification('Calculadora solar completa não carregada. Recarregue a página.', 'danger');
+        return;
+    }
+
     showNotification('Gerando proposta comercial...', 'info');
-    // TODO: Integrar com geração de PDF da proposta
-    // Por enquanto, apenas mostra a memória de cálculo
-    verMemoriaCalculo(propostaIndex);
+
+    const proposta = resultado.propostas[propostaIndex];
+    const { configuracao, custos, economia, payback, vpl, tir } = proposta;
+    const inversor = custos.equipamentos?.inversor || custos.inversor;
+    const paybackAnos = payback.real?.anos || payback.anos;
+
+    const html = `
+        <div class="max-w-4xl mx-auto bg-white p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-green-600 mb-2">PROPOSTA COMERCIAL</h1>
+                <h2 class="text-xl font-semibold mb-1">Sistema de Energia Solar Fotovoltaica</h2>
+                <p class="text-gray-600">Sunbotic Energia Solar</p>
+            </div>
+
+            <div class="mb-8 bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                <h3 class="text-lg font-bold mb-4">📍 DADOS DO PROJETO</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong>Localização:</strong> ${resultado.localizacao.cidade} - ${resultado.localizacao.estado}
+                    </div>
+                    <div>
+                        <strong>Consumo Mensal:</strong> ${resultado.dimensionamento.energiaMensalNecessaria} kWh
+                    </div>
+                    <div>
+                        <strong>Irradiação Solar:</strong> ${resultado.localizacao.irradiacao} kWh/m²/dia
+                    </div>
+                    <div>
+                        <strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4 border-b-2 pb-2">⚡ SISTEMA PROPOSTO</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-gray-50 p-4 rounded">
+                        <strong class="text-green-600">Potência Total:</strong>
+                        <div class="text-2xl font-bold">${configuracao.potenciaRealKwp} kWp</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <strong class="text-green-600">Geração Mensal Estimada:</strong>
+                        <div class="text-2xl font-bold">${resultado.dimensionamento.energiaMensalNecessaria} kWh</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-2 text-sm">
+                    <div class="flex items-center">
+                        <strong class="w-40">Módulos:</strong>
+                        <span>${configuracao.numModulos}x ${configuracao.placa.fabricante} ${configuracao.placa.modelo} (${configuracao.placa.potencia}W)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <strong class="w-40">Inversor:</strong>
+                        <span>${inversor.fabricante} ${inversor.modelo} (${inversor.potencia_kw}kW)</span>
+                    </div>
+                    <div class="flex items-center">
+                        <strong class="w-40">Área Necessária:</strong>
+                        <span>${configuracao.area.toFixed(1)} m²</span>
+                    </div>
+                    <div class="flex items-center">
+                        <strong class="w-40">Garantia Módulos:</strong>
+                        <span>${configuracao.placa.garantia} anos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4 border-b-2 pb-2">📦 ITENS INCLUSOS NA PROPOSTA</h3>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>${configuracao.numModulos} módulos fotovoltaicos ${configuracao.placa.potencia}W</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>1 inversor ${inversor.potencia_kw}kW</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Estrutura de fixação completa</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Cabos e conectores</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Quadro de proteção AC/DC</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>SPD (proteção contra surtos)</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Projeto elétrico + ART</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Instalação completa</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Homologação na concessionária</div>
+                    <div class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Garantia de ${configuracao.placa.garantia} anos nos módulos</div>
+                </div>
+            </div>
+
+            <div class="mb-8 bg-green-600 text-white p-6 rounded-lg">
+                <h3 class="text-lg font-bold mb-4">💰 ECONOMIA GERADA PELO SISTEMA</h3>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white bg-opacity-20 p-4 rounded text-center">
+                        <div class="text-sm opacity-90">Economia Mensal</div>
+                        <div class="text-2xl font-bold">${formatCurrency(economia.economiaMensal)}</div>
+                    </div>
+                    <div class="bg-white bg-opacity-20 p-4 rounded text-center">
+                        <div class="text-sm opacity-90">Economia Anual</div>
+                        <div class="text-2xl font-bold">${formatCurrency(economia.economiaAnual)}</div>
+                    </div>
+                    <div class="bg-white bg-opacity-20 p-4 rounded text-center">
+                        <div class="text-sm opacity-90">Em 25 Anos</div>
+                        <div class="text-2xl font-bold">${formatCurrency(economia.economia25Anos)}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="text-lg font-bold mb-4 border-b-2 pb-2">📊 ANÁLISE DE RETORNO DO INVESTIMENTO</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-4 rounded">
+                        <strong class="text-blue-800">Payback (Retorno):</strong>
+                        <div class="text-3xl font-bold text-blue-600">${paybackAnos} anos</div>
+                        <small class="text-gray-600">Tempo para recuperar o investimento</small>
+                    </div>
+                    ${tir > 0 ? `
+                    <div class="bg-green-50 p-4 rounded">
+                        <strong class="text-green-800">TIR (Taxa Interna de Retorno):</strong>
+                        <div class="text-3xl font-bold text-green-600">${tir}%</div>
+                        <small class="text-gray-600">Rentabilidade anual do investimento</small>
+                    </div>
+                    ` : ''}
+                    ${vpl && vpl !== 0 ? `
+                    <div class="bg-purple-50 p-4 rounded">
+                        <strong class="text-purple-800">VPL (Valor Presente Líquido):</strong>
+                        <div class="text-2xl font-bold text-purple-600">${formatCurrency(vpl)}</div>
+                        <small class="text-gray-600">Ganho total atualizado em 25 anos</small>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <div class="mb-8 bg-yellow-50 border-l-4 border-yellow-500 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-2xl font-bold">INVESTIMENTO TOTAL</h3>
+                    <div class="text-4xl font-bold text-green-600">${formatCurrency(custos.valorVenda)}</div>
+                </div>
+                <p class="text-sm text-gray-700">
+                    <strong>Forma de Pagamento:</strong> À vista ou parcelado (consultar condições especiais)
+                </p>
+            </div>
+
+            <div class="bg-gray-100 p-6 rounded-lg text-sm text-gray-700 mb-8">
+                <h4 class="font-bold mb-2">ℹ️ OBSERVAÇÕES IMPORTANTES</h4>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>Valores considerando instalação padrão em telhado residencial</li>
+                    <li>Geração estimada baseada na irradiação solar local</li>
+                    <li>Sistema dimensionado conforme Norma ABNT NBR 16690</li>
+                    <li>Garantia do fabricante: ${configuracao.placa.garantia} anos para módulos e 5 anos para inversor</li>
+                    <li>Proposta válida por 30 dias</li>
+                </ul>
+            </div>
+
+            <div class="text-center text-sm text-gray-600 mt-8 pt-8 border-t-2">
+                <p class="font-bold text-lg mb-2">Sunbotic Energia Solar</p>
+                <p>Proposta gerada em: ${new Date().toLocaleString('pt-BR')}</p>
+                <p class="mt-4 text-xs">Este documento é uma proposta comercial. O projeto executivo será elaborado após aprovação.</p>
+            </div>
+        </div>
+    `;
+
+    // Abrir em nova janela para impressão/PDF
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Proposta Comercial - ${configuracao.placa.fabricante}</title>
+            <link href="https://cdn.tailwindcss.com" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+            <style>
+                @media print {
+                    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body class="p-8">
+            ${html}
+            <div class="text-center mt-8 no-print">
+                <button onclick="window.print()" class="bg-green-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-green-700">
+                    <i class="fas fa-print mr-2"></i>Imprimir / Salvar PDF
+                </button>
+                <button onclick="window.close()" class="bg-gray-300 text-gray-700 px-8 py-3 rounded-lg text-lg ml-4 hover:bg-gray-400">
+                    <i class="fas fa-times mr-2"></i>Fechar
+                </button>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
 }
 
 async function salvarCalculoNoLead(leadId, resultado) {
