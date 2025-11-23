@@ -24,9 +24,15 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        console.log('🚀 Proposta Comercial React v2.0 - Carregando...');
+        console.log('✓ React disponível:', typeof React !== 'undefined');
+        console.log('✓ ReactDOM disponível:', typeof ReactDOM !== 'undefined');
+        console.log('✓ Babel disponível:', typeof Babel !== 'undefined');
+
         const { useState, useEffect } = React;
 
         const PropostaComercial = ({ resultado, propostaIndex }) => {
+            console.log('📊 Renderizando PropostaComercial com:', { resultado, propostaIndex });
             const proposta = resultado.propostas[propostaIndex];
             const { configuracao, custos, economia, payback, vpl, tir } = proposta;
             const inversor = custos.equipamentos?.inversor || custos.inversor;
@@ -298,24 +304,45 @@
         };
 
         // Receber dados do window.opener
+        console.log('🔍 Verificando window.opener:', window.opener);
+        console.log('🔍 Verificando dadosPropostaComercial:', window.opener?.dadosPropostaComercial);
+
         const dados = window.opener?.dadosPropostaComercial;
+        const root = ReactDOM.createRoot(document.getElementById('root'));
 
         if (!dados) {
-            ReactDOM.render(
-                <div className="flex items-center justify-center min-h-screen">
-                    <div className="text-center text-2xl text-slate-600">
-                        Erro: Dados não encontrados
+            console.error('❌ Dados não encontrados no window.opener');
+            root.render(
+                <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
+                    <div className="text-center bg-white/90 p-12 rounded-2xl shadow-2xl max-w-2xl">
+                        <svg className="w-24 h-24 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <h2 className="text-3xl font-bold text-slate-800 mb-4">Erro: Dados não encontrados</h2>
+                        <p className="text-lg text-slate-600 mb-6">
+                            Não foi possível carregar os dados da proposta comercial.
+                        </p>
+                        <p className="text-sm text-slate-500 mb-6 font-mono bg-slate-100 p-4 rounded">
+                            Verifique o console do navegador (F12) para mais detalhes.
+                        </p>
+                        <button
+                            onClick={() => window.close()}
+                            className="px-8 py-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
+                        >
+                            Fechar
+                        </button>
                     </div>
-                </div>,
-                document.getElementById('root')
+                </div>
             );
         } else {
-            ReactDOM.render(
+            console.log('✅ Dados recebidos com sucesso!');
+            console.log('📈 Resultado:', dados.resultado);
+            console.log('📍 Proposta Index:', dados.propostaIndex);
+            root.render(
                 <PropostaComercial
                     resultado={dados.resultado}
                     propostaIndex={dados.propostaIndex}
-                />,
-                document.getElementById('root')
+                />
             );
         }
     </script>
