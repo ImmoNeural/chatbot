@@ -726,7 +726,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium mb-1">CEP do Imóvel *</label>
-                            <input type="text" id="sim-cep" class="w-full border rounded px-3 py-2" placeholder="00000-000" maxlength="9">
+                            <input type="text" id="sim-cep" class="w-full border rounded px-3 py-2" placeholder="00000-000" maxlength="9" onblur="autoPreencherOrientacao()">
+                            <small class="text-gray-500">Inclina\u00e7\u00e3o e azimute ser\u00e3o estimados automaticamente</small>
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Consumo Mensal (kWh) *</label>

@@ -1665,6 +1665,79 @@ async function trackProposta(token) {
 // =========================================
 // SIMULADOR SOLAR
 // =========================================
+
+// Tabela de latitudes aproximadas por estado (centro do estado)
+const LATITUDES_ESTADOS = {
+    'AC': -9, 'AL': -9, 'AP': 0, 'AM': -4, 'BA': -12,
+    'CE': -5, 'DF': -16, 'ES': -20, 'GO': -16, 'MA': -5,
+    'MT': -13, 'MS': -21, 'MG': -19, 'PA': -3, 'PB': -7,
+    'PR': -25, 'PE': -8, 'PI': -7, 'RJ': -22, 'RN': -6,
+    'RS': -30, 'RO': -11, 'RR': 2, 'SC': -27, 'SP': -23,
+    'SE': -11, 'TO': -10
+};
+
+/**
+ * Estima inclinação e azimute ideais baseado no CEP
+ * Inclinação ideal ≈ latitude do local (no Brasil, quanto mais ao sul, maior a inclinação)
+ * Azimute ideal = 0° (Norte) em todo o Brasil
+ */
+async function estimarOrientacaoSolar(cep) {
+    try {
+        const Calculadora = window.CalculadoraSolarCompleta || window.CalculadoraSolar;
+        if (!Calculadora) return { inclinacao: 15, azimute: 0 };
+
+        const localizacao = await Calculadora.buscarCEP(cep);
+        if (!localizacao) return { inclinacao: 15, azimute: 0 };
+
+        const estado = localizacao.estado;
+        const latitude = Math.abs(LATITUDES_ESTADOS[estado] || -15);
+
+        // Inclinação ideal = latitude (com mínimo de 10° e máximo de 30°)
+        const inclinacaoIdeal = Math.max(10, Math.min(30, latitude));
+
+        return {
+            inclinacao: Math.round(inclinacaoIdeal),
+            azimute: 0, // Norte é sempre ideal no Brasil
+            cidade: localizacao.cidade,
+            estado: estado
+        };
+    } catch (error) {
+        console.error('Erro ao estimar orientação:', error);
+        return { inclinacao: 15, azimute: 0 };
+    }
+}
+
+/**
+ * Auto-preenche inclinação e azimute quando CEP é inserido
+ */
+async function autoPreencherOrientacao() {
+    const cep = document.getElementById('sim-cep').value.trim();
+    if (!cep || cep.length < 8) return;
+
+    const estimativa = await estimarOrientacaoSolar(cep);
+
+    // Preencher campos com valores estimados (se ainda estiverem com valores padrão)
+    const inclinacaoInput = document.getElementById('sim-inclinacao');
+    const azimuteInput = document.getElementById('sim-azimute');
+
+    if (!inclinacaoInput.value || inclinacaoInput.value == '15') {
+        inclinacaoInput.value = estimativa.inclinacao;
+    }
+
+    if (!azimuteInput.value || azimuteInput.value == '0') {
+        azimuteInput.value = estimativa.azimute;
+    }
+
+    // Mostrar dica para o usuário
+    if (estimativa.cidade) {
+        showNotification(
+            `📍 ${estimativa.cidade}-${estimativa.estado}: Inclinação sugerida ${estimativa.inclinacao}° | Azimute Norte (0°)`,
+            'info',
+            3000
+        );
+    }
+}
+
 function abrirSimuladorSolar() {
     // Preencher com dados do lead se disponível
     if (currentLead) {
@@ -1704,7 +1777,14 @@ async function calcularSistema() {
     showLoading(true);
 
     try {
-        const resultado = await window.CalculadoraSolarCompleta.gerarPropostaCompleta({
+        // Verificar qual calculadora usar (completa ou simples)
+        const Calculadora = window.CalculadoraSolarCompleta || window.CalculadoraSolar;
+
+        if (!Calculadora) {
+            throw new Error('Calculadora solar não carregada. Recarregue a página.');
+        }
+
+        const resultado = await Calculadora.gerarPropostaCompleta({
             cep,
             consumoMensalKwh,
             percentualReducao,
