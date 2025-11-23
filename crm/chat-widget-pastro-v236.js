@@ -830,8 +830,8 @@
                 <div class="chat-bubble bot-bubble">
                     <iframe
                         src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
-                        width="470" height="1800" frameborder="0"
-                        style="border-radius: 8px; margin-top: 8px;">
+                        frameborder="0"
+                        style="width: 100%; max-width: 100%; height: 600px; border-radius: 8px; margin-top: 8px; border: none;">
                     </iframe>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
