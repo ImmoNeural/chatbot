@@ -752,6 +752,50 @@
                                 <option value="empresarial">Empresarial</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Inclinação do Telhado (°)</label>
+                            <input type="number" id="sim-inclinacao" class="w-full border rounded px-3 py-2" value="15" min="0" max="90">
+                            <small class="text-gray-500">Ideal: 15-20° (latitude local)</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Azimute - Orientação (°)</label>
+                            <select id="sim-azimute" class="w-full border rounded px-3 py-2">
+                                <option value="0">0° - Norte (Ideal)</option>
+                                <option value="15">15° - Norte-Nordeste</option>
+                                <option value="30">30° - Nordeste</option>
+                                <option value="45">45° - Nordeste</option>
+                                <option value="-15">-15° - Norte-Noroeste</option>
+                                <option value="-30">-30° - Noroeste</option>
+                                <option value="-45">-45° - Noroeste</option>
+                                <option value="90">90° - Leste</option>
+                                <option value="-90">-90° - Oeste</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Avançados (Opcional) -->
+                    <div class="mt-4 border-t pt-4">
+                        <button type="button" onclick="document.getElementById('campos-avancados').classList.toggle('hidden')" class="text-sm text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-cog mr-1"></i>Configurações Avançadas (Opcional)
+                        </button>
+                        <div id="campos-avancados" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Distância Cabos DC (m)</label>
+                                <input type="number" id="sim-dist-dc" class="w-full border rounded px-3 py-2" value="15">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Distância Cabos AC (m)</label>
+                                <input type="number" id="sim-dist-ac" class="w-full border rounded px-3 py-2" value="10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Reajuste Anual Energia (%)</label>
+                                <input type="number" step="0.1" id="sim-reajuste" class="w-full border rounded px-3 py-2" value="8.0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Inflação Anual (%)</label>
+                                <input type="number" step="0.1" id="sim-inflacao" class="w-full border rounded px-3 py-2" value="4.5">
+                            </div>
+                        </div>
                     </div>
                     <button onclick="calcularSistema()" class="mt-4 text-white px-6 py-3 rounded-lg font-semibold" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
                         <i class="fas fa-calculator mr-2"></i>Calcular Sistema
@@ -800,7 +844,7 @@
     <script src="./chat-widget-pastro-v236.js"></script>
 
     <!-- JavaScript -->
-    <script src="./calculadora-solar.js"></script>
+    <script src="./calculadora-solar-completa.js"></script>
     <script src="./crm.js"></script>
 </body>
 </html>

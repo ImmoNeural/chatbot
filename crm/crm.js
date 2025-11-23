@@ -1688,6 +1688,14 @@ async function calcularSistema() {
     const tarifaKwh = parseFloat(document.getElementById('sim-tarifa').value);
     const tipoCliente = document.getElementById('sim-tipo').value;
 
+    // Novos campos
+    const inclinacao = parseFloat(document.getElementById('sim-inclinacao').value) || 15;
+    const azimute = parseFloat(document.getElementById('sim-azimute').value) || 0;
+    const distDC = parseFloat(document.getElementById('sim-dist-dc').value) || 15;
+    const distAC = parseFloat(document.getElementById('sim-dist-ac').value) || 10;
+    const reajusteAnual = (parseFloat(document.getElementById('sim-reajuste').value) || 8.0) / 100;
+    const inflacao = (parseFloat(document.getElementById('sim-inflacao').value) || 4.5) / 100;
+
     if (!cep || !consumoMensalKwh) {
         showNotification('Preencha CEP e consumo mensal', 'warning');
         return;
@@ -1696,12 +1704,17 @@ async function calcularSistema() {
     showLoading(true);
 
     try {
-        const resultado = await window.CalculadoraSolar.gerarPropostaCompleta({
+        const resultado = await window.CalculadoraSolarCompleta.gerarPropostaCompleta({
             cep,
             consumoMensalKwh,
             percentualReducao,
             tarifaKwh,
-            tipoCliente
+            tipoCliente,
+            inclinacao,
+            azimute,
+            distanciaCabos: { dc: distDC, ac: distAC },
+            reajusteAnual,
+            inflacao
         });
 
         renderResultadosSimulador(resultado);
@@ -1767,7 +1780,7 @@ function renderResultadosSimulador(resultado) {
 
                 <!-- Economia -->
                 <div class="bg-green-50 rounded-lg p-4 mb-4">
-                    <h5 class="font-bold text-sm mb-2 text-green-800">💰 Economia</h5>
+                    <h5 class="font-bold text-sm mb-2 text-green-800">💰 Economia & Retorno</h5>
                     <div class="text-sm space-y-1">
                         <div class="flex justify-between">
                             <span>Por mês:</span>
@@ -1781,9 +1794,19 @@ function renderResultadosSimulador(resultado) {
                             <span>Em 25 anos:</span>
                             <span class="font-bold text-green-600">${formatCurrency(economia.economia25Anos)}</span>
                         </div>
-                        <div class="flex justify-between border-t border-green-200 pt-2 mt-2">
-                            <span class="font-bold">Payback:</span>
-                            <span class="font-bold text-green-800">${payback.anos} anos</span>
+                        <div class="border-t border-green-200 pt-2 mt-2 space-y-1">
+                            <div class="flex justify-between">
+                                <span class="font-bold">Payback Real:</span>
+                                <span class="font-bold text-green-800">${proposta.payback.real.anos} anos</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs">TIR:</span>
+                                <span class="font-semibold text-xs">${proposta.tir}% a.a.</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-xs">VPL:</span>
+                                <span class="font-semibold text-xs">${formatCurrency(proposta.vpl)}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
