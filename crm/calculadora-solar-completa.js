@@ -680,6 +680,7 @@ async function gerarPropostaCompleta(dados) {
         percentualReducao,
         tarifaKwh = 0.85,
         tipoCliente = 'residencial',
+        tipoSistema = 'on-grid',
         inclinacao = 15,
         azimute = 0,
         distanciaCabos = { dc: 15, ac: 10 },
@@ -736,8 +737,13 @@ async function gerarPropostaCompleta(dados) {
 
     return {
         localizacao,
-        dimensionamento,
+        dimensionamento: {
+            ...dimensionamento,
+            inclinacao,
+            azimute
+        },
         propostas,
+        tipoSistema,
         parametros: {
             inclinacao,
             azimute,
