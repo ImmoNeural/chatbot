@@ -471,11 +471,13 @@
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 16px;
+            justify-content: center;
         }
 
         .action-button {
-            flex: 1 1 calc(50% - 5px);
-            min-width: 130px;
+            flex: 0 1 calc(50% - 5px);
+            min-width: 140px;
+            max-width: 160px;
             padding: 14px 16px;
             border: none;
             border-radius: 12px;
@@ -483,13 +485,15 @@
             font-weight: 600;
             font-size: 14px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 12px rgba(77, 184, 172, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #4db8ac 0%, #3a9d92 100%);
+            color: white;
         }
 
         .action-button::before {
@@ -506,7 +510,8 @@
 
         .action-button:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 20px rgba(77, 184, 172, 0.4);
+            background: linear-gradient(135deg, #5dccc0 0%, #4ac4b8 100%);
         }
 
         .action-button:hover::before {
@@ -515,42 +520,6 @@
 
         .action-button:active {
             transform: translateY(-1px) scale(0.98);
-        }
-
-        .blue-button {
-            background: linear-gradient(135deg, #309086 0%, #267269 100%);
-            color: white;
-        }
-
-        .blue-button:hover {
-            background: linear-gradient(135deg, #3aa89d 0%, #2e8278 100%);
-        }
-
-        .green-button {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
-
-        .green-button:hover {
-            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-        }
-
-        .orange-button {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
-        }
-
-        .orange-button:hover {
-            background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-        }
-
-        .yellow-button {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: white;
-        }
-
-        .yellow-button:hover {
-            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
         }
 
         .dynamic-buttons-container {
@@ -562,27 +531,26 @@
         }
 
         .dynamic-button {
-            padding: 7px 9px;
-            border: 1px solid var(--chat-color-light);
-            border-radius: 6px;
-            background-color: #f3f4f6;
-            color: var(--chat-color-text);
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #6dd5c9 0%, #5bc4b8 100%);
+            color: white;
             cursor: pointer;
-            font-weight: 400;
+            font-weight: 500;
             font-size: 13px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(77, 184, 172, 0.2);
+            text-align: center;
             flex: 0 0 48%;
             box-sizing: border-box;
         }
 
         .dynamic-button:hover {
-            background-color: var(--chat-color-primary);
-            border-color: var(--chat-color-primary);
+            background: linear-gradient(135deg, #7de3d7 0%, #6bd5c9 100%);
             color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 184, 172, 0.35);
         }
 
         .solar-panel-image {
@@ -1107,7 +1075,7 @@
                         <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
                         <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
                         <div class="action-buttons-container" style="margin-top: 15px;">
-                            <button class="action-button green-button schedule-btn">📅 Agende aqui</button>
+                            <button class="action-button schedule-btn">📅 Agende aqui</button>
                         </div>
                     </div>
                     <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -1145,10 +1113,10 @@
                 <div class="chat-bubble bot-bubble">
                     <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
                     <div class="action-buttons-container">
-                        <button class="action-button blue-button" data-action="Qualificar">Quero economizar na luz</button>
-                        <button class="action-button green-button" data-action="Agendamento">Agendar reunião</button>
-                        <button class="action-button orange-button" data-action="Ticket">Falar com alguém</button>
-                        <button class="action-button yellow-button" data-action="Dúvida">Tenho dúvidas</button>
+                        <button class="action-button" data-action="Qualificar">Quero economizar na luz</button>
+                        <button class="action-button" data-action="Agendamento">Agendar reunião</button>
+                        <button class="action-button" data-action="Ticket">Falar com alguém</button>
+                        <button class="action-button" data-action="Dúvida">Tenho dúvidas</button>
                     </div>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
