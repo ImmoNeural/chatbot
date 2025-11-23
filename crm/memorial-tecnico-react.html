@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memorial Técnico - Sunbotic Energia Solar</title>
 
-    <!-- React, ReactDOM e Babel via CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React, ReactDOM e Babel via CDN (DEV para debug) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <!-- Tailwind CSS -->
@@ -218,10 +218,10 @@
                                         <h4 className="font-bold text-purple-800 mb-3">Lado DC (Corrente Contínua)</h4>
                                         <ul className="text-sm space-y-2 text-slate-700">
                                             <li><strong>Cabo DC:</strong> {cabosDC.secao || 6}mm² ({cabosDC.distancia || 15}m)</li>
-                                            <li><strong>Corrente DC:</strong> {cabosDC.corrente || 'N/A'}A</li>
+                                            <li><strong>Corrente DC:</strong> {typeof cabosDC.corrente === 'object' ? (cabosDC.corrente?.corrente || 'N/A') : (cabosDC.corrente || 'N/A')}A</li>
                                             <li><strong>Queda de Tensão:</strong> {cabosDC.quedaTensao || '<1'}%</li>
                                             <li><strong>String Box:</strong> Incluso</li>
-                                            <li><strong>Disjuntor DC:</strong> {protecoes.disjuntorDC || '63A'}</li>
+                                            <li><strong>Disjuntor DC:</strong> {typeof protecoes.disjuntorDC === 'object' ? (protecoes.disjuntorDC?.corrente || 63) : (protecoes.disjuntorDC || '63')}A</li>
                                             <li><strong>Seccionador DC:</strong> Incluso</li>
                                         </ul>
                                     </div>
@@ -229,9 +229,9 @@
                                         <h4 className="font-bold text-purple-800 mb-3">Lado AC (Corrente Alternada)</h4>
                                         <ul className="text-sm space-y-2 text-slate-700">
                                             <li><strong>Cabo AC:</strong> {cabosAC.secao || 6}mm² ({cabosAC.distancia || 10}m)</li>
-                                            <li><strong>Corrente AC:</strong> {cabosAC.corrente || inversor.corrente_max_ac || 'N/A'}A</li>
+                                            <li><strong>Corrente AC:</strong> {typeof cabosAC.corrente === 'object' ? (cabosAC.corrente?.corrente || inversor.corrente_max_ac || 'N/A') : (cabosAC.corrente || inversor.corrente_max_ac || 'N/A')}A</li>
                                             <li><strong>Queda de Tensão:</strong> {cabosAC.quedaTensao || '<1'}%</li>
-                                            <li><strong>Disjuntor AC:</strong> {protecoes.disjuntorAC || '40A'} tripolar</li>
+                                            <li><strong>Disjuntor AC:</strong> {typeof protecoes.disjuntorAC === 'object' ? (protecoes.disjuntorAC?.corrente || 40) : (protecoes.disjuntorAC || '40')}A tripolar</li>
                                             <li><strong>SPD:</strong> Classe II - DC e AC</li>
                                             <li><strong>Aterramento:</strong> NBR 5410</li>
                                         </ul>
