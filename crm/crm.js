@@ -630,7 +630,7 @@ async function openLeadModal(leadId) {
         .eq('lead_id', leadId)
         .single();
 
-    currentStage = oportunidade?.etapa || 'simulacao'; // Default: simulacao
+    currentStage = oportunidade?.etapa || null; // Sem estágio definido = qualificação normal
 
     // Preencher informações do lead
     document.getElementById('modal-lead-name').textContent = lead.nome || lead.email;
@@ -1096,6 +1096,35 @@ async function salvarQualificacao(leadId) {
         }]);
 
         showNotification('Qualificação salva com sucesso!', 'success');
+
+        // Buscar lead atualizado com score para verificar se deve qualificar
+        const { data: leadAtualizado } = await supabase
+            .from('leads')
+            .select('score, status')
+            .eq('id', leadId)
+            .single();
+
+        // Se score >= 50, atualizar status para qualificado automaticamente
+        if (leadAtualizado && leadAtualizado.score >= 50 && leadAtualizado.status !== 'qualificado') {
+            await supabase
+                .from('leads')
+                .update({ status: 'qualificado' })
+                .eq('id', leadId);
+
+            // Registrar na timeline
+            await supabase.from('interacoes').insert([{
+                lead_id: leadId,
+                tipo: 'sistema',
+                titulo: 'Lead Qualificado Automaticamente',
+                descricao: `Lead qualificado por atingir score ${leadAtualizado.score} (≥ 50 pontos)`
+            }]);
+
+            showNotification(`Lead qualificado automaticamente! Score: ${leadAtualizado.score}`, 'success');
+
+            // Recarregar dados do CRM para atualizar badge de status
+            await refreshData();
+        }
+
         await renderLeadQualificacao(leadId);
         await renderLeadTimeline(leadId);
     } catch (error) {
@@ -2207,8 +2236,13 @@ function configurarAbasDinamicas(etapa) {
         }
     };
 
-    const config = configAbas[etapa] || configAbas['simulacao'];
-    tabButton.innerHTML = `<i class="fas ${config.icon} mr-2"></i>${config.label}`;
+    // Se não tiver etapa definida, manter "Qualificação" padrão sem modificar
+    if (!etapa) return;
+
+    const config = configAbas[etapa];
+    if (config) {
+        tabButton.innerHTML = `<i class="fas ${config.icon} mr-2"></i>${config.label}`;
+    }
 }
 
 // Renderizar conteúdo dinâmico baseado no estágio
