@@ -650,7 +650,7 @@ function hideAddInteractionForm() {
     document.getElementById('interaction-form').classList.add('hidden');
     document.getElementById('btn-show-interaction-form').classList.remove('hidden');
     // Limpar campos
-    document.getElementById('new-interaction-type').value = 'ligacao';
+    document.getElementById('new-interaction-type').value = 'chamada';
     document.getElementById('new-interaction-title').value = '';
     document.getElementById('new-interaction-desc').value = '';
 }
