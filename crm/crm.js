@@ -875,51 +875,210 @@ async function renderLeadQualificacao(leadId) {
         .eq('lead_id', leadId)
         .single();
 
-    if (error || !qualificacao) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhum dado de qualificação</p>';
+    if (error && error.code !== 'PGRST116') {
+        container.innerHTML = '<p class="text-red-500 text-center py-8">Erro ao carregar qualificação</p>';
         return;
     }
 
+    const qual = qualificacao || {};
+
     container.innerHTML = `
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <p class="text-sm text-gray-600">Pessoas na Casa</p>
-                <p class="font-semibold">${qualificacao.family_size || 'Não informado'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-600">Consumo kWh</p>
-                <p class="font-semibold">${qualificacao.kwh_consumption || 'Não informado'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-600">Tipo de Telhado</p>
-                <p class="font-semibold">${qualificacao.roof_type || qualificacao.tipo_telhado || 'Não informado'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-600">Tipo de Ligação</p>
-                <p class="font-semibold">${qualificacao.tipo_ligacao || 'Não informado'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-600">É Decisor?</p>
-                <p class="font-semibold">${qualificacao.decisor ? 'Sim' : 'Não'}</p>
-            </div>
-            <div>
-                <p class="text-sm text-gray-600">Prontidão de Compra</p>
-                <p class="font-semibold">${formatProntidao(qualificacao.prontidao_compra)}</p>
-            </div>
-            <div class="col-span-2">
-                <p class="text-sm text-gray-600">Viabilidade Técnica</p>
-                <p class="font-semibold ${qualificacao.viabilidade_tecnica ? 'text-green-600' : 'text-red-600'}">
-                    ${qualificacao.viabilidade_tecnica ? '✓ Viável' : '✗ Não viável'}
-                </p>
-            </div>
-            ${qualificacao.observacoes ? `
-                <div class="col-span-2">
-                    <p class="text-sm text-gray-600">Observações</p>
-                    <p class="text-gray-800">${qualificacao.observacoes}</p>
+        <form id="form-qualificacao" class="space-y-6">
+            <!-- Seção: Viabilidade Técnica -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-lg font-bold text-gray-800">Viabilidade Técnica</h3>
                 </div>
-            ` : ''}
-        </div>
+                <div class="space-y-3">
+                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                        <input type="checkbox" name="telhado_bom_estado" ${qual.telhado_bom_estado ? 'checked' : ''}
+                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-700">
+                            <strong>Telhado em bom estado</strong>
+                            <p class="text-sm text-gray-500">Sem rachaduras, telhas quebradas ou infiltrações</p>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                        <input type="checkbox" name="pouco_sombreamento" ${qual.pouco_sombreamento ? 'checked' : ''}
+                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-700">
+                            <strong>Pouco ou nenhum sombreamento (&lt; 20%)</strong>
+                            <p class="text-sm text-gray-500">Sem árvores, prédios ou estruturas que façam sombra</p>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                        <input type="checkbox" name="estrutura_suporta_peso" ${qual.estrutura_suporta_peso ? 'checked' : ''}
+                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-700">
+                            <strong>Estrutura suporta peso dos painéis</strong>
+                            <p class="text-sm text-gray-500">Telhado tem capacidade estrutural adequada (15-20 kg/m²)</p>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                        <input type="checkbox" name="telhado_compativel" ${qual.telhado_compativel ? 'checked' : ''}
+                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-700">
+                            <strong>Tipo de telhado compatível</strong>
+                            <p class="text-sm text-gray-500">Cerâmico, metálico, fibrocimento ou laje</p>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                        <input type="checkbox" name="acesso_adequado" ${qual.acesso_adequado ? 'checked' : ''}
+                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                        <span class="text-gray-700">
+                            <strong>Acesso adequado para instalação</strong>
+                            <p class="text-sm text-gray-500">Escada, andaime ou acesso seguro ao telhado</p>
+                        </span>
+                    </label>
+                </div>
+                <div class="mt-4 p-3 rounded ${qual.viabilidade_tecnica ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
+                    <strong>${qual.viabilidade_tecnica ? '✓ Viável tecnicamente' : 'Marque todos os itens para confirmar viabilidade'}</strong>
+                </div>
+            </div>
+
+            <!-- Seção: Decisor -->
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <h3 class="text-lg font-bold text-gray-800">Poder de Decisão</h3>
+                </div>
+                <div class="space-y-3">
+                    <label class="flex items-start gap-3 cursor-pointer hover:bg-purple-100 p-2 rounded">
+                        <input type="checkbox" name="decisor_autonomia" ${qual.decisor_autonomia || qual.decisor ? 'checked' : ''}
+                               class="mt-1 w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+                        <span class="text-gray-700">
+                            <strong>Tem autonomia para decidir</strong>
+                            <p class="text-sm text-gray-500">
+                                <strong>Residencial:</strong> Proprietário que decide sozinho<br>
+                                <strong>Empresarial:</strong> Dono, CEO, CFO ou diretor com autonomia
+                            </p>
+                        </span>
+                    </label>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Observações sobre decisor</label>
+                    <textarea name="observacoes_decisor" rows="2"
+                              class="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                              placeholder="Ex: Precisa consultar sócio, esposa tem veto, etc.">${qual.observacoes_decisor || ''}</textarea>
+                </div>
+            </div>
+
+            <!-- Seção: Prontidão de Compra -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-lg font-bold text-gray-800">Prontidão de Compra</h3>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quando pretende instalar?</label>
+                    <select name="prontidao_compra"
+                            class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
+                        <option value="">Selecione...</option>
+                        <option value="imediato" ${qual.prontidao_compra === 'imediato' ? 'selected' : ''}>Imediato (compra já)</option>
+                        <option value="30_dias" ${qual.prontidao_compra === '30_dias' ? 'selected' : ''}>Até 30 dias</option>
+                        <option value="90_dias" ${qual.prontidao_compra === '90_dias' ? 'selected' : ''}>30 a 90 dias</option>
+                        <option value="mais_90_dias" ${qual.prontidao_compra === 'mais_90_dias' ? 'selected' : ''}>Mais de 90 dias</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Campos adicionais -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Telhado</label>
+                    <select name="tipo_telhado" class="w-full border rounded px-3 py-2">
+                        <option value="">Selecione...</option>
+                        <option value="fibrocimento" ${qual.tipo_telhado === 'fibrocimento' ? 'selected' : ''}>Fibrocimento</option>
+                        <option value="ceramico" ${qual.tipo_telhado === 'ceramico' ? 'selected' : ''}>Cerâmico</option>
+                        <option value="metalico" ${qual.tipo_telhado === 'metalico' ? 'selected' : ''}>Metálico</option>
+                        <option value="laje" ${qual.tipo_telhado === 'laje' ? 'selected' : ''}>Laje</option>
+                        <option value="outro" ${qual.tipo_telhado === 'outro' ? 'selected' : ''}>Outro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Ligação</label>
+                    <select name="tipo_ligacao" class="w-full border rounded px-3 py-2">
+                        <option value="">Selecione...</option>
+                        <option value="monofasica" ${qual.tipo_ligacao === 'monofasica' ? 'selected' : ''}>Monofásica</option>
+                        <option value="bifasica" ${qual.tipo_ligacao === 'bifasica' ? 'selected' : ''}>Bifásica</option>
+                        <option value="trifasica" ${qual.tipo_ligacao === 'trifasica' ? 'selected' : ''}>Trifásica</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Observações Gerais</label>
+                <textarea name="observacoes" rows="3"
+                          class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                          placeholder="Informações adicionais sobre a qualificação...">${qual.observacoes || ''}</textarea>
+            </div>
+
+            <!-- Botão Salvar -->
+            <div class="flex gap-3">
+                <button type="submit"
+                        class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition shadow-lg">
+                    <i class="fas fa-save mr-2"></i>Salvar Qualificação
+                </button>
+            </div>
+        </form>
     `;
+
+    // Event listener para salvar
+    document.getElementById('form-qualificacao').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await salvarQualificacao(leadId);
+    });
+}
+
+async function salvarQualificacao(leadId) {
+    const form = document.getElementById('form-qualificacao');
+    const formData = new FormData(form);
+
+    const qualificacaoData = {
+        lead_id: leadId,
+        telhado_bom_estado: formData.get('telhado_bom_estado') === 'on',
+        pouco_sombreamento: formData.get('pouco_sombreamento') === 'on',
+        estrutura_suporta_peso: formData.get('estrutura_suporta_peso') === 'on',
+        telhado_compativel: formData.get('telhado_compativel') === 'on',
+        acesso_adequado: formData.get('acesso_adequado') === 'on',
+        decisor_autonomia: formData.get('decisor_autonomia') === 'on',
+        decisor: formData.get('decisor_autonomia') === 'on', // Compatibilidade
+        observacoes_decisor: formData.get('observacoes_decisor'),
+        prontidao_compra: formData.get('prontidao_compra'),
+        tipo_telhado: formData.get('tipo_telhado'),
+        tipo_ligacao: formData.get('tipo_ligacao'),
+        observacoes: formData.get('observacoes')
+    };
+
+    try {
+        const { error } = await supabase
+            .from('qualificacao')
+            .upsert(qualificacaoData, { onConflict: 'lead_id' });
+
+        if (error) throw error;
+
+        // Registrar na timeline
+        await supabase.from('interacoes').insert([{
+            lead_id: leadId,
+            tipo: 'sistema',
+            titulo: 'Qualificação Atualizada',
+            descricao: `Viabilidade: ${qualificacaoData.telhado_bom_estado && qualificacaoData.pouco_sombreamento ? 'OK' : 'Pendente'} | Prontidão: ${formatProntidao(qualificacaoData.prontidao_compra)}`
+        }]);
+
+        showNotification('Qualificação salva com sucesso!', 'success');
+        await renderLeadQualificacao(leadId);
+        await renderLeadTimeline(leadId);
+    } catch (error) {
+        console.error('Erro ao salvar qualificação:', error);
+        showNotification('Erro ao salvar qualificação', 'danger');
+    }
 }
 
 function showTab(tabName) {
