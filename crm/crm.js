@@ -1041,23 +1041,33 @@ async function salvarQualificacao(leadId) {
     const form = document.getElementById('form-qualificacao');
     const formData = new FormData(form);
 
-    const qualificacaoData = {
-        lead_id: leadId,
-        telhado_bom_estado: formData.get('telhado_bom_estado') === 'on',
-        pouco_sombreamento: formData.get('pouco_sombreamento') === 'on',
-        estrutura_suporta_peso: formData.get('estrutura_suporta_peso') === 'on',
-        telhado_compativel: formData.get('telhado_compativel') === 'on',
-        acesso_adequado: formData.get('acesso_adequado') === 'on',
-        decisor_autonomia: formData.get('decisor_autonomia') === 'on',
-        decisor: formData.get('decisor_autonomia') === 'on', // Compatibilidade
-        observacoes_decisor: formData.get('observacoes_decisor'),
-        prontidao_compra: formData.get('prontidao_compra'),
-        tipo_telhado: formData.get('tipo_telhado'),
-        tipo_ligacao: formData.get('tipo_ligacao'),
-        observacoes: formData.get('observacoes')
-    };
-
     try {
+        // Buscar qualificação existente para preservar dados do chatbot
+        const { data: existingQual } = await supabase
+            .from('qualificacao')
+            .select('*')
+            .eq('lead_id', leadId)
+            .single();
+
+        // Mesclar dados existentes com novos dados do formulário
+        const qualificacaoData = {
+            ...(existingQual || {}), // Preserva TODOS os campos existentes (family_size, kwh_consumption, roof_type, sombreamento_percentual, etc)
+            lead_id: leadId,
+            // Sobrescrever apenas com os campos do formulário
+            telhado_bom_estado: formData.get('telhado_bom_estado') === 'on',
+            pouco_sombreamento: formData.get('pouco_sombreamento') === 'on',
+            estrutura_suporta_peso: formData.get('estrutura_suporta_peso') === 'on',
+            telhado_compativel: formData.get('telhado_compativel') === 'on',
+            acesso_adequado: formData.get('acesso_adequado') === 'on',
+            decisor_autonomia: formData.get('decisor_autonomia') === 'on',
+            decisor: formData.get('decisor_autonomia') === 'on', // Compatibilidade
+            observacoes_decisor: formData.get('observacoes_decisor'),
+            prontidao_compra: formData.get('prontidao_compra'),
+            tipo_telhado: formData.get('tipo_telhado'),
+            tipo_ligacao: formData.get('tipo_ligacao'),
+            observacoes: formData.get('observacoes')
+        };
+
         const { error } = await supabase
             .from('qualificacao')
             .upsert(qualificacaoData, { onConflict: 'lead_id' });
