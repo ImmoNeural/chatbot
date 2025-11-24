@@ -1100,12 +1100,12 @@ async function salvarQualificacao(leadId) {
         // Buscar lead atualizado com score para verificar se deve qualificar
         const { data: leadAtualizado } = await supabase
             .from('leads')
-            .select('score, status')
+            .select('lead_score, status')
             .eq('id', leadId)
             .single();
 
         // Se score >= 50, atualizar status para qualificado automaticamente
-        if (leadAtualizado && leadAtualizado.score >= 50 && leadAtualizado.status !== 'qualificado') {
+        if (leadAtualizado && leadAtualizado.lead_score >= 50 && leadAtualizado.status !== 'qualificado') {
             await supabase
                 .from('leads')
                 .update({ status: 'qualificado' })
@@ -1116,10 +1116,10 @@ async function salvarQualificacao(leadId) {
                 lead_id: leadId,
                 tipo: 'sistema',
                 titulo: 'Lead Qualificado Automaticamente',
-                descricao: `Lead qualificado por atingir score ${leadAtualizado.score} (≥ 50 pontos)`
+                descricao: `Lead qualificado por atingir score ${leadAtualizado.lead_score} (≥ 50 pontos)`
             }]);
 
-            showNotification(`Lead qualificado automaticamente! Score: ${leadAtualizado.score}`, 'success');
+            showNotification(`Lead qualificado automaticamente! Score: ${leadAtualizado.lead_score}`, 'success');
 
             // Recarregar dados do CRM para atualizar badge de status
             await refreshData();
