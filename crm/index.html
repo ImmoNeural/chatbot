@@ -531,10 +531,10 @@
                 </div>
             </div>
 
-            <div class="flex border-b">
+            <div id="modal-tabs-container" class="flex border-b">
                 <button class="tab-button active" onclick="showTab('info')">Informações</button>
                 <button class="tab-button" onclick="showTab('timeline')">Timeline</button>
-                <button class="tab-button" onclick="showTab('qualificacao')">Qualificação</button>
+                <button id="tab-btn-dynamic" class="tab-button" onclick="showTab('qualificacao')">Qualificação</button>
             </div>
 
             <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
@@ -591,10 +591,10 @@
                     </div>
                 </div>
 
-                <!-- Tab: Qualificação -->
+                <!-- Tab: Qualificação / Dinâmica -->
                 <div id="tab-qualificacao" class="tab-content hidden">
                     <div id="qualificacao-content">
-                        <!-- Dados de qualificação via JS -->
+                        <!-- Conteúdo dinâmico baseado no estágio -->
                     </div>
                 </div>
             </div>
