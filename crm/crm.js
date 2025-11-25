@@ -2862,6 +2862,34 @@ async function renderInstalacao(leadId) {
                     </button>
                 </div>
             </div>
+
+            <!-- Botão Marcar como Instalado -->
+            ${inst.art_aprovada && inst.homologacao_aprovada && inst.data_agendamento_instalacao ? `
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-8 text-center">
+                    <div class="mb-4">
+                        <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                            <span class="text-sm font-semibold text-gray-700">Todos os requisitos atendidos</span>
+                        </div>
+                    </div>
+                    <button onclick="marcarComoInstalado('${leadId}')"
+                            class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-5 rounded-lg font-bold text-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105">
+                        <i class="fas fa-trophy mr-3"></i>Marcar como Instalado
+                    </button>
+                    <p class="text-sm text-gray-600 mt-3">
+                        Isso moverá o cliente para a página "Instalados" e removerá do Kanban
+                    </p>
+                </div>
+            ` : `
+                <div class="bg-gray-50 border border-gray-300 rounded-lg p-6 text-center">
+                    <i class="fas fa-lock text-gray-400 text-3xl mb-3"></i>
+                    <p class="text-gray-600 font-semibold mb-2">Botão "Marcar como Instalado" bloqueado</p>
+                    <p class="text-sm text-gray-500">
+                        Complete os requisitos acima para desbloquear:
+                        <br>✓ ART aprovada | ✓ Homologação aprovada | ✓ Data de instalação
+                    </p>
+                </div>
+            `}
         </div>
     `;
 }
@@ -2905,6 +2933,100 @@ async function salvarAgendamentoInstalacao(leadId) {
     }
 }
 
+// =========================================
+// MARCAR COMO INSTALADO
+// =========================================
+async function marcarComoInstalado(leadId) {
+    // Confirmar ação
+    if (!confirm('Confirma que a instalação foi concluída com sucesso? O cliente será movido para "Instalados" e removido do Kanban.')) {
+        return;
+    }
+
+    try {
+        // 1. Buscar dados do lead
+        const { data: lead, error: leadError } = await supabase
+            .from('leads')
+            .select('*')
+            .eq('id', leadId)
+            .single();
+
+        if (leadError) throw leadError;
+
+        // 2. Buscar última proposta aceita
+        const { data: propostas, error: propostaError } = await supabase
+            .from('propostas')
+            .select('*, oportunidades!inner(lead_id)')
+            .eq('oportunidades.lead_id', leadId)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (propostaError) throw propostaError;
+
+        const proposta = propostas?.[0];
+
+        // 3. Buscar dados de instalação
+        const { data: instalacao, error: instError } = await supabase
+            .from('instalacao')
+            .select('*')
+            .eq('lead_id', leadId)
+            .single();
+
+        if (instError) throw instError;
+
+        // 4. Criar registro em clientes_instalados
+        const clienteInstaladoData = {
+            lead_id: leadId,
+            numero_contrato: proposta?.numero_proposta || `CONTRATO-${Date.now()}`,
+            data_instalacao: instalacao.data_agendamento_instalacao || new Date().toISOString(),
+            potencia_instalada_kwp: proposta?.potencia_total_kwp || 0,
+            valor_final_negociado: proposta?.valor_final || 0,
+            numero_art: instalacao.numero_art,
+            protocolo_homologacao: instalacao.protocolo_homologacao,
+            observacoes: instalacao.observacoes_agendamento,
+            nps: null // Será preenchido depois no pós-venda
+        };
+
+        const { error: insertError } = await supabase
+            .from('clientes_instalados')
+            .insert([clienteInstaladoData]);
+
+        if (insertError) throw insertError;
+
+        // 5. Remover oportunidade do Kanban (deletar)
+        const { error: deleteOppError } = await supabase
+            .from('oportunidades')
+            .delete()
+            .eq('lead_id', leadId);
+
+        if (deleteOppError) throw deleteOppError;
+
+        // 6. Atualizar status do lead
+        await supabase
+            .from('leads')
+            .update({ status: 'instalado' })
+            .eq('id', leadId);
+
+        // 7. Registrar na timeline
+        await supabase.from('interacoes').insert([{
+            lead_id: leadId,
+            tipo: 'sistema',
+            titulo: '🎉 Cliente Instalado com Sucesso!',
+            descricao: `Sistema de ${clienteInstaladoData.potencia_instalada_kwp} kWp instalado | Valor: ${formatCurrency(clienteInstaladoData.valor_final_negociado)} | ART: ${instalacao.numero_art} | Homologação: ${instalacao.protocolo_homologacao}`
+        }]);
+
+        // 8. Fechar modal e recarregar dados
+        closeLeadModal();
+        await refreshData();
+
+        // 9. Mostrar notificação de sucesso
+        showNotification(`🎉 Parabéns! Cliente instalado com sucesso e movido para "Instalados"!`, 'success');
+
+    } catch (error) {
+        console.error('Erro ao marcar como instalado:', error);
+        showNotification(`Erro ao marcar como instalado: ${error.message}`, 'danger');
+    }
+}
+
 // Exportar para uso global
 window.showModule = showModule;
 window.openLeadModal = openLeadModal;
@@ -2943,5 +3065,6 @@ window.deletarDocumento = deletarDocumento;
 window.enviarPropostaPorEmail = enviarPropostaPorEmail;
 window.salvarStatusNegociacao = salvarStatusNegociacao;
 window.salvarAgendamentoInstalacao = salvarAgendamentoInstalacao;
+window.marcarComoInstalado = marcarComoInstalado;
 
 console.log('✅ CRM Solar carregado com sucesso!');
