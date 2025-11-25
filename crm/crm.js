@@ -2978,6 +2978,7 @@ async function marcarComoInstalado(leadId) {
             lead_id: leadId,
             numero_contrato: proposta?.numero_proposta || `CONTRATO-${Date.now()}`,
             data_instalacao: instalacao.data_agendamento_instalacao || new Date().toISOString(),
+            data_assinatura: proposta?.created_at || new Date().toISOString(), // Data da proposta ou data atual
             potencia_instalada_kwp: proposta?.potencia_total_kwp || 0,
             valor_final_negociado: proposta?.valor_final || 0,
             // Dados de ART
