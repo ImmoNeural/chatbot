@@ -140,6 +140,7 @@ async function loadOportunidades() {
             )
         `)
         .neq('etapa', 'perdido')
+        .neq('etapa', 'concluida')  // Excluir oportunidades concluídas (clientes instalados)
         .order('data_ultima_atualizacao', { ascending: false });
 
     if (error) {
@@ -3004,13 +3005,17 @@ async function marcarComoInstalado(leadId) {
 
         if (insertError) throw insertError;
 
-        // 5. Remover oportunidade do Kanban (deletar)
-        const { error: deleteOppError } = await supabase
+        // 5. NÃO deletar oportunidade - preservar para manter relacionamento com proposta
+        // Apenas marcar como concluída para remover do Kanban
+        const { error: updateOppError } = await supabase
             .from('oportunidades')
-            .delete()
+            .update({
+                etapa: 'concluida', // Marca como concluída
+                updated_at: new Date().toISOString()
+            })
             .eq('lead_id', leadId);
 
-        if (deleteOppError) throw deleteOppError;
+        if (updateOppError) console.warn('Aviso ao atualizar oportunidade:', updateOppError);
 
         // 6. Atualizar status do lead
         await supabase
