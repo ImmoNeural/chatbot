@@ -3007,15 +3007,18 @@ async function marcarComoInstalado(leadId) {
 
         // 5. NÃO deletar oportunidade - preservar para manter relacionamento com proposta
         // Apenas marcar como concluída para remover do Kanban
-        const { error: updateOppError } = await supabase
+        const { data: updateData, error: updateOppError } = await supabase
             .from('oportunidades')
             .update({
                 etapa: 'concluida', // Marca como concluída
                 updated_at: new Date().toISOString()
             })
-            .eq('lead_id', leadId);
+            .eq('lead_id', leadId)
+            .select();
 
-        if (updateOppError) console.warn('Aviso ao atualizar oportunidade:', updateOppError);
+        if (updateOppError) throw updateOppError;
+
+        console.log('✅ Oportunidade marcada como concluída:', updateData);
 
         // 6. Atualizar status do lead
         await supabase
