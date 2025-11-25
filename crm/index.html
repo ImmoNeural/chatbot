@@ -42,13 +42,15 @@
 
         .module-card {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
+            border-radius: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.03);
         }
 
         .module-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
 
         .kpi-card {
@@ -67,30 +69,41 @@
         }
 
         .kanban-column {
-            background: #f3f4f6;
-            border-radius: 8px;
+            border-radius: 12px;
             min-height: 500px;
-            padding: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .kanban-column:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
         }
 
         .kanban-card {
             background: white;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-            cursor: move;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            cursor: grab;
             border-left: 4px solid var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .kanban-card:active {
+            cursor: grabbing;
         }
 
         .kanban-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transform: translateY(-3px) scale(1.01);
+            border-left-width: 5px;
         }
 
         .kanban-card.inactive {
             border-left-color: var(--danger);
+            opacity: 0.85;
         }
 
         .timeline-item {
@@ -129,28 +142,70 @@
 
         .badge {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
+            padding: 5px 14px;
+            border-radius: 14px;
             font-size: 12px;
             font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
         }
 
-        .badge-success { background: #d1fae5; color: #065f46; }
-        .badge-warning { background: #fed7aa; color: #92400e; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
-        .badge-info { background: #dbeafe; color: #1e40af; }
-        .badge-gray { background: #f3f4f6; color: #374151; }
+        .badge:hover {
+            transform: scale(1.05);
+        }
+
+        .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-warning { background: #fed7aa; color: #92400e; border: 1px solid #fbbf24; }
+        .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .badge-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .badge-gray { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
 
         .tab-button {
             padding: 12px 24px;
             border-bottom: 3px solid transparent;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #6b7280;
+        }
+
+        .tab-button:hover {
+            color: var(--primary);
+            background: rgba(48, 144, 134, 0.05);
         }
 
         .tab-button.active {
             border-bottom-color: var(--primary);
             color: var(--primary);
+            background: rgba(48, 144, 134, 0.08);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #309086 0%, #267269 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #267269 0%, #1e5a52 100%);
         }
 
         .modal-overlay {
@@ -345,42 +400,57 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" id="kanban-board">
-                <!-- Colunas do Kanban -->
-                <div class="kanban-column" data-etapa="levantamento">
+                <!-- Colunas do Kanban com cores profissionais -->
+                <div class="kanban-column" data-etapa="levantamento" style="background: linear-gradient(135deg, #e0f2f1 0%, #f1f8f7 100%); border-top: 3px solid #26a69a;">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700">📋 Levantamento</h3>
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-clipboard-list text-teal-600"></i>
+                            <span>Levantamento</span>
+                        </h3>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="levantamento"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="simulacao">
+                <div class="kanban-column" data-etapa="simulacao" style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border-top: 3px solid #66bb6a;">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700">⚡ Simulação</h3>
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-calculator text-green-600"></i>
+                            <span>Simulação</span>
+                        </h3>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="simulacao"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="proposta">
+                <div class="kanban-column" data-etapa="proposta" style="background: linear-gradient(135deg, #e3f2fd 0%, #f1f7fc 100%); border-top: 3px solid #42a5f5;">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700">📄 Proposta</h3>
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-file-invoice-dollar text-blue-600"></i>
+                            <span>Proposta</span>
+                        </h3>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="proposta"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="negociacao">
+                <div class="kanban-column" data-etapa="negociacao" style="background: linear-gradient(135deg, #fff3e0 0%, #fef8f1 100%); border-top: 3px solid #ffa726;">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700">🤝 Negociação</h3>
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-handshake text-orange-600"></i>
+                            <span>Negociação</span>
+                        </h3>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="negociacao"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="fechamento">
+                <div class="kanban-column" data-etapa="fechamento" style="background: linear-gradient(135deg, #e8eaf6 0%, #f3f4f8 100%); border-top: 3px solid #5c6bc0;">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700">✅ Fechamento</h3>
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-indigo-600"></i>
+                            <span>Fechamento</span>
+                        </h3>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="fechamento"></div>
@@ -701,6 +771,80 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nova Tarefa -->
+    <div id="novaTarefaModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="text-white p-6 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                <h3 class="text-2xl font-bold">➕ Nova Tarefa</h3>
+                <button onclick="closeNovaTarefaModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="form-nova-tarefa" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                    <input type="text" id="nova-task-title" name="titulo" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: Agendar visita técnica" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cliente/Lead (opcional)</label>
+                    <select id="nova-task-lead" name="lead_id" class="w-full border rounded-lg px-3 py-2">
+                        <option value="">-- Sem cliente vinculado --</option>
+                    </select>
+                    <small class="text-gray-500">Vincule a tarefa a um cliente específico</small>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição/Observações</label>
+                    <textarea id="nova-task-desc" name="descricao" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Detalhes sobre a tarefa..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Vencimento *</label>
+                        <input type="date" id="nova-task-date" name="data_vencimento" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Horário</label>
+                        <input type="time" id="nova-task-time" name="horario" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade *</label>
+                        <select id="nova-task-priority" name="prioridade" class="w-full border rounded-lg px-3 py-2">
+                            <option value="baixa">🟢 Baixa</option>
+                            <option value="media" selected>🟡 Média</option>
+                            <option value="alta">🔴 Alta</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Tarefa</label>
+                        <select id="nova-task-type" name="tipo" class="w-full border rounded-lg px-3 py-2">
+                            <option value="geral">📌 Geral</option>
+                            <option value="follow-up">📞 Follow-up</option>
+                            <option value="visita">🏠 Visita Técnica</option>
+                            <option value="reuniao">👥 Reunião</option>
+                            <option value="documentacao">📄 Documentação</option>
+                            <option value="instalacao">🔧 Instalação</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end pt-4 border-t">
+                    <button type="button" onclick="closeNovaTarefaModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2 text-white rounded-lg hover:opacity-90" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                        <i class="fas fa-plus mr-2"></i>Criar Tarefa
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

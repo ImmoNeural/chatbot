@@ -493,6 +493,40 @@ function initializeKanban() {
 
 async function atualizarEtapaOportunidade(id, novaEtapa) {
     try {
+        // Buscar oportunidade atual
+        const oportunidade = oportunidades.find(o => o.id === id);
+        if (!oportunidade) {
+            throw new Error('Oportunidade não encontrada');
+        }
+
+        const etapaAtual = oportunidade.etapa;
+
+        // Definir ordem das etapas
+        const etapas = ['levantamento', 'simulacao', 'proposta', 'negociacao', 'fechamento'];
+        const indexAtual = etapas.indexOf(etapaAtual);
+        const indexNova = etapas.indexOf(novaEtapa);
+
+        // Validar se está movendo apenas para próxima ou anterior
+        const diferencaEtapas = Math.abs(indexNova - indexAtual);
+        if (diferencaEtapas > 1) {
+            showNotification('❌ Você só pode mover para a etapa anterior ou próxima!', 'danger');
+            await loadOportunidades();
+            renderKanban();
+            return;
+        }
+
+        // Se está movendo para frente (próxima etapa), validar completude
+        if (indexNova > indexAtual) {
+            const validacao = await validarCompletudeEtapa(oportunidade.lead_id, etapaAtual);
+            if (!validacao.completo) {
+                showNotification(`❌ Complete os requisitos antes de avançar: ${validacao.mensagem}`, 'danger');
+                await loadOportunidades();
+                renderKanban();
+                return;
+            }
+        }
+
+        // Atualizar etapa
         const { error } = await supabase
             .from('oportunidades')
             .update({
@@ -506,12 +540,117 @@ async function atualizarEtapaOportunidade(id, novaEtapa) {
             throw error;
         }
 
-        showNotification(`Oportunidade movida para ${novaEtapa}!`, 'success');
+        const nomesEtapas = {
+            'levantamento': 'Levantamento',
+            'simulacao': 'Simulação',
+            'proposta': 'Proposta',
+            'negociacao': 'Negociação',
+            'fechamento': 'Fechamento'
+        };
+
+        showNotification(`✅ Oportunidade movida para ${nomesEtapas[novaEtapa]}!`, 'success');
         await loadOportunidades();
         renderKanban();
     } catch (error) {
         console.error('Erro ao atualizar etapa:', error);
         showNotification('Erro ao mover oportunidade', 'danger');
+        await loadOportunidades();
+        renderKanban();
+    }
+}
+
+// Função para validar se a etapa está completa antes de avançar
+async function validarCompletudeEtapa(leadId, etapa) {
+    try {
+        switch (etapa) {
+            case 'levantamento':
+                // Verificar se tem documentos/fotos ou qualificação preenchida
+                const { data: qualificacao } = await supabase
+                    .from('qualificacao')
+                    .select('*')
+                    .eq('lead_id', leadId)
+                    .single();
+
+                if (!qualificacao || !qualificacao.telhado_bom_estado) {
+                    return {
+                        completo: false,
+                        mensagem: 'Preencha a qualificação técnica do lead'
+                    };
+                }
+                break;
+
+            case 'simulacao':
+                // Verificar se tem proposta gerada
+                const { data: proposta } = await supabase
+                    .from('propostas')
+                    .select('*')
+                    .eq('lead_id', leadId)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (!proposta) {
+                    return {
+                        completo: false,
+                        mensagem: 'Gere o projeto solar antes de enviar proposta'
+                    };
+                }
+                break;
+
+            case 'proposta':
+                // Verificar se tem dados de negociação
+                const { data: negociacao } = await supabase
+                    .from('negociacao')
+                    .select('*')
+                    .eq('lead_id', leadId)
+                    .single();
+
+                if (!negociacao || !negociacao.status_proposta) {
+                    return {
+                        completo: false,
+                        mensagem: 'Atualize o status da proposta na aba Negociação'
+                    };
+                }
+                break;
+
+            case 'negociacao':
+                // Verificar se proposta foi aceita
+                const { data: negociacaoStatus } = await supabase
+                    .from('negociacao')
+                    .select('status_proposta')
+                    .eq('lead_id', leadId)
+                    .single();
+
+                if (!negociacaoStatus || negociacaoStatus.status_proposta !== 'aceita') {
+                    return {
+                        completo: false,
+                        mensagem: 'A proposta precisa estar aceita para ir ao fechamento'
+                    };
+                }
+                break;
+
+            case 'fechamento':
+                // Verificar se tem ART, homologação e data preenchidos
+                const { data: instalacao } = await supabase
+                    .from('instalacao')
+                    .select('*')
+                    .eq('lead_id', leadId)
+                    .single();
+
+                if (!instalacao || !instalacao.numero_art || !instalacao.protocolo_homologacao || !instalacao.data_agendamento_instalacao) {
+                    return {
+                        completo: false,
+                        mensagem: 'Preencha ART, Homologação e Data de Instalação'
+                    };
+                }
+                break;
+        }
+
+        return { completo: true };
+    } catch (error) {
+        console.error('Erro ao validar completude:', error);
+        // Em caso de erro, permitir movimentação
+        return { completo: true };
     }
 }
 
@@ -1430,21 +1569,65 @@ async function deletarTarefa(tarefaId) {
 }
 
 async function novaTarefa() {
-    const titulo = prompt('Título da tarefa:');
-    if (!titulo) return;
+    // Abrir modal
+    document.getElementById('novaTarefaModal').classList.remove('hidden');
 
-    const descricao = prompt('Descrição (opcional):');
-    const dataVencimento = prompt('Data de vencimento (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-    const prioridade = prompt('Prioridade (baixa/media/alta):', 'media');
+    // Preencher select de leads
+    const selectLead = document.getElementById('nova-task-lead');
+    selectLead.innerHTML = '<option value="">-- Sem cliente vinculado --</option>';
+
+    leads.forEach(lead => {
+        const option = document.createElement('option');
+        option.value = lead.id;
+        option.textContent = `${lead.nome || lead.email} ${lead.tipo_cliente === 'empresarial' ? '🏢' : '🏠'}`;
+        selectLead.appendChild(option);
+    });
+
+    // Definir data mínima como hoje
+    const dataInput = document.getElementById('nova-task-date');
+    dataInput.value = new Date().toISOString().split('T')[0];
+    dataInput.min = new Date().toISOString().split('T')[0];
+
+    // Setup do form submit
+    const form = document.getElementById('form-nova-tarefa');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        await salvarNovaTarefa();
+    };
+}
+
+function closeNovaTarefaModal() {
+    document.getElementById('novaTarefaModal').classList.add('hidden');
+    document.getElementById('form-nova-tarefa').reset();
+}
+
+async function salvarNovaTarefa() {
+    const form = document.getElementById('form-nova-tarefa');
+    const formData = new FormData(form);
+
+    const titulo = formData.get('titulo');
+    const leadId = formData.get('lead_id') || null;
+    const descricao = formData.get('descricao') || null;
+    const dataVencimento = formData.get('data_vencimento');
+    const horario = formData.get('horario');
+    const prioridade = formData.get('prioridade');
+    const tipo = formData.get('tipo');
+
+    // Combinar data e horário
+    let dataVencimentoCompleta = dataVencimento;
+    if (horario) {
+        dataVencimentoCompleta = `${dataVencimento}T${horario}:00`;
+    }
 
     try {
         const novaTarefaData = {
             titulo,
-            descricao: descricao || null,
-            data_vencimento: dataVencimento || new Date().toISOString(),
-            prioridade: prioridade || 'media',
+            descricao,
+            data_vencimento: dataVencimentoCompleta,
+            prioridade,
             status: 'pendente',
-            tipo: 'geral'
+            tipo,
+            lead_id: leadId
         };
 
         const { error } = await supabase
@@ -1453,12 +1636,23 @@ async function novaTarefa() {
 
         if (error) throw error;
 
-        showNotification('Tarefa criada com sucesso!', 'success');
+        // Se tarefa vinculada a lead, registrar na timeline
+        if (leadId) {
+            await supabase.from('interacoes').insert([{
+                lead_id: leadId,
+                tipo: 'tarefa',
+                titulo: `📋 Nova Tarefa: ${titulo}`,
+                descricao: descricao || `Tarefa agendada para ${new Date(dataVencimentoCompleta).toLocaleDateString('pt-BR')}`
+            }]);
+        }
+
+        showNotification('✅ Tarefa criada com sucesso!', 'success');
+        closeNovaTarefaModal();
         await loadTarefas();
         renderTarefas();
     } catch (error) {
         console.error('Erro ao criar tarefa:', error);
-        showNotification('Erro ao criar tarefa', 'danger');
+        showNotification('❌ Erro ao criar tarefa', 'danger');
     }
 }
 
