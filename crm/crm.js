@@ -2964,6 +2964,11 @@ async function marcarComoInstalado(leadId) {
 
         const proposta = propostas?.[0];
 
+        // Debug: Ver o que está vindo da proposta
+        console.log('🔍 Debug - Proposta encontrada:', proposta);
+        console.log('🔍 Potência:', proposta?.potencia_total_kwp);
+        console.log('🔍 Valor final:', proposta?.valor_final);
+
         // 3. Buscar dados de instalação
         const { data: instalacao, error: instError } = await supabase
             .from('instalacao')
