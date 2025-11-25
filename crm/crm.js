@@ -2980,9 +2980,6 @@ async function marcarComoInstalado(leadId) {
             data_instalacao: instalacao.data_agendamento_instalacao || new Date().toISOString(),
             potencia_instalada_kwp: proposta?.potencia_total_kwp || 0,
             valor_final_negociado: proposta?.valor_final || 0,
-            numero_art: instalacao.numero_art,
-            protocolo_homologacao: instalacao.protocolo_homologacao,
-            observacoes: instalacao.observacoes_agendamento,
             nps: null // Será preenchido depois no pós-venda
         };
 
@@ -3011,7 +3008,7 @@ async function marcarComoInstalado(leadId) {
             lead_id: leadId,
             tipo: 'sistema',
             titulo: '🎉 Cliente Instalado com Sucesso!',
-            descricao: `Sistema de ${clienteInstaladoData.potencia_instalada_kwp} kWp instalado | Valor: ${formatCurrency(clienteInstaladoData.valor_final_negociado)} | ART: ${instalacao.numero_art} | Homologação: ${instalacao.protocolo_homologacao}`
+            descricao: `Sistema de ${clienteInstaladoData.potencia_instalada_kwp} kWp instalado | Valor: ${formatCurrency(clienteInstaladoData.valor_final_negociado)} | ART: ${instalacao.numero_art || 'N/A'} | Homologação: ${instalacao.protocolo_homologacao || 'N/A'}`
         }]);
 
         // 8. Fechar modal e recarregar dados
