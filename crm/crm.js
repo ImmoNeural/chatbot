@@ -2219,8 +2219,8 @@ function configurarAbasDinamicas(etapa) {
             icon: 'fa-folder'
         },
         'simulacao': {
-            label: 'Qualificação',
-            icon: 'fa-check-circle'
+            label: 'Projeto',
+            icon: 'fa-solar-panel'
         },
         'proposta': {
             label: 'Resumo Proposta',
@@ -2423,23 +2423,56 @@ async function deletarDocumento(docId, leadId) {
 // SIMULAÇÃO: Qualificação + Botão Calcular
 // =========================================
 async function renderQualificacaoComSimulador(leadId) {
-    // Renderizar qualificação normal
-    await renderLeadQualificacao(leadId);
-
-    // Adicionar botão de calcular no topo
     const container = document.getElementById('qualificacao-content');
-    const botaoCalcular = `
-        <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-            <button onclick="abrirSimuladorSolar()"
-                    class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:from-green-700 hover:to-emerald-700 transition shadow-lg">
-                <i class="fas fa-solar-panel mr-2"></i>Calcular Sistema Solar
-            </button>
-            <p class="text-sm text-gray-600 text-center mt-2">
-                Preencha a qualificação acima e depois calcule o sistema
-            </p>
+
+    container.innerHTML = `
+        <div class="space-y-6">
+            <!-- Texto Explicativo -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-xl font-bold text-gray-800">Etapa de Simulação</h3>
+                </div>
+                <p class="text-gray-700 leading-relaxed mb-4">
+                    Agora você pode gerar o <strong>projeto completo do sistema solar fotovoltaico</strong>
+                    para este cliente. O sistema irá calcular automaticamente:
+                </p>
+                <ul class="space-y-2 text-gray-700 ml-6">
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span><strong>Dimensionamento do sistema</strong> - Número de módulos, potência total e inversor adequado</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span><strong>Memória de cálculo técnica</strong> - Geração estimada, área necessária e análise financeira</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span><strong>Proposta comercial</strong> - Documento profissional pronto para apresentar ao cliente</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Botão Calcular -->
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-8 text-center">
+                <button onclick="abrirSimuladorSolar()"
+                        class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-5 rounded-lg font-bold text-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-solar-panel mr-3"></i>Calcular Sistema Solar
+                </button>
+                <p class="text-sm text-gray-600 mt-4">
+                    O simulador abrirá em uma nova janela com todos os dados do lead já preenchidos
+                </p>
+            </div>
         </div>
     `;
-    container.innerHTML = botaoCalcular + container.innerHTML;
 }
 
 // =========================================
