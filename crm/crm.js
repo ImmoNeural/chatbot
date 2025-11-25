@@ -2973,13 +2973,22 @@ async function marcarComoInstalado(leadId) {
 
         if (instError) throw instError;
 
-        // 4. Criar registro em clientes_instalados
+        // 4. Criar registro em clientes_instalados com TODOS os dados
         const clienteInstaladoData = {
             lead_id: leadId,
             numero_contrato: proposta?.numero_proposta || `CONTRATO-${Date.now()}`,
             data_instalacao: instalacao.data_agendamento_instalacao || new Date().toISOString(),
             potencia_instalada_kwp: proposta?.potencia_total_kwp || 0,
             valor_final_negociado: proposta?.valor_final || 0,
+            // Dados de ART
+            numero_art: instalacao.numero_art,
+            data_art: instalacao.data_art,
+            // Dados de Homologação
+            protocolo_homologacao: instalacao.protocolo_homologacao,
+            data_homologacao: instalacao.data_homologacao,
+            // Observações e data de conclusão
+            observacoes: instalacao.observacoes_agendamento,
+            data_conclusao_instalacao: new Date().toISOString(), // Data atual como conclusão
             nps: null // Será preenchido depois no pós-venda
         };
 
