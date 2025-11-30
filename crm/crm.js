@@ -2460,43 +2460,47 @@ async function gerarPropostaComercial(propostaIndex) {
             const proposta = resultado.propostas[propostaIndex];
             const { configuracao, custos, economia, payback } = proposta;
 
-            console.log('📊 Dados da proposta a salvar:', {
+            const dadosProposta = {
                 oportunidade_id: oportunidade.id,
-                potencia: configuracao.potenciaRealKwp,
-                valor: custos.valorVenda
-            });
+                numero_proposta: `PROP-${Date.now()}`,
+                potencia_total_kwp: configuracao.potenciaRealKwp,
+                num_modulos: configuracao.numModulos,
+                modelo_placa: configuracao.placa.modelo,
+                fabricante_placa: configuracao.placa.fabricante,
+                potencia_placa: configuracao.placa.potencia,
+                modelo_inversor: custos.equipamentos?.inversor?.modelo || 'N/A',
+                fabricante_inversor: custos.equipamentos?.inversor?.fabricante || 'N/A',
+                valor_equipamentos: custos.custoTotal,
+                valor_final: custos.valorVenda,
+                economia_mensal: economia.economiaMensal,
+                economia_anual: economia.economiaAnual,
+                payback_anos: payback.real?.anos || payback.anos,
+                status: 'enviada'
+            };
 
-            // Salvar proposta no banco
+            console.log('📊 Dados COMPLETOS da proposta a salvar:', dadosProposta);
+            console.log('⏳ Iniciando insert no Supabase...');
+
+            // Salvar proposta no banco SEM .select() primeiro
             const { data: propostaSalva, error } = await supabase
                 .from('propostas')
-                .insert([{
-                    oportunidade_id: oportunidade.id,
-                    numero_proposta: `PROP-${Date.now()}`,
-                    potencia_total_kwp: configuracao.potenciaRealKwp,
-                    num_modulos: configuracao.numModulos,
-                    modelo_placa: configuracao.placa.modelo,
-                    fabricante_placa: configuracao.placa.fabricante,
-                    potencia_placa: configuracao.placa.potencia,
-                    modelo_inversor: custos.equipamentos?.inversor?.modelo || 'N/A',
-                    fabricante_inversor: custos.equipamentos?.inversor?.fabricante || 'N/A',
-                    valor_equipamentos: custos.custoTotal,
-                    valor_final: custos.valorVenda,
-                    economia_mensal: economia.economiaMensal,
-                    economia_anual: economia.economiaAnual,
-                    payback_anos: payback.real?.anos || payback.anos,
-                    status: 'enviada'
-                }])
-                .select();
+                .insert([dadosProposta]);
+
+            console.log('⏹️ Insert retornou:', { data: propostaSalva, error });
 
             if (error) {
                 console.error('❌ ERRO DETALHADO ao salvar proposta:', error);
                 console.error('❌ Mensagem:', error.message);
                 console.error('❌ Código:', error.code);
                 console.error('❌ Details:', error.details);
+                console.error('❌ Hint:', error.hint);
                 showNotification('Erro ao salvar proposta: ' + error.message, 'danger');
             } else {
-                console.log('✅ Proposta salva no banco:', propostaSalva);
+                console.log('✅ Proposta salva no banco com sucesso!');
                 showNotification('Proposta salva com sucesso!', 'success');
+
+                // Recarregar propostas
+                await loadPropostas();
             }
         } catch (error) {
             console.error('❌ EXCEÇÃO ao salvar proposta:', error);
