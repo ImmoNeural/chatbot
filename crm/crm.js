@@ -581,15 +581,29 @@ async function validarCompletudeEtapa(leadId, etapa) {
 
             case 'simulacao':
                 // Verificar se tem proposta gerada
+                // Primeiro buscar a oportunidade do lead
+                const { data: oportunidade } = await supabase
+                    .from('oportunidades')
+                    .select('id')
+                    .eq('lead_id', leadId)
+                    .single();
+
+                if (!oportunidade) {
+                    return {
+                        completo: false,
+                        mensagem: 'Oportunidade não encontrada'
+                    };
+                }
+
+                // Depois buscar proposta pela oportunidade
                 const { data: proposta } = await supabase
                     .from('propostas')
                     .select('*')
-                    .eq('lead_id', leadId)
+                    .eq('oportunidade_id', oportunidade.id)
                     .order('created_at', { ascending: false })
-                    .limit(1)
-                    .single();
+                    .limit(1);
 
-                if (!proposta) {
+                if (!proposta || proposta.length === 0) {
                     return {
                         completo: false,
                         mensagem: 'Gere o projeto solar antes de enviar proposta'
@@ -2659,7 +2673,10 @@ async function renderQualificacaoComSimulador(leadId) {
             <!-- Botão Calcular -->
             <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-8 text-center">
                 <button onclick="abrirSimuladorSolar()"
-                        class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-5 rounded-lg font-bold text-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        class="w-full text-white px-8 py-5 rounded-lg font-semibold text-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-102"
+                        style="background: linear-gradient(135deg, #309086 0%, #26a69a 100%);"
+                        onmouseover="this.style.background='linear-gradient(135deg, #267269 0%, #1e8a7e 100%)'"
+                        onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #26a69a 100%)'">
                     <i class="fas fa-solar-panel mr-3"></i>Calcular Sistema Solar
                 </button>
                 <p class="text-sm text-gray-600 mt-4">
@@ -2758,7 +2775,10 @@ async function renderResumoProposta(leadId) {
             <!-- Ações -->
             <div class="space-y-3">
                 <button onclick="enviarPropostaPorEmail('${proposta.id}', '${leadId}')"
-                        class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:from-green-700 hover:to-emerald-700 transition shadow-lg">
+                        class="w-full text-white px-6 py-4 rounded-lg font-semibold text-lg transition shadow-md hover:shadow-lg"
+                        style="background: linear-gradient(135deg, #42a5f5 0%, #5c6bc0 100%);"
+                        onmouseover="this.style.background='linear-gradient(135deg, #1e88e5 0%, #3f51b5 100%)'"
+                        onmouseout="this.style.background='linear-gradient(135deg, #42a5f5 0%, #5c6bc0 100%)'">
                     <i class="fas fa-envelope mr-2"></i>Enviar Proposta por Email
                 </button>
                 <p class="text-sm text-gray-500 text-center">
@@ -2898,7 +2918,10 @@ async function renderStatusNegociacao(leadId) {
                     </div>
 
                     <button onclick="salvarStatusNegociacao('${leadId}')"
-                            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition">
+                            class="w-full text-white px-6 py-3 rounded-lg font-semibold transition shadow-md hover:shadow-lg"
+                            style="background: linear-gradient(135deg, #309086 0%, #26a69a 100%);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #267269 0%, #1e8a7e 100%)'"
+                            onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #26a69a 100%)'">
                         <i class="fas fa-save mr-2"></i>Salvar Status
                     </button>
                 </div>
@@ -3052,7 +3075,10 @@ async function renderInstalacao(leadId) {
                     ` : ''}
 
                     <button onclick="salvarAgendamentoInstalacao('${leadId}')"
-                            class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:from-green-700 hover:to-emerald-700 transition shadow-lg">
+                            class="w-full text-white px-6 py-4 rounded-lg font-semibold text-lg transition shadow-md hover:shadow-lg"
+                            style="background: linear-gradient(135deg, #309086 0%, #26a69a 100%);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #267269 0%, #1e8a7e 100%)'"
+                            onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #26a69a 100%)'">
                         <i class="fas fa-calendar-check mr-2"></i>Salvar Agendamento e Enviar para Cliente
                     </button>
                 </div>
@@ -3068,8 +3094,11 @@ async function renderInstalacao(leadId) {
                         </div>
                     </div>
                     <button onclick="marcarComoInstalado('${leadId}')"
-                            class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-5 rounded-lg font-bold text-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105">
-                        <i class="fas fa-trophy mr-3"></i>Marcar como Instalado
+                            class="w-full text-white px-8 py-5 rounded-lg font-semibold text-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-102"
+                            style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #4caf50 0%, #388e3c 100%)'"
+                            onmouseout="this.style.background='linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)'">
+                        <i class="fas fa-check-circle mr-3"></i>Marcar como Instalado
                     </button>
                     <p class="text-sm text-gray-600 mt-3">
                         Isso moverá o cliente para a página "Instalados" e removerá do Kanban
