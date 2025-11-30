@@ -2436,6 +2436,56 @@ async function gerarPropostaComercial(propostaIndex) {
 
     showNotification('Gerando proposta comercial...', 'info');
 
+    // Salvar proposta no banco de dados ANTES de abrir o PDF
+    if (currentLead) {
+        try {
+            console.log('💾 Salvando proposta no banco de dados...');
+
+            // Buscar oportunidade do lead
+            const { data: oportunidade } = await supabase
+                .from('oportunidades')
+                .select('id')
+                .eq('lead_id', currentLead.id)
+                .single();
+
+            if (oportunidade) {
+                const proposta = resultado.propostas[propostaIndex];
+                const { configuracao, custos, economia, payback } = proposta;
+
+                // Salvar proposta no banco
+                const { data: propostaSalva, error } = await supabase
+                    .from('propostas')
+                    .insert([{
+                        oportunidade_id: oportunidade.id,
+                        numero_proposta: `PROP-${Date.now()}`,
+                        potencia_total_kwp: configuracao.potenciaRealKwp,
+                        num_modulos: configuracao.numModulos,
+                        modelo_placa: configuracao.placa.modelo,
+                        fabricante_placa: configuracao.placa.fabricante,
+                        potencia_placa: configuracao.placa.potencia,
+                        modelo_inversor: custos.equipamentos?.inversor?.modelo || 'N/A',
+                        fabricante_inversor: custos.equipamentos?.inversor?.fabricante || 'N/A',
+                        valor_equipamentos: custos.custoTotal,
+                        valor_final: custos.valorVenda,
+                        economia_mensal: economia.economiaMensal,
+                        economia_anual: economia.economiaAnual,
+                        payback_anos: payback.real?.anos || payback.anos,
+                        status: 'enviada'
+                    }])
+                    .select();
+
+                if (error) {
+                    console.error('❌ Erro ao salvar proposta:', error);
+                } else {
+                    console.log('✅ Proposta salva no banco:', propostaSalva);
+                    showNotification('Proposta salva com sucesso!', 'success');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro ao salvar proposta:', error);
+        }
+    }
+
     // Armazenar dados globalmente para a nova janela acessar
     window.dadosPropostaComercial = {
         resultado,
