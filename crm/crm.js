@@ -582,11 +582,13 @@ async function validarCompletudeEtapa(leadId, etapa) {
             case 'simulacao':
                 // Verificar se tem proposta gerada
                 // Primeiro buscar a oportunidade do lead
-                const { data: oportunidade } = await supabase
+                const { data: oportunidade, error: oppError } = await supabase
                     .from('oportunidades')
                     .select('id')
                     .eq('lead_id', leadId)
                     .single();
+
+                console.log('🔍 Validação Simulação - Oportunidade:', oportunidade, oppError);
 
                 if (!oportunidade) {
                     return {
@@ -596,19 +598,21 @@ async function validarCompletudeEtapa(leadId, etapa) {
                 }
 
                 // Depois buscar proposta pela oportunidade
-                const { data: proposta } = await supabase
+                const { data: propostas, error: propError } = await supabase
                     .from('propostas')
                     .select('*')
-                    .eq('oportunidade_id', oportunidade.id)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
+                    .eq('oportunidade_id', oportunidade.id);
 
-                if (!proposta || proposta.length === 0) {
+                console.log('🔍 Validação Simulação - Propostas encontradas:', propostas, propError);
+
+                if (!propostas || propostas.length === 0) {
                     return {
                         completo: false,
                         mensagem: 'Gere o projeto solar antes de enviar proposta'
                     };
                 }
+
+                console.log('✅ Validação passou - proposta encontrada!');
                 break;
 
             case 'proposta':
