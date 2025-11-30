@@ -2471,6 +2471,7 @@ async function gerarPropostaComercial(propostaIndex) {
                 modelo_inversor: custos.equipamentos?.inversor?.modelo || 'N/A',
                 fabricante_inversor: custos.equipamentos?.inversor?.fabricante || 'N/A',
                 valor_equipamentos: custos.custoTotal,
+                valor_total: custos.valorVenda,
                 valor_final: custos.valorVenda,
                 economia_mensal: economia.economiaMensal,
                 economia_anual: economia.economiaAnual,
