@@ -772,8 +772,13 @@ function renderLeadsTable() {
 // MODAL DE LEAD (Timeline)
 // =========================================
 async function openLeadModal(leadId) {
+    console.log('🔍 openLeadModal chamado:', leadId);
+
     const lead = leads.find(l => l.id === leadId);
-    if (!lead) return;
+    if (!lead) {
+        console.error('❌ Lead não encontrado');
+        return;
+    }
 
     currentLead = lead;
 
@@ -784,7 +789,7 @@ async function openLeadModal(leadId) {
         .eq('lead_id', leadId)
         .single();
 
-    currentStage = oportunidade?.etapa || null; // Sem estágio definido = qualificação normal
+    currentStage = oportunidade?.etapa || null;
 
     // Preencher informações do lead
     document.getElementById('modal-lead-name').textContent = lead.nome || lead.email;
@@ -797,6 +802,17 @@ async function openLeadModal(leadId) {
     const overlay = document.getElementById('leadModalOverlay');
     const panel = document.getElementById('leadModal');
 
+    if (!overlay || !panel) {
+        console.error('❌ Elementos não encontrados!', { overlay, panel });
+        // Fallback: tentar o método antigo
+        document.getElementById('leadModal')?.classList.remove('hidden');
+        await renderLeadInfo(lead);
+        await renderLeadTimeline(leadId);
+        await renderConteudoDinamico(leadId, currentStage);
+        return;
+    }
+
+    console.log('✅ Abrindo painel lateral');
     overlay.classList.remove('hidden');
     panel.classList.remove('hidden');
 
@@ -817,6 +833,14 @@ async function openLeadModal(leadId) {
 function closeLeadModal() {
     const overlay = document.getElementById('leadModalOverlay');
     const panel = document.getElementById('leadModal');
+
+    if (!overlay || !panel) {
+        // Fallback
+        document.getElementById('leadModal')?.classList.add('hidden');
+        currentLead = null;
+        hideAddInteractionForm();
+        return;
+    }
 
     // Animar saída
     overlay.classList.remove('opacity-100');
