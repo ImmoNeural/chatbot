@@ -2440,50 +2440,71 @@ async function gerarPropostaComercial(propostaIndex) {
     if (currentLead) {
         try {
             console.log('💾 Salvando proposta no banco de dados...');
+            console.log('📋 currentLead:', currentLead);
 
             // Buscar oportunidade do lead
-            const { data: oportunidade } = await supabase
+            const { data: oportunidade, error: oppError } = await supabase
                 .from('oportunidades')
                 .select('id')
                 .eq('lead_id', currentLead.id)
                 .single();
 
-            if (oportunidade) {
-                const proposta = resultado.propostas[propostaIndex];
-                const { configuracao, custos, economia, payback } = proposta;
+            console.log('🔍 Oportunidade encontrada:', oportunidade, oppError);
 
-                // Salvar proposta no banco
-                const { data: propostaSalva, error } = await supabase
-                    .from('propostas')
-                    .insert([{
-                        oportunidade_id: oportunidade.id,
-                        numero_proposta: `PROP-${Date.now()}`,
-                        potencia_total_kwp: configuracao.potenciaRealKwp,
-                        num_modulos: configuracao.numModulos,
-                        modelo_placa: configuracao.placa.modelo,
-                        fabricante_placa: configuracao.placa.fabricante,
-                        potencia_placa: configuracao.placa.potencia,
-                        modelo_inversor: custos.equipamentos?.inversor?.modelo || 'N/A',
-                        fabricante_inversor: custos.equipamentos?.inversor?.fabricante || 'N/A',
-                        valor_equipamentos: custos.custoTotal,
-                        valor_final: custos.valorVenda,
-                        economia_mensal: economia.economiaMensal,
-                        economia_anual: economia.economiaAnual,
-                        payback_anos: payback.real?.anos || payback.anos,
-                        status: 'enviada'
-                    }])
-                    .select();
+            if (!oportunidade) {
+                console.error('❌ Oportunidade não encontrada para o lead:', currentLead.id);
+                showNotification('Erro: Oportunidade não encontrada', 'danger');
+                return;
+            }
 
-                if (error) {
-                    console.error('❌ Erro ao salvar proposta:', error);
-                } else {
-                    console.log('✅ Proposta salva no banco:', propostaSalva);
-                    showNotification('Proposta salva com sucesso!', 'success');
-                }
+            const proposta = resultado.propostas[propostaIndex];
+            const { configuracao, custos, economia, payback } = proposta;
+
+            console.log('📊 Dados da proposta a salvar:', {
+                oportunidade_id: oportunidade.id,
+                potencia: configuracao.potenciaRealKwp,
+                valor: custos.valorVenda
+            });
+
+            // Salvar proposta no banco
+            const { data: propostaSalva, error } = await supabase
+                .from('propostas')
+                .insert([{
+                    oportunidade_id: oportunidade.id,
+                    numero_proposta: `PROP-${Date.now()}`,
+                    potencia_total_kwp: configuracao.potenciaRealKwp,
+                    num_modulos: configuracao.numModulos,
+                    modelo_placa: configuracao.placa.modelo,
+                    fabricante_placa: configuracao.placa.fabricante,
+                    potencia_placa: configuracao.placa.potencia,
+                    modelo_inversor: custos.equipamentos?.inversor?.modelo || 'N/A',
+                    fabricante_inversor: custos.equipamentos?.inversor?.fabricante || 'N/A',
+                    valor_equipamentos: custos.custoTotal,
+                    valor_final: custos.valorVenda,
+                    economia_mensal: economia.economiaMensal,
+                    economia_anual: economia.economiaAnual,
+                    payback_anos: payback.real?.anos || payback.anos,
+                    status: 'enviada'
+                }])
+                .select();
+
+            if (error) {
+                console.error('❌ ERRO DETALHADO ao salvar proposta:', error);
+                console.error('❌ Mensagem:', error.message);
+                console.error('❌ Código:', error.code);
+                console.error('❌ Details:', error.details);
+                showNotification('Erro ao salvar proposta: ' + error.message, 'danger');
+            } else {
+                console.log('✅ Proposta salva no banco:', propostaSalva);
+                showNotification('Proposta salva com sucesso!', 'success');
             }
         } catch (error) {
-            console.error('❌ Erro ao salvar proposta:', error);
+            console.error('❌ EXCEÇÃO ao salvar proposta:', error);
+            console.error('❌ Stack:', error.stack);
+            showNotification('Erro ao salvar proposta', 'danger');
         }
+    } else {
+        console.warn('⚠️ currentLead é null - não pode salvar proposta');
     }
 
     // Armazenar dados globalmente para a nova janela acessar
