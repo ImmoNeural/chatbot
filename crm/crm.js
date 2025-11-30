@@ -793,8 +793,20 @@ async function openLeadModal(leadId) {
     // Configurar abas dinâmicas baseado no estágio
     configurarAbasDinamicas(currentStage);
 
-    // Mostrar modal
-    document.getElementById('leadModal').classList.remove('hidden');
+    // Mostrar overlay e painel lateral com animação
+    const overlay = document.getElementById('leadModalOverlay');
+    const panel = document.getElementById('leadModal');
+
+    overlay.classList.remove('hidden');
+    panel.classList.remove('hidden');
+
+    // Trigger animation após um pequeno delay para garantir transição
+    setTimeout(() => {
+        overlay.classList.remove('opacity-0');
+        overlay.classList.add('opacity-100');
+        panel.classList.remove('translate-x-full');
+        panel.classList.add('translate-x-0');
+    }, 10);
 
     // Carregar abas
     await renderLeadInfo(lead);
@@ -803,7 +815,21 @@ async function openLeadModal(leadId) {
 }
 
 function closeLeadModal() {
-    document.getElementById('leadModal').classList.add('hidden');
+    const overlay = document.getElementById('leadModalOverlay');
+    const panel = document.getElementById('leadModal');
+
+    // Animar saída
+    overlay.classList.remove('opacity-100');
+    overlay.classList.add('opacity-0');
+    panel.classList.remove('translate-x-0');
+    panel.classList.add('translate-x-full');
+
+    // Esconder após animação
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+        panel.classList.add('hidden');
+    }, 300);
+
     currentLead = null;
     hideAddInteractionForm();
 }
