@@ -142,6 +142,9 @@ async function loadOportunidades() {
                 tipo_cliente,
                 consumo_mensal,
                 status
+            ),
+            clientes_instalados!left(
+                data_agendamento_instalacao
             )
         `)
         .neq('etapa', 'perdido')
@@ -797,12 +800,22 @@ function renderKanban() {
                 minute: '2-digit'
             });
 
-            // Determinar cor do badge de status
+            // Verificar se há instalação agendada
+            const instalacao = oportunidade.clientes_instalados?.[0];
+            const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
+
+            // Determinar badge/ícone de status
             let statusBadge = '';
             let statusColor = '';
             let statusText = '';
+            let statusIcon = '';
 
-            if (lead?.status === 'perdido') {
+            if (temInstalacaoAgendada) {
+                // Mostrar troféu se tiver instalação agendada
+                statusIcon = '🏆';
+                statusText = 'Instalação Agendada';
+                statusColor = 'text-yellow-600';
+            } else if (lead?.status === 'perdido') {
                 statusBadge = 'bg-red-500';
                 statusColor = 'text-red-500';
                 statusText = 'Perdido';
@@ -827,7 +840,11 @@ function renderKanban() {
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
-                            ${statusBadge ? `
+                            ${statusIcon ? `
+                                <div class="flex items-center gap-1" title="${statusText}">
+                                    <span class="text-lg">${statusIcon}</span>
+                                </div>
+                            ` : statusBadge ? `
                                 <div class="flex items-center gap-1.5" title="${statusText}">
                                     <div class="w-2 h-2 rounded-full ${statusBadge}"></div>
                                     <span class="text-xs font-medium ${statusColor}">${statusText.charAt(0)}</span>
@@ -2561,12 +2578,22 @@ function renderKanbanFiltered() {
                 minute: '2-digit'
             });
 
-            // Determinar cor do badge de status
+            // Verificar se há instalação agendada
+            const instalacao = oportunidade.clientes_instalados?.[0];
+            const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
+
+            // Determinar badge/ícone de status
             let statusBadge = '';
             let statusColor = '';
             let statusText = '';
+            let statusIcon = '';
 
-            if (lead?.status === 'perdido') {
+            if (temInstalacaoAgendada) {
+                // Mostrar troféu se tiver instalação agendada
+                statusIcon = '🏆';
+                statusText = 'Instalação Agendada';
+                statusColor = 'text-yellow-600';
+            } else if (lead?.status === 'perdido') {
                 statusBadge = 'bg-red-500';
                 statusColor = 'text-red-500';
                 statusText = 'Perdido';
@@ -2591,7 +2618,11 @@ function renderKanbanFiltered() {
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
-                            ${statusBadge ? `
+                            ${statusIcon ? `
+                                <div class="flex items-center gap-1" title="${statusText}">
+                                    <span class="text-lg">${statusIcon}</span>
+                                </div>
+                            ` : statusBadge ? `
                                 <div class="flex items-center gap-1.5" title="${statusText}">
                                     <div class="w-2 h-2 rounded-full ${statusBadge}"></div>
                                     <span class="text-xs font-medium ${statusColor}">${statusText.charAt(0)}</span>
