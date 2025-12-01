@@ -142,9 +142,6 @@ async function loadOportunidades() {
                 tipo_cliente,
                 consumo_mensal,
                 status
-            ),
-            clientes_instalados!oportunidade_id(
-                data_agendamento_instalacao
             )
         `)
         .neq('etapa', 'perdido')
@@ -800,8 +797,8 @@ function renderKanban() {
                 minute: '2-digit'
             });
 
-            // Verificar se há instalação agendada
-            const instalacao = oportunidade.clientes_instalados?.[0];
+            // Verificar se há instalação agendada (buscar no array instalados)
+            const instalacao = instalados.find(inst => inst.oportunidade_id === oportunidade.id);
             const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
 
             // Determinar badge/ícone de status
@@ -2578,8 +2575,8 @@ function renderKanbanFiltered() {
                 minute: '2-digit'
             });
 
-            // Verificar se há instalação agendada
-            const instalacao = oportunidade.clientes_instalados?.[0];
+            // Verificar se há instalação agendada (buscar no array instalados)
+            const instalacao = instalados.find(inst => inst.oportunidade_id === oportunidade.id);
             const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
 
             // Determinar badge/ícone de status
