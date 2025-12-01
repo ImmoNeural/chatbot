@@ -796,6 +796,25 @@ function renderKanban() {
                 minute: '2-digit'
             });
 
+            // Determinar cor do badge de status
+            let statusBadge = '';
+            let statusColor = '';
+            let statusText = '';
+
+            if (lead?.status === 'perdido') {
+                statusBadge = 'bg-red-500';
+                statusColor = 'text-red-500';
+                statusText = 'Perdido';
+            } else if (lead?.status === 'qualificado') {
+                statusBadge = 'bg-green-500';
+                statusColor = 'text-green-500';
+                statusText = 'Qualificado';
+            } else if (lead?.status === 'em_nutricao') {
+                statusBadge = 'bg-orange-500';
+                statusColor = 'text-orange-500';
+                statusText = 'Em Nutrição';
+            }
+
             return `
                 <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
                     <!-- Cabeçalho com nome e estrela de favorito -->
@@ -806,9 +825,17 @@ function renderKanban() {
                                 <i class="fas fa-clock"></i> ${dataFormatada} ${horaFormatada}
                             </p>
                         </div>
-                        <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
-                            <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            ${statusBadge ? `
+                                <div class="flex items-center gap-1.5" title="${statusText}">
+                                    <div class="w-2 h-2 rounded-full ${statusBadge}"></div>
+                                    <span class="text-xs font-medium ${statusColor}">${statusText.charAt(0)}</span>
+                                </div>
+                            ` : ''}
+                            <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
+                                <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Valor e consumo -->
@@ -2533,6 +2560,25 @@ function renderKanbanFiltered() {
                 minute: '2-digit'
             });
 
+            // Determinar cor do badge de status
+            let statusBadge = '';
+            let statusColor = '';
+            let statusText = '';
+
+            if (lead?.status === 'perdido') {
+                statusBadge = 'bg-red-500';
+                statusColor = 'text-red-500';
+                statusText = 'Perdido';
+            } else if (lead?.status === 'qualificado') {
+                statusBadge = 'bg-green-500';
+                statusColor = 'text-green-500';
+                statusText = 'Qualificado';
+            } else if (lead?.status === 'em_nutricao') {
+                statusBadge = 'bg-orange-500';
+                statusColor = 'text-orange-500';
+                statusText = 'Em Nutrição';
+            }
+
             return `
                 <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
                     <!-- Cabeçalho com nome e estrela de favorito -->
@@ -2543,9 +2589,17 @@ function renderKanbanFiltered() {
                                 <i class="fas fa-clock"></i> ${dataFormatada} ${horaFormatada}
                             </p>
                         </div>
-                        <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
-                            <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            ${statusBadge ? `
+                                <div class="flex items-center gap-1.5" title="${statusText}">
+                                    <div class="w-2 h-2 rounded-full ${statusBadge}"></div>
+                                    <span class="text-xs font-medium ${statusColor}">${statusText.charAt(0)}</span>
+                                </div>
+                            ` : ''}
+                            <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
+                                <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Valor e consumo -->
