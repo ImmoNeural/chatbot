@@ -12,8 +12,8 @@ DROP FUNCTION IF EXISTS detectar_leads_para_nutricao();
 CREATE OR REPLACE FUNCTION detectar_leads_para_nutricao()
 RETURNS TABLE(
     lead_id UUID,
-    lead_nome TEXT,
-    lead_email TEXT,
+    lead_nome VARCHAR(150),
+    lead_email VARCHAR(255),
     dias_sem_interacao INTEGER,
     tem_motivo_espera BOOLEAN,
     motivo TEXT
@@ -55,8 +55,8 @@ DROP FUNCTION IF EXISTS detectar_leads_perdidos();
 CREATE OR REPLACE FUNCTION detectar_leads_perdidos()
 RETURNS TABLE(
     lead_id UUID,
-    lead_nome TEXT,
-    lead_email TEXT,
+    lead_nome VARCHAR(150),
+    lead_email VARCHAR(255),
     dias_sem_resposta INTEGER,
     tentativas INTEGER
 ) AS $$
