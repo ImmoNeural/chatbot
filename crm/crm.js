@@ -140,7 +140,8 @@ async function loadOportunidades() {
                 nome,
                 email,
                 tipo_cliente,
-                consumo_mensal
+                consumo_mensal,
+                status
             )
         `)
         .neq('etapa', 'perdido')
