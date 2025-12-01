@@ -1,0 +1,23 @@
+[project]
+# Substituir com o ID do seu projeto Supabase
+# Encontre em: https://supabase.com/dashboard/project/_/settings/general
+project_id = "SEU_PROJECT_ID"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[functions.automacao-leads]
+verify_jwt = false
