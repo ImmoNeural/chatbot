@@ -143,7 +143,7 @@ async function loadOportunidades() {
                 consumo_mensal,
                 status
             ),
-            clientes_instalados!left(
+            clientes_instalados!oportunidade_id(
                 data_agendamento_instalacao
             )
         `)
