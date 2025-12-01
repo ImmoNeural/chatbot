@@ -1078,18 +1078,33 @@ async function salvarNovaInteracao() {
 
         // Se marcado como tentativa sem resposta, incrementar contador
         if (semResposta) {
-            const { error: leadError } = await supabase
+            // Buscar valor atual do banco primeiro
+            const { data: leadAtual, error: fetchError } = await supabase
                 .from('leads')
-                .update({
-                    tentativas_contato: (currentLead.tentativas_contato || 0) + 1,
-                    data_ultima_tentativa: new Date().toISOString()
-                })
-                .eq('id', currentLead.id);
+                .select('tentativas_contato')
+                .eq('id', currentLead.id)
+                .single();
 
-            if (leadError) {
-                console.error('Erro ao atualizar tentativas:', leadError);
+            if (fetchError) {
+                console.error('Erro ao buscar lead:', fetchError);
             } else {
-                console.log('✅ Contador de tentativas incrementado:', (currentLead.tentativas_contato || 0) + 1);
+                const novoValor = (leadAtual.tentativas_contato || 0) + 1;
+
+                const { error: leadError } = await supabase
+                    .from('leads')
+                    .update({
+                        tentativas_contato: novoValor,
+                        data_ultima_tentativa: new Date().toISOString()
+                    })
+                    .eq('id', currentLead.id);
+
+                if (leadError) {
+                    console.error('Erro ao atualizar tentativas:', leadError);
+                } else {
+                    console.log('✅ Contador de tentativas incrementado:', novoValor);
+                    // Atualizar valor local também
+                    currentLead.tentativas_contato = novoValor;
+                }
             }
         }
 
