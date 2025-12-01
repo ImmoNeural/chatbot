@@ -19,6 +19,7 @@ let instalados = [];
 let tarefas = [];
 let kpis = {};
 let interacoesStats = {}; // Estatísticas de interações por lead_id
+let notificacoes = []; // Notificações do sistema de automação
 
 // Charts
 let funnelChart = null;
@@ -73,7 +74,8 @@ async function loadAllData() {
             loadInstalados(),
             loadTarefas(),
             loadKPIs(),
-            loadInteracoesStats()
+            loadInteracoesStats(),
+            loadNotificacoes()
         ]);
 
         // Renderizar módulo atual
@@ -1045,6 +1047,7 @@ function hideAddInteractionForm() {
     document.getElementById('new-interaction-type').value = 'chamada';
     document.getElementById('new-interaction-title').value = '';
     document.getElementById('new-interaction-desc').value = '';
+    document.getElementById('new-interaction-sem-resposta').checked = false;
 }
 
 async function salvarNovaInteracao() {
@@ -1053,6 +1056,7 @@ async function salvarNovaInteracao() {
     const tipo = document.getElementById('new-interaction-type').value;
     const titulo = document.getElementById('new-interaction-title').value.trim();
     const descricao = document.getElementById('new-interaction-desc').value.trim();
+    const semResposta = document.getElementById('new-interaction-sem-resposta').checked;
 
     if (!titulo) {
         showNotification('Por favor, preencha o título', 'warning');
@@ -1060,6 +1064,7 @@ async function salvarNovaInteracao() {
     }
 
     try {
+        // Salvar interação
         const { error } = await supabase
             .from('interacoes')
             .insert([{
@@ -1071,9 +1076,27 @@ async function salvarNovaInteracao() {
 
         if (error) throw error;
 
+        // Se marcado como tentativa sem resposta, incrementar contador
+        if (semResposta) {
+            const { error: leadError } = await supabase
+                .from('leads')
+                .update({
+                    tentativas_contato: (currentLead.tentativas_contato || 0) + 1,
+                    data_ultima_tentativa: new Date().toISOString()
+                })
+                .eq('id', currentLead.id);
+
+            if (leadError) {
+                console.error('Erro ao atualizar tentativas:', leadError);
+            } else {
+                console.log('✅ Contador de tentativas incrementado:', (currentLead.tentativas_contato || 0) + 1);
+            }
+        }
+
         showNotification('Interação adicionada com sucesso!', 'success');
         hideAddInteractionForm();
         await renderLeadTimeline(currentLead.id);
+        await loadLeads(); // Recarregar para atualizar contador
     } catch (error) {
         console.error('Erro ao salvar interação:', error);
         showNotification('Erro ao salvar interação', 'danger');
@@ -1170,6 +1193,21 @@ function renderLeadInfoEdit(lead) {
                 <option value="perdido" ${lead.status === 'perdido' ? 'selected' : ''}>Perdido</option>
             </select>
         </div>
+        <div class="col-span-2">
+            <label class="text-sm text-gray-600">Motivo de Espera <span class="text-xs text-gray-400">(Para nutrição automática)</span></label>
+            <textarea id="edit-motivo-espera" class="w-full border rounded px-3 py-2 mt-1 text-sm" rows="2" placeholder="Ex: Vai construir a casa em 6 meses, aguardando aprovação de financiamento, etc.">${lead.motivo_espera || ''}</textarea>
+            <p class="text-xs text-gray-500 mt-1">💡 Se preenchido + sem interação 7-14 dias → move para "Em Nutrição" automaticamente</p>
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Data Prevista de Retorno</label>
+            <input type="date" id="edit-data-retorno" value="${lead.data_prevista_retorno || ''}" class="w-full border rounded px-3 py-2 mt-1">
+            <p class="text-xs text-gray-500 mt-1">Quando retomar o contato</p>
+        </div>
+        <div>
+            <label class="text-sm text-gray-600">Tentativas de Contato</label>
+            <input type="number" id="edit-tentativas" value="${lead.tentativas_contato || 0}" class="w-full border rounded px-3 py-2 mt-1" readonly>
+            <p class="text-xs text-gray-500 mt-1">3+ tentativas + 30 dias → marca como "Perdido"</p>
+        </div>
     `;
 }
 
@@ -1181,7 +1219,9 @@ async function saveLead() {
             phone: document.getElementById('edit-phone').value,
             tipo_cliente: document.getElementById('edit-tipo').value,
             consumo_mensal: parseFloat(document.getElementById('edit-consumo').value),
-            status: document.getElementById('edit-status').value
+            status: document.getElementById('edit-status').value,
+            motivo_espera: document.getElementById('edit-motivo-espera').value,
+            data_prevista_retorno: document.getElementById('edit-data-retorno').value || null
         };
 
         const { error } = await supabase
@@ -2203,6 +2243,213 @@ function exportLeads() {
 function logout() {
     // Implementar logout
     window.location.href = '/';
+}
+
+// =========================================
+// SISTEMA DE NOTIFICAÇÕES
+// =========================================
+
+async function loadNotificacoes() {
+    try {
+        const { data, error } = await supabase
+            .from('notificacoes')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        notificacoes = data || [];
+        console.log(`🔔 ${notificacoes.length} notificações carregadas`);
+
+        // Atualizar badge
+        updateNotificacoesBadge();
+    } catch (error) {
+        console.error('Erro ao carregar notificações:', error);
+    }
+}
+
+function updateNotificacoesBadge() {
+    const badge = document.getElementById('notificacoes-badge');
+    const naoLidas = notificacoes.filter(n => !n.lida).length;
+
+    if (naoLidas > 0) {
+        badge.textContent = naoLidas > 99 ? '99+' : naoLidas;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function toggleNotificacoes() {
+    const dropdown = document.getElementById('notificacoes-dropdown');
+    const isHidden = dropdown.classList.contains('hidden');
+
+    if (isHidden) {
+        renderNotificacoes();
+        dropdown.classList.remove('hidden');
+    } else {
+        dropdown.classList.add('hidden');
+    }
+}
+
+function renderNotificacoes() {
+    const container = document.getElementById('notificacoes-container');
+
+    if (notificacoes.length === 0) {
+        container.innerHTML = `
+            <div class="p-8 text-center text-gray-500">
+                <i class="fas fa-bell-slash text-4xl mb-2"></i>
+                <p>Nenhuma notificação</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = notificacoes.map(notif => {
+        const icone = {
+            'auto_nutricao': 'fa-seedling text-yellow-500',
+            'auto_perdido': 'fa-times-circle text-red-500',
+            'alerta_inatividade': 'fa-clock text-orange-500',
+            'retomar_contato': 'fa-phone text-blue-500'
+        }[notif.tipo] || 'fa-bell text-gray-500';
+
+        return `
+            <div class="p-4 hover:bg-gray-50 transition ${!notif.lida ? 'bg-blue-50' : ''}" onclick="marcarComoLida('${notif.id}')">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <i class="fas ${icone}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-2">
+                            <h4 class="font-semibold text-sm text-gray-900">${notif.titulo}</h4>
+                            ${!notif.lida ? '<span class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${notif.mensagem}</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-xs text-gray-500">
+                                <i class="fas fa-clock"></i>
+                                ${formatarDataRelativa(notif.created_at)}
+                            </span>
+                            ${notif.acao_sugerida === 'reverter' ? `
+                                <button onclick="event.stopPropagation(); abrirReversao('${notif.id}')" class="text-xs text-teal-600 hover:text-teal-700 font-semibold">
+                                    <i class="fas fa-undo"></i> Reverter
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function formatarDataRelativa(dataString) {
+    const data = new Date(dataString);
+    const agora = new Date();
+    const diffMs = agora - data;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHoras = Math.floor(diffMs / 3600000);
+    const diffDias = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Agora';
+    if (diffMins < 60) return `${diffMins} min atrás`;
+    if (diffHoras < 24) return `${diffHoras}h atrás`;
+    if (diffDias < 7) return `${diffDias}d atrás`;
+
+    return data.toLocaleDateString('pt-BR');
+}
+
+async function marcarComoLida(notifId) {
+    try {
+        const { error } = await supabase
+            .from('notificacoes')
+            .update({ lida: true })
+            .eq('id', notifId);
+
+        if (error) throw error;
+
+        // Atualizar localmente
+        const notif = notificacoes.find(n => n.id === notifId);
+        if (notif) notif.lida = true;
+
+        updateNotificacoesBadge();
+        renderNotificacoes();
+    } catch (error) {
+        console.error('Erro ao marcar como lida:', error);
+    }
+}
+
+async function marcarTodasLidas() {
+    try {
+        const naoLidas = notificacoes.filter(n => !n.lida).map(n => n.id);
+
+        if (naoLidas.length === 0) return;
+
+        const { error } = await supabase
+            .from('notificacoes')
+            .update({ lida: true })
+            .in('id', naoLidas);
+
+        if (error) throw error;
+
+        // Atualizar localmente
+        notificacoes.forEach(n => n.lida = true);
+
+        updateNotificacoesBadge();
+        renderNotificacoes();
+        showNotification('Todas as notificações foram marcadas como lidas', 'success');
+    } catch (error) {
+        console.error('Erro ao marcar todas como lidas:', error);
+        showNotification('Erro ao marcar notificações', 'danger');
+    }
+}
+
+async function abrirReversao(notifId) {
+    const notif = notificacoes.find(n => n.id === notifId);
+    if (!notif) return;
+
+    const confirmar = confirm(`Deseja reverter esta ação automática?\n\n${notif.mensagem}`);
+    if (!confirmar) return;
+
+    try {
+        // Buscar o histórico relacionado a esta notificação
+        const { data: historico, error: histError } = await supabase
+            .from('historico_mudancas_automaticas')
+            .select('*')
+            .eq('lead_id', notif.lead_id)
+            .eq('revertido', false)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (histError || !historico) {
+            showNotification('Histórico não encontrado', 'warning');
+            return;
+        }
+
+        // Chamar função SQL para reverter
+        const { data, error } = await supabase.rpc('reverter_mudanca_automatica', {
+            p_historico_id: historico.id,
+            p_user_id: null // TODO: pegar user_id do usuário logado
+        });
+
+        if (error) throw error;
+
+        showNotification('Ação revertida com sucesso!', 'success');
+
+        // Marcar notificação como respondida
+        await supabase
+            .from('notificacoes')
+            .update({ respondida: true })
+            .eq('id', notifId);
+
+        // Recarregar dados
+        await loadAllData();
+    } catch (error) {
+        console.error('Erro ao reverter:', error);
+        showNotification('Erro ao reverter ação: ' + error.message, 'danger');
+    }
 }
 
 // =========================================
