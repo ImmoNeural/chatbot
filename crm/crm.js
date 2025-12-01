@@ -18,6 +18,7 @@ let propostas = [];
 let instalados = [];
 let tarefas = [];
 let kpis = {};
+let interacoesStats = {}; // Estatísticas de interações por lead_id
 
 // Charts
 let funnelChart = null;
@@ -71,7 +72,8 @@ async function loadAllData() {
             loadPropostas(),
             loadInstalados(),
             loadTarefas(),
-            loadKPIs()
+            loadKPIs(),
+            loadInteracoesStats()
         ]);
 
         // Renderizar módulo atual
@@ -190,6 +192,85 @@ async function loadInstalados() {
 
     instalados = data || [];
     console.log(`✅ ${instalados.length} clientes instalados`);
+}
+
+async function loadInteracoesStats() {
+    // Carregar todas as interações
+    const { data: interacoes, error: intError } = await supabase
+        .from('interacoes')
+        .select('lead_id, tipo');
+
+    if (intError) {
+        console.error('Erro ao carregar interações:', intError);
+        return;
+    }
+
+    // Carregar todas as propostas
+    const { data: props, error: propError } = await supabase
+        .from('propostas')
+        .select('oportunidade_id, oportunidades!inner(lead_id)');
+
+    if (propError) {
+        console.error('Erro ao carregar propostas para stats:', propError);
+    }
+
+    // Carregar instalações
+    const { data: installs, error: instError } = await supabase
+        .from('clientes_instalados')
+        .select('lead_id');
+
+    if (instError) {
+        console.error('Erro ao carregar instalações para stats:', instError);
+    }
+
+    // Processar estatísticas por lead_id
+    interacoesStats = {};
+
+    // Contar interações por tipo
+    (interacoes || []).forEach(int => {
+        if (!interacoesStats[int.lead_id]) {
+            interacoesStats[int.lead_id] = {
+                emails: 0,
+                chamadas: 0,
+                propostas: 0,
+                instalacoes: 0
+            };
+        }
+
+        if (int.tipo === 'email') interacoesStats[int.lead_id].emails++;
+        else if (int.tipo === 'chamada') interacoesStats[int.lead_id].chamadas++;
+    });
+
+    // Contar propostas
+    (props || []).forEach(prop => {
+        const leadId = prop.oportunidades?.lead_id;
+        if (leadId) {
+            if (!interacoesStats[leadId]) {
+                interacoesStats[leadId] = {
+                    emails: 0,
+                    chamadas: 0,
+                    propostas: 0,
+                    instalacoes: 0
+                };
+            }
+            interacoesStats[leadId].propostas++;
+        }
+    });
+
+    // Contar instalações
+    (installs || []).forEach(inst => {
+        if (!interacoesStats[inst.lead_id]) {
+            interacoesStats[inst.lead_id] = {
+                emails: 0,
+                chamadas: 0,
+                propostas: 0,
+                instalacoes: 0
+            };
+        }
+        interacoesStats[inst.lead_id].instalacoes++;
+    });
+
+    console.log(`📊 Estatísticas de interações carregadas para ${Object.keys(interacoesStats).length} leads`);
 }
 
 async function loadTarefas() {
@@ -693,22 +774,82 @@ function renderKanban() {
             const diasInativo = calcularDiasInativo(oportunidade.data_ultima_atualizacao);
             const isInactive = diasInativo > 14;
 
+            // Pegar estatísticas de interações
+            const stats = interacoesStats[oportunidade.lead_id] || {
+                emails: 0,
+                chamadas: 0,
+                propostas: 0,
+                instalacoes: 0
+            };
+
+            // Formatar data da última atualização
+            const dataAtualizacao = new Date(oportunidade.data_ultima_atualizacao || oportunidade.created_at);
+            const dataFormatada = dataAtualizacao.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const horaFormatada = dataAtualizacao.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
             return `
                 <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
+                    <!-- Cabeçalho com nome e estrela de favorito -->
                     <div class="flex items-start justify-between mb-2">
-                        <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
-                        ${isInactive ? '<span class="text-red-500 text-xs"><i class="fas fa-exclamation-circle"></i></span>' : ''}
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                <i class="fas fa-clock"></i> ${dataFormatada} ${horaFormatada}
+                            </p>
+                        </div>
+                        <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
+                            <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
+                        </button>
                     </div>
-                    <p class="text-xs text-gray-600 mb-2">
-                        <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh/mês
-                    </p>
-                    <div class="flex items-center justify-between">
+
+                    <!-- Valor e consumo -->
+                    <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-bold text-green-600">${formatCurrency(oportunidade.valor_estimado)}</span>
+                        <span class="text-xs text-gray-600">
+                            <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh
+                        </span>
+                    </div>
+
+                    <!-- Ícones de estatísticas -->
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                        <!-- Email -->
+                        <div class="flex items-center gap-1" title="${stats.emails} email(s) enviado(s)">
+                            <i class="fas fa-envelope text-xs ${stats.emails > 0 ? 'text-blue-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.emails > 0 ? 'text-blue-600 font-semibold' : 'text-gray-400'}">${stats.emails}</span>
+                        </div>
+
+                        <!-- Chamadas -->
+                        <div class="flex items-center gap-1" title="${stats.chamadas} ligaç(ões) realizada(s)">
+                            <i class="fas fa-phone text-xs ${stats.chamadas > 0 ? 'text-purple-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.chamadas > 0 ? 'text-purple-600 font-semibold' : 'text-gray-400'}">${stats.chamadas}</span>
+                        </div>
+
+                        <!-- Propostas -->
+                        <div class="flex items-center gap-1" title="${stats.propostas} proposta(s) criada(s)">
+                            <i class="fas fa-file-invoice-dollar text-xs ${stats.propostas > 0 ? 'text-green-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.propostas > 0 ? 'text-green-600 font-semibold' : 'text-gray-400'}">${stats.propostas}</span>
+                        </div>
+
+                        <!-- Instalações -->
+                        <div class="flex items-center gap-1" title="${stats.instalacoes} instalação(ões) concluída(s)">
+                            <i class="fas fa-solar-panel text-xs ${stats.instalacoes > 0 ? 'text-orange-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.instalacoes > 0 ? 'text-orange-600 font-semibold' : 'text-gray-400'}">${stats.instalacoes}</span>
+                        </div>
+
+                        <!-- Badge tipo cliente -->
                         <span class="badge badge-${lead?.tipo_cliente === 'empresarial' ? 'info' : 'gray'} text-xs">
                             ${lead?.tipo_cliente === 'empresarial' ? 'EMP' : 'RES'}
                         </span>
                     </div>
-                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-clock"></i> ${diasInativo} dias sem atualização</p>` : ''}
+
+                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-exclamation-triangle"></i> ${diasInativo} dias sem atualização</p>` : ''}
                 </div>
             `;
         }).join('') || '<p class="text-gray-400 text-sm text-center py-4">Nenhuma oportunidade</p>';
@@ -720,6 +861,36 @@ function calcularDiasInativo(dataUltimaAtualizacao) {
     const ultima = new Date(dataUltimaAtualizacao);
     const diff = agora - ultima;
     return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+async function toggleFavorito(oportunidadeId) {
+    const oportunidade = oportunidades.find(o => o.id === oportunidadeId);
+    if (!oportunidade) return;
+
+    const novoEstado = !oportunidade.favorito;
+
+    // Atualizar no banco
+    const { error } = await supabase
+        .from('oportunidades')
+        .update({ favorito: novoEstado })
+        .eq('id', oportunidadeId);
+
+    if (error) {
+        console.error('Erro ao atualizar favorito:', error);
+        showNotification('Erro ao favoritar', 'danger');
+        return;
+    }
+
+    // Atualizar localmente
+    oportunidade.favorito = novoEstado;
+
+    // Re-renderizar apenas o card específico (ou todo o Kanban)
+    renderKanban();
+
+    showNotification(
+        novoEstado ? '⭐ Adicionado aos favoritos' : 'Removido dos favoritos',
+        novoEstado ? 'success' : 'info'
+    );
 }
 
 // =========================================
@@ -2080,22 +2251,82 @@ function renderKanbanFiltered() {
             const diasInativo = calcularDiasInativo(oportunidade.data_ultima_atualizacao);
             const isInactive = diasInativo > 14;
 
+            // Pegar estatísticas de interações
+            const stats = interacoesStats[oportunidade.lead_id] || {
+                emails: 0,
+                chamadas: 0,
+                propostas: 0,
+                instalacoes: 0
+            };
+
+            // Formatar data da última atualização
+            const dataAtualizacao = new Date(oportunidade.data_ultima_atualizacao || oportunidade.created_at);
+            const dataFormatada = dataAtualizacao.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const horaFormatada = dataAtualizacao.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
             return `
                 <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
+                    <!-- Cabeçalho com nome e estrela de favorito -->
                     <div class="flex items-start justify-between mb-2">
-                        <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
-                        ${isInactive ? '<span class="text-red-500 text-xs"><i class="fas fa-exclamation-circle"></i></span>' : ''}
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                <i class="fas fa-clock"></i> ${dataFormatada} ${horaFormatada}
+                            </p>
+                        </div>
+                        <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
+                            <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
+                        </button>
                     </div>
-                    <p class="text-xs text-gray-600 mb-2">
-                        <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh/mês
-                    </p>
-                    <div class="flex items-center justify-between">
+
+                    <!-- Valor e consumo -->
+                    <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-bold text-green-600">${formatCurrency(oportunidade.valor_estimado)}</span>
+                        <span class="text-xs text-gray-600">
+                            <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh
+                        </span>
+                    </div>
+
+                    <!-- Ícones de estatísticas -->
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                        <!-- Email -->
+                        <div class="flex items-center gap-1" title="${stats.emails} email(s) enviado(s)">
+                            <i class="fas fa-envelope text-xs ${stats.emails > 0 ? 'text-blue-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.emails > 0 ? 'text-blue-600 font-semibold' : 'text-gray-400'}">${stats.emails}</span>
+                        </div>
+
+                        <!-- Chamadas -->
+                        <div class="flex items-center gap-1" title="${stats.chamadas} ligaç(ões) realizada(s)">
+                            <i class="fas fa-phone text-xs ${stats.chamadas > 0 ? 'text-purple-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.chamadas > 0 ? 'text-purple-600 font-semibold' : 'text-gray-400'}">${stats.chamadas}</span>
+                        </div>
+
+                        <!-- Propostas -->
+                        <div class="flex items-center gap-1" title="${stats.propostas} proposta(s) criada(s)">
+                            <i class="fas fa-file-invoice-dollar text-xs ${stats.propostas > 0 ? 'text-green-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.propostas > 0 ? 'text-green-600 font-semibold' : 'text-gray-400'}">${stats.propostas}</span>
+                        </div>
+
+                        <!-- Instalações -->
+                        <div class="flex items-center gap-1" title="${stats.instalacoes} instalação(ões) concluída(s)">
+                            <i class="fas fa-solar-panel text-xs ${stats.instalacoes > 0 ? 'text-orange-500' : 'text-gray-300'}"></i>
+                            <span class="text-xs ${stats.instalacoes > 0 ? 'text-orange-600 font-semibold' : 'text-gray-400'}">${stats.instalacoes}</span>
+                        </div>
+
+                        <!-- Badge tipo cliente -->
                         <span class="badge badge-${lead?.tipo_cliente === 'empresarial' ? 'info' : 'gray'} text-xs">
                             ${lead?.tipo_cliente === 'empresarial' ? 'EMP' : 'RES'}
                         </span>
                     </div>
-                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-clock"></i> ${diasInativo} dias sem atualização</p>` : ''}
+
+                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-exclamation-triangle"></i> ${diasInativo} dias sem atualização</p>` : ''}
                 </div>
             `;
         }).join('') || '<p class="text-gray-400 text-sm text-center py-4">Nenhuma oportunidade</p>';
