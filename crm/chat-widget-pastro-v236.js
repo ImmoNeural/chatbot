@@ -14,8 +14,8 @@
     const widgetStyles = document.createElement('style');
     widgetStyles.textContent = `
         .chat-assist-widget {
-            --chat-color-primary: var(--chat-widget-primary, #97B4BB);
-            --chat-color-secondary: var(--chat-widget-secondary, #187874);
+            --chat-color-primary: var(--chat-widget-primary, #1e3a5f);
+            --chat-color-secondary: var(--chat-widget-secondary, #0d1b2a);
             --chat-color-tertiary: var(--chat-widget-tertiary, #a1b3df);
             --chat-color-light: var(--chat-widget-light, #d4eaf9);
             --chat-color-surface: var(--chat-widget-surface, #ffffff);
@@ -514,22 +514,22 @@
         }
 
         .blue-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
             color: white !important;
         }
 
         .green-button {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
             color: white !important;
         }
 
         .orange-button {
-            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important;
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
             color: white !important;
         }
 
         .yellow-button {
-            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%) !important;
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
             color: white !important;
         }
 
