@@ -37,8 +37,8 @@
             position: fixed;
             bottom: 90px;
             z-index: 10000;
-            width: 380px;
-            height: 1030px;
+            width: 320px !important;
+            height: 520px !important;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
             box-shadow: var(--chat-shadow-lg);
@@ -204,6 +204,24 @@
             border-radius: 50%;
             flex-shrink: 0;
             margin-top: 4px;
+        }
+
+        .chat-assist-widget .bot-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .chat-assist-widget .bot-avatar svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
         }
 
         .chat-assist-widget .timestamp {
@@ -469,57 +487,50 @@
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 16px;
-            justify-content: center;
+            gap: 6px;
+            margin-top: 10px;
         }
 
         .action-button {
-            flex: 0 1 calc(50% - 5px);
-            min-width: 140px;
-            max-width: 160px;
-            padding: 14px 16px;
+            flex: 1 1 calc(50% - 3px);
+            min-width: 80px;
+            padding: 6px 8px;
             border: none;
-            border-radius: 12px;
+            border-radius: 6px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 12px rgba(77, 184, 172, 0.25);
+            font-weight: 500;
+            font-size: 11px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            background: linear-gradient(135deg, #4db8ac 0%, #3a9d92 100%);
-            color: white;
-        }
-
-        .action-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
         .action-button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 20px rgba(77, 184, 172, 0.4);
-            background: linear-gradient(135deg, #5dccc0 0%, #4ac4b8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+            filter: brightness(1.05);
         }
 
-        .action-button:hover::before {
-            opacity: 1;
+        .blue-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
         }
 
-        .action-button:active {
-            transform: translateY(-1px) scale(0.98);
+        .green-button {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            color: white !important;
+        }
+
+        .orange-button {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important;
+            color: white !important;
+        }
+
+        .yellow-button {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%) !important;
+            color: white !important;
         }
 
         .dynamic-buttons-container {
@@ -531,26 +542,27 @@
         }
 
         .dynamic-button {
-            padding: 10px 14px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #6dd5c9 0%, #5bc4b8 100%);
-            color: white;
+            padding: 7px 9px;
+            border: 1px solid var(--chat-color-light);
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            color: var(--chat-color-text);
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 400;
             font-size: 13px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(77, 184, 172, 0.2);
-            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: left;
             flex: 0 0 48%;
             box-sizing: border-box;
         }
 
         .dynamic-button:hover {
-            background: linear-gradient(135deg, #7de3d7 0%, #6bd5c9 100%);
+            background-color: var(--chat-color-primary);
+            border-color: var(--chat-color-primary);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(77, 184, 172, 0.35);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .solar-panel-image {
@@ -560,32 +572,32 @@
             box-shadow: var(--chat-shadow-md);
         }
 
-        @media (max-width: 1500px) {
+        @media (max-width: 480px) {
             .chat-assist-widget .chat-window {
-                width: 98vw !important;
-                max-width: 400px !important;
+                width: 95vw !important;
+                max-width: 260px !important;
                 padding: 0 !important;
-                height: 70vh !important;
+                height: 60vh !important;
                 bottom: 10px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
-                border-radius: 16px !important;
+                border-radius: 12px !important;
                 box-shadow: 0 10px 25px rgba(0,0,0,0.2);
                 overflow: hidden;
             }
         }
 
-        @media (max-width: 3200px) and (orientation: landscape) {
+        @media (min-width: 481px) and (orientation: landscape) {
             .chat-assist-widget .chat-window {
-                width: 65vw !important;
-                max-width: 500px !important;
-                height: 80vh !important;
+                width: 228px !important;
+                max-width: 280px !important;
+                height: 618px !important;
                 top: auto !important;
                 left: auto !important;
                 bottom: 80px !important;
                 right: 20px !important;
                 transform: none !important;
-                border-radius: 16px !important;
+                border-radius: 12px !important;
                 box-shadow: 0 5px 30px rgba(0,0,0,0.15);
             }
         }
@@ -627,7 +639,6 @@
 
     // Qualification funnel data
     let qualificationData = {
-        name: null,
         email: null,
         phone: null,
         familySize: null,
@@ -651,14 +662,11 @@
                     'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
-                    nome: data.name,
                     email: data.email,
                     phone: data.phone,
                     family_size: data.familySize,
                     kwh_consumption: data.kwhConsumption,
                     roof_type: data.roofType,
-                    origem: 'chatbot',
-                    status: 'novo',
                     created_at: new Date().toISOString()
                 })
             });
@@ -777,6 +785,15 @@
             .replace(/^- (.*)$/gm, '<li>$1</li>');
     };
 
+    // Bot avatar SVG inline
+    const botAvatarHTML = `
+        <div class="bot-avatar">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5z"/>
+            </svg>
+        </div>
+    `;
+
     // Function to add bot message
     const addBotMessage = (content, includeImage = false, imageUrl = '') => {
         const messageContainer = document.createElement('div');
@@ -788,7 +805,7 @@
         }
 
         messageContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
                     ${imageHTML}
@@ -820,25 +837,16 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
 
-    // Function to add the calendar iframe to the conversation
+    // Function to open calendar in external window
     const addCalendarToChat = () => {
-        const iframeContainer = document.createElement('div');
-        iframeContainer.className = 'message-container bot-message';
-        iframeContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
-            <div class="message-content">
-                <div class="chat-bubble bot-bubble" style="max-width: none; width: 125%;">
-                    <iframe
-                        src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
-                        frameborder="0"
-                        style="width: 100%; height: 1800px; border-radius: 8px; margin-top: 8px; border: none; transform: scale(0.80); transform-origin: top left;">
-                    </iframe>
-                </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
-            </div>
-        `;
-        messagesContainer.appendChild(iframeContainer);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // Abre o calendário em uma nova aba/janela externa
+        window.open('https://calendar.app.google/tps9rXCFtW3VUoiBA', '_blank');
+
+        // Mostra mensagem confirmando
+        addBotMessage(`
+            <p>📅 <strong>O calendário foi aberto em uma nova janela!</strong></p>
+            <p style="font-size: 12px; color: #6b7280;">Escolha o melhor horário para sua reunião com nosso especialista.</p>
+        `);
     };
 
     // Function to show the dynamic buttons for different doubt topics
@@ -846,7 +854,7 @@
         const botFollowUpContainer = document.createElement('div');
         botFollowUpContainer.className = 'message-container bot-message';
         botFollowUpContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
                     <p>Sobre qual tópico você tem dúvidas? Escolha uma opção abaixo:</p>
@@ -892,21 +900,10 @@
     // Qualification funnel functions
     const startQualificationFunnel = () => {
         qualificationStep = 1;
-        askName();
+        askEmail();
     };
 
-    // Step 1: Ask for name
-    const askName = () => {
-        setTimeout(() => {
-            addBotMessage(`
-                <div>
-                    <p>Olá! Para começar, qual é o seu nome? 😊</p>
-                </div>
-            `);
-        }, 500);
-    };
-
-    // Step 2: Ask for email
+    // Step 1: Ask for email
     const askEmail = () => {
         const emailImage = 'https://images.unsplash.com/photo-1560264280-88b68371db39?w=500';
 
@@ -1061,7 +1058,7 @@
             const messageContainer = document.createElement('div');
             messageContainer.className = 'message-container bot-message';
             messageContainer.innerHTML = `
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+                ${botAvatarHTML}
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
                         <img src="${savingsImage}" style="width: 100%; border-radius: 10px; margin-bottom: 10px;" alt="Economia">
@@ -1075,7 +1072,7 @@
                         <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
                         <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
                         <div class="action-buttons-container" style="margin-top: 15px;">
-                            <button class="action-button schedule-btn">📅 Agende aqui</button>
+                            <button class="action-button green-button schedule-btn">📅 Agende aqui</button>
                         </div>
                     </div>
                     <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -1108,15 +1105,15 @@
         const welcomeContainer = document.createElement('div');
         welcomeContainer.className = 'message-container bot-message';
         welcomeContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
                     <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
                     <div class="action-buttons-container">
-                        <button class="action-button" data-action="Qualificar">Quero economizar</button>
-                        <button class="action-button" data-action="Agendamento">Agendar reunião</button>
-                        <button class="action-button" data-action="Ticket">Falar com alguém</button>
-                        <button class="action-button" data-action="Dúvida">Tenho dúvidas</button>
+                        <button class="action-button blue-button" data-action="Qualificar">Quero economizar na luz</button>
+                        <button class="action-button green-button" data-action="Agendamento">Agendar reunião</button>
+                        <button class="action-button orange-button" data-action="Ticket">Falar com alguém</button>
+                        <button class="action-button yellow-button" data-action="Dúvida">Tenho dúvidas</button>
                     </div>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -1130,7 +1127,7 @@
             button.addEventListener('click', () => {
                 const action = button.dataset.action;
                 if (action === 'Qualificar') {
-                    addUserMessage('Quero economizar');
+                    addUserMessage('Quero economizar na luz');
                     startQualificationFunnel();
                 } else if (action === 'Dúvida') {
                     addUserMessage('Tenho dúvidas');
@@ -1162,31 +1159,7 @@
         if (!trimmedMessage) return;
 
         // Handle qualification funnel input
-        if (qualificationStep === 1 && !qualificationData.name) {
-            // Validating name
-            if (trimmedMessage.length < 2) {
-                addUserMessage(trimmedMessage);
-                setTimeout(() => {
-                    addBotMessage(`
-                        <p>❌ Por favor, digite um nome válido.</p>
-                    `);
-                }, 300);
-                messageTextarea.value = '';
-                return;
-            }
-            qualificationData.name = trimmedMessage;
-            addUserMessage(trimmedMessage);
-            messageTextarea.value = '';
-            setTimeout(() => {
-                addBotMessage(`
-                    <p>Prazer em conhecê-lo, ${trimmedMessage}! 👋</p>
-                `);
-            }, 300);
-            askEmail();
-            return;
-        }
-
-        if (qualificationStep === 1 && qualificationData.name && !qualificationData.email) {
+        if (qualificationStep === 1 && !qualificationData.email) {
             // Validating email
             if (!validateEmail(trimmedMessage)) {
                 addUserMessage(trimmedMessage);
@@ -1206,7 +1179,7 @@
             return;
         }
 
-        if (qualificationStep === 1 && qualificationData.name && qualificationData.email && !qualificationData.phone) {
+        if (qualificationStep === 1 && qualificationData.email && !qualificationData.phone) {
             // Validating phone
             if (!validatePhone(trimmedMessage)) {
                 addUserMessage(trimmedMessage);
@@ -1281,7 +1254,7 @@
             const botMessageContainer = document.createElement('div');
             botMessageContainer.className = 'message-container bot-message';
             botMessageContainer.innerHTML = `
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+                ${botAvatarHTML}
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
                         <p>${processedResponse}</p>
