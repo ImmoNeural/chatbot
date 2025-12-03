@@ -21,3 +21,6 @@ port = 54323
 
 [functions.automacao-leads]
 verify_jwt = false
+
+[functions.twilio-webhook]
+verify_jwt = false
