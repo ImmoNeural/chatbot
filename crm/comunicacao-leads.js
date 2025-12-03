@@ -981,8 +981,89 @@ function openLeadSelector(type) {
         subtitle.textContent = 'Selecione um lead para enviar mensagem de texto';
     }
 
-    populateLeadList();
+    // Buscar leads e popular lista
+    fetchAndPopulateLeads();
     modal.classList.add('visible');
+}
+
+// Buscar leads diretamente do Supabase
+async function fetchAndPopulateLeads() {
+    const list = document.getElementById('lead-selector-list');
+
+    // Mostrar loading
+    list.innerHTML = `
+        <div class="lead-selector-empty">
+            <p>Carregando leads...</p>
+        </div>
+    `;
+
+    try {
+        // Buscar leads do Supabase
+        const { data: leadsData, error } = await supabase
+            .from('leads')
+            .select('*')
+            .not('phone', 'is', null)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Erro ao buscar leads:', error);
+            list.innerHTML = `
+                <div class="lead-selector-empty">
+                    <p>Erro ao carregar leads</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Filtrar leads com telefone válido
+        const leadsComTelefone = (leadsData || []).filter(lead => lead.phone && lead.phone.trim() !== '');
+
+        console.log('Leads com telefone encontrados:', leadsComTelefone.length);
+
+        if (leadsComTelefone.length === 0) {
+            list.innerHTML = `
+                <div class="lead-selector-empty">
+                    <p>Nenhum lead com telefone cadastrado</p>
+                    <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;">Cadastre leads com telefone no CRM</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Armazenar leads para uso posterior
+        comunicacaoState.leadsCache = leadsComTelefone;
+
+        renderLeadList(leadsComTelefone);
+
+    } catch (err) {
+        console.error('Erro ao buscar leads:', err);
+        list.innerHTML = `
+            <div class="lead-selector-empty">
+                <p>Erro ao carregar leads</p>
+            </div>
+        `;
+    }
+}
+
+function renderLeadList(leadsToRender) {
+    const list = document.getElementById('lead-selector-list');
+
+    list.innerHTML = leadsToRender.map(lead => {
+        const initials = getInitials(lead.nome || lead.email || 'Lead');
+        const statusClass = getStatusClass(lead.status);
+        const statusText = getStatusText(lead.status);
+
+        return `
+            <div class="lead-selector-item" onclick="selectLead('${lead.id}')">
+                <div class="lead-selector-avatar">${initials}</div>
+                <div class="lead-selector-info">
+                    <div class="lead-selector-name">${lead.nome || lead.email || 'Lead sem nome'}</div>
+                    <div class="lead-selector-phone">${lead.phone || 'Sem telefone'}</div>
+                </div>
+                <span class="lead-selector-status ${statusClass}">${statusText}</span>
+            </div>
+        `;
+    }).join('');
 }
 
 function closeLeadSelector() {
@@ -990,79 +1071,42 @@ function closeLeadSelector() {
     document.getElementById('lead-search-input').value = '';
 }
 
-function populateLeadList() {
-    const list = document.getElementById('lead-selector-list');
+function filterLeads(searchTerm) {
+    const leadsCache = comunicacaoState.leadsCache || [];
 
-    // Usar a variável global 'leads' do CRM
-    const leadsComTelefone = (window.leads || []).filter(lead => lead.phone);
-
-    if (leadsComTelefone.length === 0) {
-        list.innerHTML = `
-            <div class="lead-selector-empty">
-                <p>Nenhum lead com telefone cadastrado</p>
-            </div>
-        `;
+    if (!searchTerm || searchTerm.trim() === '') {
+        renderLeadList(leadsCache);
         return;
     }
 
-    list.innerHTML = leadsComTelefone.map(lead => {
-        const initials = getInitials(lead.nome || lead.email || 'Lead');
-        const statusClass = getStatusClass(lead.status);
-        const statusText = getStatusText(lead.status);
-
-        return `
-            <div class="lead-selector-item" onclick="selectLead('${lead.id}')">
-                <div class="lead-selector-avatar">${initials}</div>
-                <div class="lead-selector-info">
-                    <div class="lead-selector-name">${lead.nome || lead.email || 'Lead sem nome'}</div>
-                    <div class="lead-selector-phone">${lead.phone || 'Sem telefone'}</div>
-                </div>
-                <span class="lead-selector-status ${statusClass}">${statusText}</span>
-            </div>
-        `;
-    }).join('');
-}
-
-function filterLeads(searchTerm) {
-    const list = document.getElementById('lead-selector-list');
-    const leadsComTelefone = (window.leads || []).filter(lead => lead.phone);
-    const filtered = leadsComTelefone.filter(lead => {
+    const filtered = leadsCache.filter(lead => {
         const nome = (lead.nome || '').toLowerCase();
         const phone = (lead.phone || '').toLowerCase();
+        const email = (lead.email || '').toLowerCase();
         const term = searchTerm.toLowerCase();
-        return nome.includes(term) || phone.includes(term);
+        return nome.includes(term) || phone.includes(term) || email.includes(term);
     });
 
     if (filtered.length === 0) {
+        const list = document.getElementById('lead-selector-list');
         list.innerHTML = `
             <div class="lead-selector-empty">
-                <p>Nenhum lead encontrado</p>
+                <p>Nenhum lead encontrado para "${searchTerm}"</p>
             </div>
         `;
         return;
     }
 
-    list.innerHTML = filtered.map(lead => {
-        const initials = getInitials(lead.nome || lead.email || 'Lead');
-        const statusClass = getStatusClass(lead.status);
-        const statusText = getStatusText(lead.status);
-
-        return `
-            <div class="lead-selector-item" onclick="selectLead('${lead.id}')">
-                <div class="lead-selector-avatar">${initials}</div>
-                <div class="lead-selector-info">
-                    <div class="lead-selector-name">${lead.nome || lead.email || 'Lead sem nome'}</div>
-                    <div class="lead-selector-phone">${lead.phone || 'Sem telefone'}</div>
-                </div>
-                <span class="lead-selector-status ${statusClass}">${statusText}</span>
-            </div>
-        `;
-    }).join('');
+    renderLeadList(filtered);
 }
 
 function selectLead(leadId) {
-    const lead = (window.leads || []).find(l => l.id === leadId);
-    if (!lead) return;
+    // Buscar do cache local
+    const lead = (comunicacaoState.leadsCache || []).find(l => l.id === leadId);
+    if (!lead) {
+        console.error('Lead não encontrado:', leadId);
+        return;
+    }
 
     comunicacaoState.selectedLead = lead;
     comunicacaoState.messages = [];
