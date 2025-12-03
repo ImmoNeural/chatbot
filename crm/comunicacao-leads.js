@@ -49,35 +49,36 @@ function createFloatingButtons() {
             #comunicacao-floating-btns {
                 position: fixed;
                 right: 220px;
-                top: 18px;
+                top: 22px;
                 display: flex;
                 flex-direction: row;
+                align-items: center;
                 gap: 8px;
                 z-index: 9999;
             }
 
             .comunicacao-btn {
-                width: 40px;
-                height: 40px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 border: none;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                transition: all 0.3s ease;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                transition: all 0.2s ease;
                 position: relative;
             }
 
             .comunicacao-btn:hover {
-                transform: scale(1.1);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+                transform: scale(1.08);
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
             }
 
             .comunicacao-btn svg {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
 
             .comunicacao-btn-whatsapp {
@@ -89,14 +90,10 @@ function createFloatingButtons() {
             }
 
             .comunicacao-btn-config {
-                width: 36px;
-                height: 36px;
                 background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
             }
 
             .comunicacao-btn-config svg {
-                width: 16px;
-                height: 16px;
                 fill: white;
             }
 
