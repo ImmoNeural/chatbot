@@ -19,3 +19,6 @@ verify_jwt = false
 
 [functions.twilio-webhook]
 verify_jwt = false
+
+[functions.twilio-send]
+verify_jwt = false

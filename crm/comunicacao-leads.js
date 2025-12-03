@@ -6,6 +6,18 @@
 // Configuração OpenAI (será preenchida pelo usuário)
 let OPENAI_API_KEY = localStorage.getItem('openai_api_key') || '';
 
+// Configuração Twilio
+let TWILIO_CONFIG = {
+    supabaseUrl: localStorage.getItem('supabase_url') || '',
+    supabaseKey: localStorage.getItem('supabase_anon_key') || ''
+};
+
+// Carregar config do Supabase se disponível
+if (typeof supabase !== 'undefined' && supabase.supabaseUrl) {
+    TWILIO_CONFIG.supabaseUrl = supabase.supabaseUrl;
+    TWILIO_CONFIG.supabaseKey = supabase.supabaseKey;
+}
+
 // Estado do módulo
 let comunicacaoState = {
     isOpen: false,
@@ -1180,7 +1192,7 @@ function sendMessage() {
     textarea.value = '';
 }
 
-function sendViaWhatsApp() {
+async function sendViaWhatsApp() {
     const textarea = document.getElementById('conv-textarea');
     const text = textarea.value.trim();
     const lead = comunicacaoState.selectedLead;
@@ -1190,30 +1202,87 @@ function sendViaWhatsApp() {
         return;
     }
 
-    // Formatar número de telefone (remover caracteres especiais)
-    let phone = lead.phone.replace(/\D/g, '');
-
-    // Adicionar código do país se não tiver
-    if (!phone.startsWith('55')) {
-        phone = '55' + phone;
+    if (!text) {
+        alert('Digite uma mensagem para enviar');
+        return;
     }
 
-    // Abrir WhatsApp Web com a mensagem
-    const whatsappUrl = text
-        ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
-        : `https://wa.me/${phone}`;
+    // Formatar número de telefone (remover caracteres especiais, manter +)
+    let phone = lead.phone.replace(/[^\d+]/g, '');
 
-    window.open(whatsappUrl, '_blank');
+    // Se não começar com +, adicionar
+    if (!phone.startsWith('+')) {
+        // Se for número brasileiro sem código do país
+        if (phone.length === 11 || phone.length === 10) {
+            phone = '+55' + phone;
+        } else {
+            phone = '+' + phone;
+        }
+    }
 
-    if (text) {
-        addMessageToConversation(text + ' (enviado via WhatsApp)', 'sent');
-        comunicacaoState.messages.push({
-            type: 'whatsapp',
-            content: text,
-            direction: 'sent',
-            timestamp: new Date().toISOString()
+    // Mostrar loading
+    const btnWhatsapp = document.getElementById('btn-whatsapp');
+    const originalHTML = btnWhatsapp.innerHTML;
+    btnWhatsapp.innerHTML = '<div class="summary-spinner" style="width:20px;height:20px;border-width:2px;"></div>';
+    btnWhatsapp.disabled = true;
+
+    try {
+        // Obter URL do Supabase
+        const supabaseUrl = window.supabaseUrl || 'https://zralzmgsdmwispfvgqvy.supabase.co';
+
+        // Chamar Edge Function para enviar via Twilio
+        const response = await fetch(`${supabaseUrl}/functions/v1/twilio-send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${window.supabaseAnonKey || ''}`
+            },
+            body: JSON.stringify({
+                to: phone,
+                message: text,
+                lead_id: lead.id
+            })
         });
-        textarea.value = '';
+
+        const result = await response.json();
+
+        if (result.success) {
+            addMessageToConversation(text, 'sent');
+            comunicacaoState.messages.push({
+                type: 'whatsapp',
+                content: text,
+                direction: 'sent',
+                timestamp: new Date().toISOString()
+            });
+            textarea.value = '';
+
+            if (typeof showNotification === 'function') {
+                showNotification('Mensagem enviada via WhatsApp!', 'success');
+            }
+        } else {
+            throw new Error(result.error || 'Erro ao enviar mensagem');
+        }
+    } catch (err) {
+        console.error('Erro ao enviar via Twilio:', err);
+
+        // Fallback: abrir WhatsApp Web
+        const fallback = confirm(`Erro ao enviar via API: ${err.message}\n\nDeseja abrir o WhatsApp Web para enviar manualmente?`);
+        if (fallback) {
+            const whatsappUrl = `https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(text)}`;
+            window.open(whatsappUrl, '_blank');
+
+            addMessageToConversation(text + ' (enviado manualmente)', 'sent');
+            comunicacaoState.messages.push({
+                type: 'whatsapp',
+                content: text,
+                direction: 'sent',
+                timestamp: new Date().toISOString()
+            });
+            textarea.value = '';
+        }
+    } finally {
+        btnWhatsapp.innerHTML = originalHTML;
+        btnWhatsapp.disabled = false;
     }
 }
 

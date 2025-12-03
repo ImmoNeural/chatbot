@@ -494,6 +494,31 @@
                 </div>
             </div>
 
+            <!-- Twilio WhatsApp -->
+            <div class="section">
+                <div class="section-title">Integração Twilio WhatsApp</div>
+
+                <div class="form-group">
+                    <label>Número do Twilio WhatsApp</label>
+                    <input type="text" id="twilioPhone" value="+14155238886" placeholder="+14155238886">
+                    <p style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Número do sandbox ou seu número verificado</p>
+                </div>
+
+                <div class="form-group">
+                    <label>URL do Supabase</label>
+                    <input type="url" id="supabaseUrl" value="https://zralzmgsdmwispfvgqvy.supabase.co" placeholder="https://seu-projeto.supabase.co">
+                </div>
+
+                <div style="background: #fef3c7; border-radius: 8px; padding: 12px; margin-top: 12px;">
+                    <p style="font-size: 12px; color: #92400e; margin: 0;">
+                        <strong>Importante:</strong> Configure os secrets do Twilio no Supabase via CLI:
+                    </p>
+                    <pre style="background: #1f2937; color: #e5e7eb; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 11px; overflow-x: auto;">supabase secrets set TWILIO_ACCOUNT_SID=ACxxxxx
+supabase secrets set TWILIO_AUTH_TOKEN=xxxxx
+supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
+                </div>
+            </div>
+
             <button class="btn btn-primary" onclick="generateCode()">Gerar Código de Configuração</button>
             <button class="btn btn-secondary" onclick="savePreferences()">Salvar Preferências</button>
 
@@ -721,10 +746,17 @@
                 avatarPrimary: document.getElementById('avatarPrimary').value,
                 avatarSecondary: document.getElementById('avatarSecondary').value,
                 title: document.getElementById('chatTitle').value,
-                logoUrl: document.getElementById('logoUrl').value
+                logoUrl: document.getElementById('logoUrl').value,
+                twilioPhone: document.getElementById('twilioPhone').value,
+                supabaseUrl: document.getElementById('supabaseUrl').value
             };
 
             localStorage.setItem('chatbotPreferences', JSON.stringify(prefs));
+
+            // Salvar também as configs do Twilio separadamente para o módulo de comunicação
+            localStorage.setItem('twilio_phone', prefs.twilioPhone);
+            localStorage.setItem('supabase_url', prefs.supabaseUrl);
+
             alert('Preferências salvas com sucesso!');
         }
 
@@ -752,6 +784,8 @@
                 document.getElementById('avatarSecondaryHex').value = prefs.avatarSecondary || '#764ba2';
                 document.getElementById('chatTitle').value = prefs.title || 'Sunbotic 🌞 Energia Solar';
                 document.getElementById('logoUrl').value = prefs.logoUrl || 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png';
+                document.getElementById('twilioPhone').value = prefs.twilioPhone || '+14155238886';
+                document.getElementById('supabaseUrl').value = prefs.supabaseUrl || 'https://zralzmgsdmwispfvgqvy.supabase.co';
 
                 updatePreview();
             }
