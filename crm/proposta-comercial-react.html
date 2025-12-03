@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta Comercial - Sunbotic Energia Solar</title>
+
+    <!-- React, ReactDOM e Babel via CDN (DEV para debug) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS via CDN (Play CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        console.log('🚀 Proposta Comercial React v2.0 - Carregando...');
+        console.log('✓ React disponível:', typeof React !== 'undefined');
+        console.log('✓ ReactDOM disponível:', typeof ReactDOM !== 'undefined');
+        console.log('✓ Babel disponível:', typeof Babel !== 'undefined');
+
+        const { useState, useEffect } = React;
+
+        const PropostaComercial = ({ resultado, propostaIndex }) => {
+            console.log('📊 Renderizando PropostaComercial com:', { resultado, propostaIndex });
+            const proposta = resultado.propostas[propostaIndex];
+            const { configuracao, custos, economia, payback, vpl, tir } = proposta;
+            const inversor = custos.equipamentos?.inversor || custos.inversor;
+            const paybackAnos = payback.real?.anos || payback.anos;
+
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            };
+
+            const handlePrint = () => {
+                window.print();
+            };
+
+            const handleClose = () => {
+                window.close();
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-8 relative">
+                    {/* Imagem de fundo com transparência */}
+                    <div
+                        className="fixed inset-0 z-0 opacity-50"
+                        style={{
+                            backgroundImage: 'url(https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1600)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    />
+
+                    {/* Overlay adicional para suavizar */}
+                    <div className="fixed inset-0 z-0 bg-white opacity-40" />
+
+                    {/* Conteúdo principal */}
+                    <div className="relative z-10 max-w-5xl mx-auto">
+                        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-12 border border-green-200">
+
+                            {/* Cabeçalho */}
+                            <div className="text-center mb-12 pb-8 border-b-2 border-emerald-300">
+                                <h1 className="text-5xl font-bold text-slate-800 mb-3">
+                                    💚 Proposta Comercial
+                                </h1>
+                                <h2 className="text-2xl text-slate-600 mb-2">Sistema de Energia Solar Fotovoltaica</h2>
+                                <p className="text-slate-500">Sunbotic Energia Solar | {new Date().toLocaleDateString('pt-BR')}</p>
+                            </div>
+
+                            {/* Dados do Projeto */}
+                            <section className="mb-10 bg-gradient-to-r from-green-50/80 to-emerald-50/80 p-8 rounded-xl border border-green-200/50">
+                                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                                    <svg width="24" height="24" className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    Dados do Projeto
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white/90 p-4 rounded-lg shadow-sm">
+                                        <span className="text-slate-600 text-sm block mb-1">Localização</span>
+                                        <strong className="text-lg text-slate-800">{resultado.localizacao.cidade} - {resultado.localizacao.estado}</strong>
+                                    </div>
+                                    <div className="bg-white/90 p-4 rounded-lg shadow-sm">
+                                        <span className="text-slate-600 text-sm block mb-1">Consumo Mensal</span>
+                                        <strong className="text-lg text-slate-800">{resultado.dimensionamento.energiaMensalNecessaria} kWh</strong>
+                                    </div>
+                                    <div className="bg-white/90 p-4 rounded-lg shadow-sm">
+                                        <span className="text-slate-600 text-sm block mb-1">☀️ Irradiação Solar</span>
+                                        <strong className="text-lg text-orange-600">{resultado.localizacao.irradiacao} kWh/m²/dia</strong>
+                                    </div>
+                                    <div className="bg-white/90 p-4 rounded-lg shadow-sm">
+                                        <span className="text-slate-600 text-sm block mb-1">Data</span>
+                                        <strong className="text-lg text-slate-800">{new Date().toLocaleDateString('pt-BR')}</strong>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Sistema Proposto */}
+                            <section className="mb-10 bg-gradient-to-r from-blue-50/80 to-cyan-50/80 p-8 rounded-xl border border-blue-200/50">
+                                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                                    <svg width="24" height="24" className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" />
+                                    </svg>
+                                    Sistema Proposto
+                                </h3>
+
+                                <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div className="bg-white/90 p-5 rounded-lg shadow-sm text-center">
+                                        <span className="text-slate-600 block mb-2">Potência Total</span>
+                                        <strong className="text-4xl text-green-700">{configuracao.potenciaRealKwp}</strong>
+                                        <span className="text-slate-500 text-sm ml-2">kWp</span>
+                                    </div>
+                                    <div className="bg-white/90 p-5 rounded-lg shadow-sm text-center">
+                                        <span className="text-slate-600 block mb-2">Geração Mensal Estimada</span>
+                                        <strong className="text-4xl text-blue-700">{resultado.dimensionamento.energiaMensalNecessaria}</strong>
+                                        <span className="text-slate-500 text-sm ml-2">kWh</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white/90 p-5 rounded-lg shadow-sm">
+                                    <div className="space-y-3 text-sm text-slate-700">
+                                        <div className="flex items-start">
+                                            <span className="font-semibold min-w-[140px]">Módulos:</span>
+                                            <span>{configuracao.numModulos}x {configuracao.placa.fabricante} {configuracao.placa.modelo} ({configuracao.placa.potencia}W)</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <span className="font-semibold min-w-[140px]">Inversor:</span>
+                                            <span>{inversor.fabricante} {inversor.modelo} ({inversor.potencia_kw}kW)</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <span className="font-semibold min-w-[140px]">Área Necessária:</span>
+                                            <span>{configuracao.area.toFixed(1)} m²</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                            <span className="font-semibold min-w-[140px]">Garantia:</span>
+                                            <span>5 anos nos módulos (25 anos de performance ≥80%)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Itens Inclusos */}
+                            <section className="mb-10 bg-gradient-to-r from-slate-50/80 to-gray-50/80 p-8 rounded-xl border border-slate-200/50">
+                                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                                    <svg width="24" height="24" className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Itens Inclusos na Proposta
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    {[
+                                        `${configuracao.numModulos} módulos fotovoltaicos ${configuracao.placa.potencia}W`,
+                                        `1 inversor ${inversor.potencia_kw}kW`,
+                                        'Estrutura de fixação completa',
+                                        'Cabos e conectores',
+                                        'Quadro de proteção AC/DC',
+                                        'SPD (proteção contra surtos)',
+                                        'Projeto elétrico + ART',
+                                        'Instalação completa',
+                                        'Homologação na concessionária',
+                                        'Garantia de 5 anos nos módulos'
+                                    ].map((item, index) => (
+                                        <div key={index} className="flex items-center gap-2 text-slate-700">
+                                            <svg width="20" height="20" className="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            <span>{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* Economia Gerada */}
+                            <section className="mb-10 bg-gradient-to-r from-green-600 to-emerald-700 text-white p-8 rounded-xl shadow-lg">
+                                <h3 className="text-2xl font-bold mb-6 flex items-center">
+                                    <svg width="24" height="24" className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                                    </svg>
+                                    Economia Gerada pelo Sistema
+                                </h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="bg-white/20 backdrop-blur-sm p-5 rounded-lg text-center">
+                                        <span className="text-sm opacity-90 block mb-2">Economia Mensal</span>
+                                        <strong className="text-3xl block">{formatCurrency(economia.economiaMensal)}</strong>
+                                    </div>
+                                    <div className="bg-white/20 backdrop-blur-sm p-5 rounded-lg text-center">
+                                        <span className="text-sm opacity-90 block mb-2">Economia Anual</span>
+                                        <strong className="text-3xl block">{formatCurrency(economia.economiaAnual)}</strong>
+                                    </div>
+                                    <div className="bg-white/20 backdrop-blur-sm p-5 rounded-lg text-center">
+                                        <span className="text-sm opacity-90 block mb-2">Em 25 Anos</span>
+                                        <strong className="text-3xl block">{formatCurrency(economia.economia25Anos)}</strong>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Análise de Retorno */}
+                            <section className="mb-10 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 p-8 rounded-xl border border-blue-200/50">
+                                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center">
+                                    <svg width="24" height="24" className="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                                    </svg>
+                                    Análise de Retorno do Investimento
+                                </h3>
+                                <div className={`grid grid-cols-${tir > 0 ? '2' : '1'} gap-4`}>
+                                    <div className="bg-white/90 p-6 rounded-lg shadow-sm text-center">
+                                        <span className="text-slate-600 block mb-2">Payback (Retorno)</span>
+                                        <strong className="text-5xl text-blue-700 block">{paybackAnos}</strong>
+                                        <span className="text-slate-500 text-sm">anos</span>
+                                        <p className="text-xs text-slate-500 mt-2">Tempo para recuperar o investimento</p>
+                                    </div>
+                                    {tir > 0 && (
+                                        <div className="bg-white/90 p-6 rounded-lg shadow-sm text-center">
+                                            <span className="text-slate-600 block mb-2">TIR (Taxa Interna de Retorno)</span>
+                                            <strong className="text-5xl text-purple-700 block">{tir}%</strong>
+                                            <span className="text-slate-500 text-sm">ao ano</span>
+                                            <p className="text-xs text-slate-500 mt-2">Rentabilidade anual do investimento</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* Investimento Total */}
+                            <section className="mb-10 bg-gradient-to-r from-amber-50/80 to-yellow-50/80 p-8 rounded-xl border-2 border-amber-300/50 shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-3xl font-bold text-slate-800">Investimento Total</h3>
+                                    <div className="text-right">
+                                        <div className="text-5xl font-bold text-green-700">{formatCurrency(custos.valorVenda)}</div>
+                                        <p className="text-sm text-slate-600 mt-2">À vista ou parcelado (consultar condições)</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Observações */}
+                            <section className="mb-10 bg-slate-100/80 p-6 rounded-xl border border-slate-300/50">
+                                <h4 className="font-bold text-slate-800 mb-3 flex items-center">
+                                    <svg width="20" height="20" className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                    Observações Importantes
+                                </h4>
+                                <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
+                                    <li>Valores considerando instalação padrão em telhado residencial</li>
+                                    <li>Geração estimada baseada na irradiação solar local</li>
+                                    <li>Sistema dimensionado conforme Norma ABNT NBR 16690</li>
+                                    <li>Garantia do fabricante: 5 anos para módulos e inversor</li>
+                                    <li>Proposta válida por 30 dias</li>
+                                </ul>
+                            </section>
+
+                            {/* Rodapé */}
+                            <div className="text-center text-sm text-slate-600 pt-8 border-t-2 border-slate-200">
+                                <p className="font-bold text-lg mb-2">Sunbotic Energia Solar</p>
+                                <p>Proposta gerada em: {new Date().toLocaleString('pt-BR')}</p>
+                                <p className="text-xs text-slate-500 mt-2">Este documento é uma proposta comercial. O projeto executivo será elaborado após aprovação.</p>
+                            </div>
+                        </div>
+
+                        {/* Botões de Ação */}
+                        <div className="flex justify-center gap-4 mt-8 no-print">
+                            <button
+                                onClick={handlePrint}
+                                className="group relative px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <svg width="24" height="24" className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Imprimir / Salvar PDF
+                                </span>
+                            </button>
+
+                            <button
+                                onClick={handleClose}
+                                className="group relative px-8 py-4 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <svg width="24" height="24" className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Fechar
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Receber dados do window.opener
+        console.log('🔍 Verificando window.opener:', window.opener);
+        console.log('🔍 Verificando dadosPropostaComercial:', window.opener?.dadosPropostaComercial);
+
+        const dados = window.opener?.dadosPropostaComercial;
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+
+        if (!dados) {
+            console.error('❌ Dados não encontrados no window.opener');
+            root.render(
+                <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
+                    <div className="text-center bg-white/90 p-12 rounded-2xl shadow-2xl max-w-2xl">
+                        <svg className="w-24 h-24 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <h2 className="text-3xl font-bold text-slate-800 mb-4">Erro: Dados não encontrados</h2>
+                        <p className="text-lg text-slate-600 mb-6">
+                            Não foi possível carregar os dados da proposta comercial.
+                        </p>
+                        <p className="text-sm text-slate-500 mb-6 font-mono bg-slate-100 p-4 rounded">
+                            Verifique o console do navegador (F12) para mais detalhes.
+                        </p>
+                        <button
+                            onClick={() => window.close()}
+                            className="px-8 py-3 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            );
+        } else {
+            console.log('✅ Dados recebidos com sucesso!');
+            console.log('📈 Resultado:', dados.resultado);
+            console.log('📍 Proposta Index:', dados.propostaIndex);
+            root.render(
+                <PropostaComercial
+                    resultado={dados.resultado}
+                    propostaIndex={dados.propostaIndex}
+                />
+            );
+        }
+    </script>
+</body>
+</html>

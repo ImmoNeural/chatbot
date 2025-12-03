@@ -469,51 +469,57 @@
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: center;
         }
 
         .action-button {
-            flex: 1 1 calc(50% - 4px);
-            min-width: 120px;
-            padding: 10px 12px;
+            flex: 0 1 calc(50% - 5px);
+            min-width: 140px;
+            max-width: 160px;
+            padding: 14px 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 14px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(77, 184, 172, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.9;
-        }
-
-        .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            opacity: 1;
-        }
-
-        .blue-button {
-            background-color: rgba(100, 149, 237, 0.7);
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #4db8ac 0%, #3a9d92 100%);
             color: white;
         }
 
-        .green-button {
-            background-color: rgba(144, 238, 144, 0.7);
-            color: #333;
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .orange-button {
-            background-color: rgba(255, 182, 193, 0.7);
-            color: #333;
+        .action-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(77, 184, 172, 0.4);
+            background: linear-gradient(135deg, #5dccc0 0%, #4ac4b8 100%);
         }
 
-        .yellow-button {
-            background-color: rgba(255, 255, 153, 0.7);
-            color: #333;
+        .action-button:hover::before {
+            opacity: 1;
+        }
+
+        .action-button:active {
+            transform: translateY(-1px) scale(0.98);
         }
 
         .dynamic-buttons-container {
@@ -525,27 +531,26 @@
         }
 
         .dynamic-button {
-            padding: 7px 9px;
-            border: 1px solid var(--chat-color-light);
-            border-radius: 6px;
-            background-color: #f3f4f6;
-            color: var(--chat-color-text);
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #6dd5c9 0%, #5bc4b8 100%);
+            color: white;
             cursor: pointer;
-            font-weight: 400;
+            font-weight: 500;
             font-size: 13px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(77, 184, 172, 0.2);
+            text-align: center;
             flex: 0 0 48%;
             box-sizing: border-box;
         }
 
         .dynamic-button:hover {
-            background-color: var(--chat-color-primary);
-            border-color: var(--chat-color-primary);
+            background: linear-gradient(135deg, #7de3d7 0%, #6bd5c9 100%);
             color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 184, 172, 0.35);
         }
 
         .solar-panel-image {
@@ -622,6 +627,7 @@
 
     // Qualification funnel data
     let qualificationData = {
+        name: null,
         email: null,
         phone: null,
         familySize: null,
@@ -645,11 +651,14 @@
                     'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
+                    nome: data.name,
                     email: data.email,
                     phone: data.phone,
                     family_size: data.familySize,
                     kwh_consumption: data.kwhConsumption,
                     roof_type: data.roofType,
+                    origem: 'chatbot',
+                    status: 'novo',
                     created_at: new Date().toISOString()
                 })
             });
@@ -818,11 +827,11 @@
         iframeContainer.innerHTML = `
             <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
             <div class="message-content">
-                <div class="chat-bubble bot-bubble">
+                <div class="chat-bubble bot-bubble" style="max-width: none; width: 125%;">
                     <iframe
                         src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
-                        width="470" height="1800" frameborder="0"
-                        style="border-radius: 8px; margin-top: 8px;">
+                        frameborder="0"
+                        style="width: 100%; height: 1800px; border-radius: 8px; margin-top: 8px; border: none; transform: scale(0.80); transform-origin: top left;">
                     </iframe>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -883,10 +892,21 @@
     // Qualification funnel functions
     const startQualificationFunnel = () => {
         qualificationStep = 1;
-        askEmail();
+        askName();
     };
 
-    // Step 1: Ask for email
+    // Step 1: Ask for name
+    const askName = () => {
+        setTimeout(() => {
+            addBotMessage(`
+                <div>
+                    <p>Olá! Para começar, qual é o seu nome? 😊</p>
+                </div>
+            `);
+        }, 500);
+    };
+
+    // Step 2: Ask for email
     const askEmail = () => {
         const emailImage = 'https://images.unsplash.com/photo-1560264280-88b68371db39?w=500';
 
@@ -1055,7 +1075,7 @@
                         <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
                         <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
                         <div class="action-buttons-container" style="margin-top: 15px;">
-                            <button class="action-button green-button schedule-btn">📅 Agende aqui</button>
+                            <button class="action-button schedule-btn">📅 Agende aqui</button>
                         </div>
                     </div>
                     <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -1093,10 +1113,10 @@
                 <div class="chat-bubble bot-bubble">
                     <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
                     <div class="action-buttons-container">
-                        <button class="action-button blue-button" data-action="Qualificar">Quero economizar na luz</button>
-                        <button class="action-button green-button" data-action="Agendamento">Agendar reunião</button>
-                        <button class="action-button orange-button" data-action="Ticket">Falar com alguém</button>
-                        <button class="action-button yellow-button" data-action="Dúvida">Tenho dúvidas</button>
+                        <button class="action-button" data-action="Qualificar">Quero economizar</button>
+                        <button class="action-button" data-action="Agendamento">Agendar reunião</button>
+                        <button class="action-button" data-action="Ticket">Falar com alguém</button>
+                        <button class="action-button" data-action="Dúvida">Tenho dúvidas</button>
                     </div>
                 </div>
                 <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
@@ -1110,7 +1130,7 @@
             button.addEventListener('click', () => {
                 const action = button.dataset.action;
                 if (action === 'Qualificar') {
-                    addUserMessage('Quero economizar na luz');
+                    addUserMessage('Quero economizar');
                     startQualificationFunnel();
                 } else if (action === 'Dúvida') {
                     addUserMessage('Tenho dúvidas');
@@ -1142,7 +1162,31 @@
         if (!trimmedMessage) return;
 
         // Handle qualification funnel input
-        if (qualificationStep === 1 && !qualificationData.email) {
+        if (qualificationStep === 1 && !qualificationData.name) {
+            // Validating name
+            if (trimmedMessage.length < 2) {
+                addUserMessage(trimmedMessage);
+                setTimeout(() => {
+                    addBotMessage(`
+                        <p>❌ Por favor, digite um nome válido.</p>
+                    `);
+                }, 300);
+                messageTextarea.value = '';
+                return;
+            }
+            qualificationData.name = trimmedMessage;
+            addUserMessage(trimmedMessage);
+            messageTextarea.value = '';
+            setTimeout(() => {
+                addBotMessage(`
+                    <p>Prazer em conhecê-lo, ${trimmedMessage}! 👋</p>
+                `);
+            }, 300);
+            askEmail();
+            return;
+        }
+
+        if (qualificationStep === 1 && qualificationData.name && !qualificationData.email) {
             // Validating email
             if (!validateEmail(trimmedMessage)) {
                 addUserMessage(trimmedMessage);
@@ -1162,7 +1206,7 @@
             return;
         }
 
-        if (qualificationStep === 1 && qualificationData.email && !qualificationData.phone) {
+        if (qualificationStep === 1 && qualificationData.name && qualificationData.email && !qualificationData.phone) {
             // Validating phone
             if (!validatePhone(trimmedMessage)) {
                 addUserMessage(trimmedMessage);

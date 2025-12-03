@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Energia Solar - Funil Completo</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- SortableJS para Drag & Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #309086;
+            --secondary: #267269;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f9fafb;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .module-card:hover {
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .kanban-column {
+            border-radius: 12px;
+            min-height: 500px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .kanban-column:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .kanban-card {
+            background: white;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            cursor: grab;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .kanban-card:active {
+            cursor: grabbing;
+        }
+
+        .kanban-card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transform: translateY(-3px) scale(1.01);
+            border-left-width: 5px;
+        }
+
+        .kanban-card.inactive {
+            border-left-color: var(--danger);
+            opacity: 0.85;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 30px;
+            bottom: -10px;
+            width: 2px;
+            background: #e5e7eb;
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+
+        .badge:hover {
+            transform: scale(1.05);
+        }
+
+        .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-warning { background: #fed7aa; color: #92400e; border: 1px solid #fbbf24; }
+        .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .badge-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .badge-gray { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+        .tab-button {
+            padding: 12px 24px;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #6b7280;
+        }
+
+        .tab-button:hover {
+            color: var(--primary);
+            background: rgba(48, 144, 134, 0.05);
+        }
+
+        .tab-button.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            background: rgba(48, 144, 134, 0.08);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #309086 0%, #267269 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #267269 0%, #1e5a52 100%);
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* Drag and drop styles */
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+
+        .sortable-drag {
+            opacity: 0.8;
+            transform: rotate(5deg);
+        }
+
+        /* Painel Lateral 30% - Estilos compactos */
+        #leadModal {
+            font-size: 0.875rem;
+        }
+
+        #leadModal h1 { font-size: 1.25rem; }
+        #leadModal h2 { font-size: 1.125rem; }
+        #leadModal h3 { font-size: 1rem; }
+        #leadModal h4 { font-size: 0.9375rem; }
+        #leadModal h5 { font-size: 0.875rem; }
+        #leadModal p { font-size: 0.8125rem; }
+        #leadModal small { font-size: 0.75rem; }
+
+        #leadModal button {
+            font-size: 0.8125rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        #leadModal input,
+        #leadModal select,
+        #leadModal textarea {
+            font-size: 0.8125rem;
+            padding: 0.375rem 0.5rem;
+        }
+
+        #leadModal .tab-button {
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+        }
+
+        #leadModal label {
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        #leadModal .badge {
+            font-size: 0.6875rem;
+            padding: 0.125rem 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 100;
+                transition: transform 0.3s;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-64 text-white z-50">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <i class="fas fa-sun text-3xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold">CRM Solar</h1>
+                    <p class="text-xs opacity-80">Funil Completo</p>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="#" onclick="showModule('dashboard')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition active">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showModule('kanban')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <i class="fas fa-columns w-5"></i>
+                    <span>Kanban</span>
+                </a>
+                <a href="#" onclick="showModule('leads')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Leads</span>
+                </a>
+                <a href="#" onclick="showModule('propostas')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <i class="fas fa-file-invoice w-5"></i>
+                    <span>Propostas</span>
+                </a>
+                <a href="#" onclick="showModule('instalados')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <i class="fas fa-check-circle w-5"></i>
+                    <span>Instalados</span>
+                </a>
+                <a href="#" onclick="showModule('tarefas')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <i class="fas fa-tasks w-5"></i>
+                    <span>Tarefas</span>
+                    <span id="tarefas-badge" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden"></span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-semibold text-sm" id="user-name">Usuário</p>
+                    <p class="text-xs opacity-70" id="user-role">Vendedor</p>
+                </div>
+                <button onclick="logout()" class="hover:bg-white/10 p-2 rounded">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile Menu Toggle -->
+    <button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 text-white p-3 rounded-lg shadow-lg" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="md:ml-64 p-4 md:p-8">
+
+        <!-- Header -->
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h2 id="module-title" class="text-3xl font-bold text-gray-800">Dashboard Executivo</h2>
+                <p id="module-subtitle" class="text-gray-600 mt-1">Visão geral do funil de vendas</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Ícone de Notificações -->
+                <div class="relative">
+                    <button onclick="toggleNotificacoes()" class="relative p-3 rounded-lg hover:bg-gray-100 transition" title="Notificações">
+                        <i class="fas fa-bell text-2xl text-gray-700"></i>
+                        <span id="notificacoes-badge" class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
+
+                    <!-- Dropdown de Notificações -->
+                    <div id="notificacoes-dropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-800">Notificações</h3>
+                            <button onclick="marcarTodasLidas()" class="text-sm text-teal-600 hover:text-teal-700">Marcar todas como lidas</button>
+                        </div>
+                        <div id="notificacoes-container" class="divide-y divide-gray-100">
+                            <!-- Notificações serão inseridas aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="refreshData()" class="text-white px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #267269 100%)'">
+                    <i class="fas fa-sync-alt" id="refresh-icon"></i>
+                    <span>Atualizar</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Module -->
+        <div id="module-dashboard" class="module">
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- KPI Cards serão inseridos aqui via JS -->
+            </div>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="module-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Funil de Vendas</h3>
+                    <canvas id="funnelChart"></canvas>
+                </div>
+                <div class="module-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Conversão por Mês</h3>
+                    <canvas id="conversionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Leads Recentes -->
+            <div class="module-card p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Leads Recentes (Chatbot)</h3>
+                <div id="recent-leads" class="space-y-3">
+                    <!-- Leads inseridos via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Kanban Module -->
+        <div id="module-kanban" class="module hidden">
+            <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
+                <button class="tab-button active" onclick="filterKanban('todos')">Todos</button>
+                <button class="tab-button" onclick="filterKanban('residencial')">Residencial</button>
+                <button class="tab-button" onclick="filterKanban('empresarial')">Empresarial</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" id="kanban-board">
+                <!-- Colunas do Kanban com cores profissionais -->
+                <div class="kanban-column" data-etapa="levantamento" style="background: linear-gradient(135deg, #e0f2f1 0%, #f1f8f7 100%); border-top: 3px solid #26a69a;">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-clipboard-list text-teal-600"></i>
+                            <span>Levantamento</span>
+                        </h3>
+                        <span class="badge badge-gray kanban-count">0</span>
+                    </div>
+                    <div class="kanban-cards" data-etapa="levantamento"></div>
+                </div>
+
+                <div class="kanban-column" data-etapa="simulacao" style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border-top: 3px solid #66bb6a;">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-calculator text-green-600"></i>
+                            <span>Simulação</span>
+                        </h3>
+                        <span class="badge badge-gray kanban-count">0</span>
+                    </div>
+                    <div class="kanban-cards" data-etapa="simulacao"></div>
+                </div>
+
+                <div class="kanban-column" data-etapa="proposta" style="background: linear-gradient(135deg, #e3f2fd 0%, #f1f7fc 100%); border-top: 3px solid #42a5f5;">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-file-invoice-dollar text-blue-600"></i>
+                            <span>Proposta</span>
+                        </h3>
+                        <span class="badge badge-gray kanban-count">0</span>
+                    </div>
+                    <div class="kanban-cards" data-etapa="proposta"></div>
+                </div>
+
+                <div class="kanban-column" data-etapa="negociacao" style="background: linear-gradient(135deg, #fff3e0 0%, #fef8f1 100%); border-top: 3px solid #ffa726;">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-handshake text-orange-600"></i>
+                            <span>Negociação</span>
+                        </h3>
+                        <span class="badge badge-gray kanban-count">0</span>
+                    </div>
+                    <div class="kanban-cards" data-etapa="negociacao"></div>
+                </div>
+
+                <div class="kanban-column" data-etapa="fechamento" style="background: linear-gradient(135deg, #e8eaf6 0%, #f3f4f8 100%); border-top: 3px solid #5c6bc0;">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-indigo-600"></i>
+                            <span>Fechamento</span>
+                        </h3>
+                        <span class="badge badge-gray kanban-count">0</span>
+                    </div>
+                    <div class="kanban-cards" data-etapa="fechamento"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leads Module -->
+        <div id="module-leads" class="module hidden">
+            <!-- Filtros e Busca -->
+            <div class="module-card p-4 mb-4 flex flex-wrap gap-4">
+                <input type="text" id="lead-search" placeholder="Buscar por nome, email..." class="px-4 py-2 border rounded-lg flex-1 min-w-[200px]">
+                <select id="lead-status-filter" class="px-4 py-2 border rounded-lg">
+                    <option value="">Todos Status</option>
+                    <option value="novo">Novo</option>
+                    <option value="qualificado">Qualificado</option>
+                    <option value="em_nutricao">Em Nutrição</option>
+                    <option value="nao_qualificado">Não Qualificado</option>
+                </select>
+                <select id="lead-type-filter" class="px-4 py-2 border rounded-lg">
+                    <option value="">Todos Tipos</option>
+                    <option value="residencial">Residencial</option>
+                    <option value="empresarial">Empresarial</option>
+                </select>
+                <button onclick="exportLeads()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-download mr-2"></i>Exportar
+                </button>
+                <button onclick="showNewLeadModal()" class="text-white px-4 py-2 rounded-lg" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                    <i class="fas fa-plus mr-2"></i>Novo Lead
+                </button>
+            </div>
+
+            <!-- Tabela de Leads -->
+            <div class="module-card overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leads-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Leads inseridos via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Propostas Module -->
+        <div id="module-propostas" class="module hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="propostas-grid">
+                <!-- Propostas inseridas via JS -->
+            </div>
+        </div>
+
+        <!-- Instalados Module -->
+        <div id="module-instalados" class="module hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="module-card p-6 text-center">
+                    <div class="text-4xl font-bold text-green-600" id="total-instalados">0</div>
+                    <div class="text-gray-600 mt-2">Sistemas Instalados</div>
+                </div>
+                <div class="module-card p-6 text-center">
+                    <div class="text-4xl font-bold text-blue-600" id="potencia-total">0 kWp</div>
+                    <div class="text-gray-600 mt-2">Potência Total</div>
+                </div>
+                <div class="module-card p-6 text-center">
+                    <div class="text-4xl font-bold text-purple-600" id="nps-medio">0</div>
+                    <div class="text-gray-600 mt-2">NPS Médio</div>
+                </div>
+            </div>
+
+            <div class="module-card overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Cliente</th>
+                            <th class="px-6 py-3 text-left">Contrato</th>
+                            <th class="px-6 py-3 text-left">Instalação</th>
+                            <th class="px-6 py-3 text-left">Potência</th>
+                            <th class="px-6 py-3 text-left">Valor</th>
+                            <th class="px-6 py-3 text-left">NPS</th>
+                            <th class="px-6 py-3 text-left">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="instalados-table-body">
+                        <!-- Inserido via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tarefas Module -->
+        <div id="module-tarefas" class="module hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Tarefas</h2>
+                <button onclick="novaTarefa()" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Nova Tarefa
+                </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="module-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="status-dot bg-red-500"></span>
+                        Atrasadas
+                    </h3>
+                    <div id="tarefas-atrasadas" class="space-y-3"></div>
+                </div>
+                <div class="module-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="status-dot bg-yellow-500"></span>
+                        Hoje
+                    </h3>
+                    <div id="tarefas-hoje" class="space-y-3"></div>
+                </div>
+                <div class="module-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="status-dot bg-blue-500"></span>
+                        Próximas
+                    </h3>
+                    <div id="tarefas-proximas" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Overlay escuro -->
+    <div id="leadModalOverlay" class="fixed inset-0 z-40 hidden bg-black bg-opacity-30 backdrop-blur-sm transition-opacity duration-300 opacity-0" onclick="closeLeadModal()"></div>
+
+    <!-- Painel Lateral: Detalhes do Lead (30% fixo) -->
+    <div id="leadModal" class="fixed inset-y-0 right-0 z-50 hidden bg-white shadow-2xl border-l-4 border-teal-600 transition-all duration-300 ease-out transform translate-x-full" style="width: 30%;">
+        <div class="h-full flex flex-col overflow-hidden">
+            <div class="text-white p-3 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-base font-bold truncate" id="modal-lead-name">Nome do Lead</h3>
+                    <p class="opacity-90 text-xs truncate" id="modal-lead-email">email@example.com</p>
+                </div>
+                <div class="flex gap-1 ml-2">
+                    <button onclick="toggleEditLead()" id="btn-edit-lead" class="text-white hover:bg-white/20 px-2 py-1 rounded text-xs transition">
+                        <i class="fas fa-edit mr-1"></i>Editar
+                    </button>
+                    <button onclick="closeLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="modal-tabs-container" class="flex border-b">
+                <button class="tab-button active" onclick="showTab('info')">Informações</button>
+                <button class="tab-button" onclick="showTab('timeline')">Timeline</button>
+                <button id="tab-btn-dynamic" class="tab-button" onclick="showTab('qualificacao')">Qualificação</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                <!-- Tab: Informações -->
+                <div id="tab-info" class="tab-content">
+                    <div class="grid grid-cols-2 gap-4" id="lead-info-grid">
+                        <!-- Preenchido via JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Timeline -->
+                <div id="tab-timeline" class="tab-content hidden">
+                    <div class="mb-4">
+                        <button id="btn-show-interaction-form" onclick="showAddInteractionForm()" class="text-white px-4 py-2 rounded-lg" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                            <i class="fas fa-plus mr-2"></i>Nova Interação
+                        </button>
+                    </div>
+
+                    <!-- Form Nova Interação -->
+                    <div id="interaction-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg border">
+                        <h4 class="font-bold mb-3">Adicionar Interação</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Tipo *</label>
+                                <select id="new-interaction-type" class="w-full border rounded px-3 py-2">
+                                    <option value="chamada">Ligação</option>
+                                    <option value="email">Email</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                    <option value="visita">Visita</option>
+                                    <option value="nota">Nota</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Título *</label>
+                                <input type="text" id="new-interaction-title" class="w-full border rounded px-3 py-2" placeholder="Ex: Primeira ligação">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium mb-1">Descrição</label>
+                            <textarea id="new-interaction-desc" rows="3" class="w-full border rounded px-3 py-2" placeholder="Detalhes da interação..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" id="new-interaction-sem-resposta" class="rounded">
+                                <span class="font-medium text-orange-600">
+                                    <i class="fas fa-phone-slash"></i> Tentativa sem resposta
+                                </span>
+                                <span class="text-gray-500 text-xs">(Incrementa contador para auto-perdido)</span>
+                            </label>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="salvarNovaInteracao()" class="text-white px-4 py-2 rounded" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                                <i class="fas fa-save mr-2"></i>Salvar
+                            </button>
+                            <button onclick="hideAddInteractionForm()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="timeline-container" class="space-y-4">
+                        <!-- Timeline inserida via JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Qualificação / Dinâmica -->
+                <div id="tab-qualificacao" class="tab-content hidden">
+                    <div id="qualificacao-content">
+                        <!-- Conteúdo dinâmico baseado no estágio -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Novo Lead -->
+    <div id="newLeadModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="text-white p-6 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                <h3 class="text-2xl font-bold">➕ Novo Lead</h3>
+                <button onclick="closeNewLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="newLeadForm" class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                        <input type="text" id="new-lead-nome" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" id="new-lead-email" required class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                        <input type="tel" id="new-lead-phone" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+                        <select id="new-lead-tipo" required class="w-full border rounded-lg px-3 py-2">
+                            <option value="residencial">Residencial</option>
+                            <option value="empresarial">Empresarial</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Consumo Mensal (kWh)</label>
+                        <input type="number" id="new-lead-consumo" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="new-lead-status" class="w-full border rounded-lg px-3 py-2">
+                            <option value="novo">Novo</option>
+                            <option value="qualificado">Qualificado</option>
+                            <option value="em_nutricao">Em Nutrição</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end pt-4 border-t">
+                    <button type="button" onclick="closeNewLeadModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2 text-white rounded-lg" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                        <i class="fas fa-save mr-2"></i>Salvar Lead
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Tarefa -->
+    <div id="editTaskModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
+                <h3 class="text-2xl font-bold">✏️ Editar Tarefa</h3>
+                <button onclick="closeEditTaskModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                    <input type="text" id="edit-task-title" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                    <textarea id="edit-task-desc" rows="3" class="w-full border rounded-lg px-3 py-2"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Vencimento *</label>
+                        <input type="date" id="edit-task-date" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
+                        <select id="edit-task-priority" class="w-full border rounded-lg px-3 py-2">
+                            <option value="baixa">Baixa</option>
+                            <option value="media">Média</option>
+                            <option value="alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end pt-4 border-t">
+                    <button onclick="closeEditTaskModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button onclick="salvarEdicaoTarefa()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-save mr-2"></i>Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Nova Tarefa -->
+    <div id="novaTarefaModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+            <div class="text-white p-6 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                <h3 class="text-2xl font-bold">➕ Nova Tarefa</h3>
+                <button onclick="closeNovaTarefaModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="form-nova-tarefa" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                    <input type="text" id="nova-task-title" name="titulo" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: Agendar visita técnica" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cliente/Lead (opcional)</label>
+                    <select id="nova-task-lead" name="lead_id" class="w-full border rounded-lg px-3 py-2">
+                        <option value="">-- Sem cliente vinculado --</option>
+                    </select>
+                    <small class="text-gray-500">Vincule a tarefa a um cliente específico</small>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição/Observações</label>
+                    <textarea id="nova-task-desc" name="descricao" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Detalhes sobre a tarefa..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Vencimento *</label>
+                        <input type="date" id="nova-task-date" name="data_vencimento" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Horário</label>
+                        <input type="time" id="nova-task-time" name="horario" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade *</label>
+                        <select id="nova-task-priority" name="prioridade" class="w-full border rounded-lg px-3 py-2">
+                            <option value="baixa">🟢 Baixa</option>
+                            <option value="media" selected>🟡 Média</option>
+                            <option value="alta">🔴 Alta</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Tarefa</label>
+                        <select id="nova-task-type" name="tipo" class="w-full border rounded-lg px-3 py-2">
+                            <option value="geral">📌 Geral</option>
+                            <option value="follow-up">📞 Follow-up</option>
+                            <option value="visita">🏠 Visita Técnica</option>
+                            <option value="reuniao">👥 Reunião</option>
+                            <option value="documentacao">📄 Documentação</option>
+                            <option value="instalacao">🔧 Instalação</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-end pt-4 border-t">
+                    <button type="button" onclick="closeNovaTarefaModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-2 text-white rounded-lg hover:opacity-90" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                        <i class="fas fa-plus mr-2"></i>Criar Tarefa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Simulador Solar -->
+    <div id="simuladorSolarModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div class="text-white p-6 flex justify-between items-center sticky top-0 z-10" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                <h3 class="text-2xl font-bold">☀️ Simulador Solar - Cálculo Completo</h3>
+                <button onclick="closeSimuladorSolar()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <!-- Formulário de Input -->
+                <div id="simulador-form" class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h4 class="text-lg font-bold mb-4">Dados para Simulação</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">CEP do Imóvel *</label>
+                            <input type="text" id="sim-cep" class="w-full border rounded px-3 py-2" placeholder="00000-000" maxlength="9" onblur="autoPreencherOrientacao()">
+                            <small class="text-gray-500">Inclina\u00e7\u00e3o e azimute ser\u00e3o estimados automaticamente</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Consumo Mensal (kWh) *</label>
+                            <input type="number" id="sim-consumo" class="w-full border rounded px-3 py-2" placeholder="350">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">% de Redução Desejada *</label>
+                            <select id="sim-reducao" class="w-full border rounded px-3 py-2">
+                                <option value="50">50% - Redução Parcial</option>
+                                <option value="75">75% - Alta Redução</option>
+                                <option value="95" selected>95% - Máxima Redução</option>
+                                <option value="100">100% - Autossuficiência</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Tarifa de Energia (R$/kWh)</label>
+                            <input type="number" step="0.01" id="sim-tarifa" class="w-full border rounded px-3 py-2" value="0.85">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Tipo de Cliente</label>
+                            <select id="sim-tipo" class="w-full border rounded px-3 py-2">
+                                <option value="residencial">Residencial</option>
+                                <option value="empresarial">Empresarial</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Tipo de Sistema *</label>
+                            <select id="sim-tipo-sistema" class="w-full border rounded px-3 py-2">
+                                <option value="on-grid">On-Grid (Conectado à Rede)</option>
+                                <option value="off-grid">Off-Grid (Isolado)</option>
+                                <option value="hibrido">Híbrido (Grid + Baterias)</option>
+                            </select>
+                            <small class="text-gray-500">On-Grid: mais comum, sem baterias. Off-Grid: com baterias.</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Inclinação do Telhado (°)</label>
+                            <input type="number" id="sim-inclinacao" class="w-full border rounded px-3 py-2" value="15" min="0" max="90">
+                            <small class="text-gray-500">Ideal: 15-20° (latitude local)</small>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Azimute - Orientação (°)</label>
+                            <select id="sim-azimute" class="w-full border rounded px-3 py-2">
+                                <option value="0">0° - Norte (Ideal)</option>
+                                <option value="15">15° - Norte-Nordeste</option>
+                                <option value="30">30° - Nordeste</option>
+                                <option value="45">45° - Nordeste</option>
+                                <option value="-15">-15° - Norte-Noroeste</option>
+                                <option value="-30">-30° - Noroeste</option>
+                                <option value="-45">-45° - Noroeste</option>
+                                <option value="90">90° - Leste</option>
+                                <option value="-90">-90° - Oeste</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos Avançados (Opcional) -->
+                    <div class="mt-4 border-t pt-4">
+                        <button type="button" onclick="document.getElementById('campos-avancados').classList.toggle('hidden')" class="text-sm text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-cog mr-1"></i>Configurações Avançadas (Opcional)
+                        </button>
+                        <div id="campos-avancados" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Distância Cabos DC (m)</label>
+                                <input type="number" id="sim-dist-dc" class="w-full border rounded px-3 py-2" value="15">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Distância Cabos AC (m)</label>
+                                <input type="number" id="sim-dist-ac" class="w-full border rounded px-3 py-2" value="10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Reajuste Anual Energia (%)</label>
+                                <input type="number" step="0.1" id="sim-reajuste" class="w-full border rounded px-3 py-2" value="8.0">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Inflação Anual (%)</label>
+                                <input type="number" step="0.1" id="sim-inflacao" class="w-full border rounded px-3 py-2" value="4.5">
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="calcularSistema()" class="mt-4 text-white px-6 py-3 rounded-lg font-semibold" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                        <i class="fas fa-calculator mr-2"></i>Calcular Sistema
+                    </button>
+                </div>
+
+                <!-- Resultados -->
+                <div id="simulador-resultados" class="hidden">
+                    <!-- Localização -->
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                        <h5 class="font-bold text-blue-900 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Localização</h5>
+                        <p id="sim-localizacao" class="text-sm text-blue-800"></p>
+                        <p id="sim-irradiacao" class="text-sm text-blue-800 font-semibold mt-1"></p>
+                    </div>
+
+                    <!-- Propostas (3 opções) -->
+                    <div id="propostas-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Propostas inseridas via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget -->
+    <script>
+        window.ChatWidgetConfig = {
+            webhook: {
+                url: 'https://pastro83.app.n8n.cloud/webhook/2951cf43-2103-415e-8b36-f73c345753a3/chat',
+                route: 'general'
+            },
+            branding: {
+                name: 'Sunbotic 🌞 Energia Solar',
+                logo: 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png'
+            },
+            style: {
+                primaryColor: '#309086',
+                secondaryColor: '#267269',
+                position: 'right',
+                backgroundColor: '#ffffff',
+                fontColor: '#1f2937'
+            },
+            suggestedQuestions: []
+        };
+    </script>
+    <script src="./chat-widget-pastro-v236.js"></script>
+
+    <!-- JavaScript -->
+    <script src="./calculadora-solar-completa.js"></script>
+    <script src="./crm.js"></script>
+</body>
+</html>
