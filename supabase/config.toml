@@ -1,8 +1,3 @@
-[project]
-# Substituir com o ID do seu projeto Supabase
-# Encontre em: https://supabase.com/dashboard/project/_/settings/general
-project_id = "SEU_PROJECT_ID"
-
 [api]
 enabled = true
 port = 54321
