@@ -37,8 +37,8 @@
             position: fixed;
             bottom: 90px;
             z-index: 10000;
-            width: 228px;
-            height: 618px;
+            width: 320px !important;
+            height: 520px !important;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
             box-shadow: var(--chat-shadow-lg);
@@ -514,23 +514,23 @@
         }
 
         .blue-button {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
         }
 
         .green-button {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+            color: white !important;
         }
 
         .orange-button {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important;
+            color: white !important;
         }
 
         .yellow-button {
-            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
-            color: white;
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%) !important;
+            color: white !important;
         }
 
         .dynamic-buttons-container {
