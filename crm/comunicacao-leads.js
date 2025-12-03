@@ -1382,13 +1382,20 @@ async function generateSummary() {
 
     const prompt = `Você é um assistente que resume conversas de vendas de energia solar.
 Analise a conversa abaixo e gere um resumo conciso (2-3 frases) com os pontos mais importantes.
-Foque em: interesse do cliente, próximos passos, objeções ou dúvidas mencionadas.
+
+REGRAS IMPORTANTES:
+- Baseie-se APENAS no que foi dito na conversa
+- NÃO invente informações que não existem na conversa
+- Se a conversa tiver poucas mensagens ou só saudações, diga apenas: "Contato inicial realizado. Aguardando continuidade da conversa."
+- Foque em: interesse do cliente, próximos passos, objeções ou dúvidas mencionadas
 
 Cliente: ${lead?.nome || 'Lead'}
 Telefone: ${lead?.phone || 'N/A'}
 
 Conversa:
-${conversationText || 'Conversa sem mensagens registradas'}
+${conversationText || 'Sem mensagens registradas'}
+
+${messages.length <= 2 ? 'ATENÇÃO: Esta conversa tem poucas mensagens. Seja objetivo e não invente detalhes.' : ''}
 
 Gere apenas o resumo, sem explicações adicionais.`;
 
@@ -1570,3 +1577,58 @@ if (document.readyState === 'loading') {
 } else {
     initComunicacaoModule();
 }
+
+// =========================================
+// FUNÇÃO PARA ADICIONAR LEAD DE TESTE
+// =========================================
+async function addTestLead() {
+    try {
+        const testLead = {
+            nome: 'Thiago RS Pastro',
+            email: 'thiago.pastro@test.com',
+            phone: '+49 1799044322',
+            status: 'novo',
+            origem: 'teste',
+            created_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+            .from('leads')
+            .insert([testLead])
+            .select();
+
+        if (error) {
+            console.error('Erro ao adicionar lead de teste:', error);
+            alert('Erro ao adicionar lead: ' + error.message);
+            return;
+        }
+
+        console.log('Lead de teste adicionado:', data);
+        alert('Lead de teste "Thiago RS Pastro" adicionado com sucesso!');
+
+        // Recarregar dados do CRM se disponível
+        if (typeof loadAllData === 'function') {
+            await loadAllData();
+        }
+    } catch (err) {
+        console.error('Erro:', err);
+        alert('Erro ao adicionar lead de teste');
+    }
+}
+
+// Executar automaticamente ao carregar (apenas uma vez)
+(async function() {
+    // Verificar se o lead já existe
+    const { data: existingLead } = await supabase
+        .from('leads')
+        .select('id')
+        .eq('phone', '+49 1799044322')
+        .single();
+
+    if (!existingLead) {
+        console.log('Adicionando lead de teste...');
+        await addTestLead();
+    } else {
+        console.log('Lead de teste já existe');
+    }
+})();
