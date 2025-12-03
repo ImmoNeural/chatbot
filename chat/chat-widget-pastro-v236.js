@@ -37,8 +37,8 @@
             position: fixed;
             bottom: 90px;
             z-index: 10000;
-            width: 380px;
-            height: 1030px;
+            width: 228px;
+            height: 618px;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
             box-shadow: var(--chat-shadow-lg);
@@ -204,6 +204,24 @@
             border-radius: 50%;
             flex-shrink: 0;
             margin-top: 4px;
+        }
+
+        .chat-assist-widget .bot-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .chat-assist-widget .bot-avatar svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
         }
 
         .chat-assist-widget .timestamp {
@@ -469,51 +487,50 @@
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 6px;
+            margin-top: 10px;
         }
 
         .action-button {
-            flex: 1 1 calc(50% - 4px);
-            min-width: 120px;
-            padding: 10px 12px;
+            flex: 1 1 calc(50% - 3px);
+            min-width: 80px;
+            padding: 6px 8px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 500;
-            font-size: 14px;
+            font-size: 11px;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.9;
         }
 
         .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            opacity: 1;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+            filter: brightness(1.05);
         }
 
         .blue-button {
-            background-color: rgba(100, 149, 237, 0.7);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
         }
 
         .green-button {
-            background-color: rgba(144, 238, 144, 0.7);
-            color: #333;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
         }
 
         .orange-button {
-            background-color: rgba(255, 182, 193, 0.7);
-            color: #333;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
         }
 
         .yellow-button {
-            background-color: rgba(255, 255, 153, 0.7);
-            color: #333;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            color: white;
         }
 
         .dynamic-buttons-container {
@@ -555,32 +572,32 @@
             box-shadow: var(--chat-shadow-md);
         }
 
-        @media (max-width: 1500px) {
+        @media (max-width: 480px) {
             .chat-assist-widget .chat-window {
-                width: 98vw !important;
-                max-width: 400px !important;
+                width: 95vw !important;
+                max-width: 260px !important;
                 padding: 0 !important;
-                height: 70vh !important;
+                height: 60vh !important;
                 bottom: 10px !important;
                 left: 50% !important;
                 transform: translateX(-50%) !important;
-                border-radius: 16px !important;
+                border-radius: 12px !important;
                 box-shadow: 0 10px 25px rgba(0,0,0,0.2);
                 overflow: hidden;
             }
         }
 
-        @media (max-width: 3200px) and (orientation: landscape) {
+        @media (min-width: 481px) and (orientation: landscape) {
             .chat-assist-widget .chat-window {
-                width: 65vw !important;
-                max-width: 500px !important;
-                height: 80vh !important;
+                width: 228px !important;
+                max-width: 280px !important;
+                height: 618px !important;
                 top: auto !important;
                 left: auto !important;
                 bottom: 80px !important;
                 right: 20px !important;
                 transform: none !important;
-                border-radius: 16px !important;
+                border-radius: 12px !important;
                 box-shadow: 0 5px 30px rgba(0,0,0,0.15);
             }
         }
@@ -768,6 +785,15 @@
             .replace(/^- (.*)$/gm, '<li>$1</li>');
     };
 
+    // Bot avatar SVG inline
+    const botAvatarHTML = `
+        <div class="bot-avatar">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5z"/>
+            </svg>
+        </div>
+    `;
+
     // Function to add bot message
     const addBotMessage = (content, includeImage = false, imageUrl = '') => {
         const messageContainer = document.createElement('div');
@@ -779,7 +805,7 @@
         }
 
         messageContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
                     ${imageHTML}
@@ -811,25 +837,16 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
 
-    // Function to add the calendar iframe to the conversation
+    // Function to open calendar in external window
     const addCalendarToChat = () => {
-        const iframeContainer = document.createElement('div');
-        iframeContainer.className = 'message-container bot-message';
-        iframeContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
-            <div class="message-content">
-                <div class="chat-bubble bot-bubble">
-                    <iframe
-                        src="https://calendar.app.google/tps9rXCFtW3VUoiBA"
-                        width="470" height="1800" frameborder="0"
-                        style="border-radius: 8px; margin-top: 8px;">
-                    </iframe>
-                </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
-            </div>
-        `;
-        messagesContainer.appendChild(iframeContainer);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // Abre o calendário em uma nova aba/janela externa
+        window.open('https://calendar.app.google/tps9rXCFtW3VUoiBA', '_blank');
+
+        // Mostra mensagem confirmando
+        addBotMessage(`
+            <p>📅 <strong>O calendário foi aberto em uma nova janela!</strong></p>
+            <p style="font-size: 12px; color: #6b7280;">Escolha o melhor horário para sua reunião com nosso especialista.</p>
+        `);
     };
 
     // Function to show the dynamic buttons for different doubt topics
@@ -837,7 +854,7 @@
         const botFollowUpContainer = document.createElement('div');
         botFollowUpContainer.className = 'message-container bot-message';
         botFollowUpContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
                     <p>Sobre qual tópico você tem dúvidas? Escolha uma opção abaixo:</p>
@@ -1041,7 +1058,7 @@
             const messageContainer = document.createElement('div');
             messageContainer.className = 'message-container bot-message';
             messageContainer.innerHTML = `
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+                ${botAvatarHTML}
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
                         <img src="${savingsImage}" style="width: 100%; border-radius: 10px; margin-bottom: 10px;" alt="Economia">
@@ -1088,7 +1105,7 @@
         const welcomeContainer = document.createElement('div');
         welcomeContainer.className = 'message-container bot-message';
         welcomeContainer.innerHTML = `
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+            ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
                     <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
@@ -1237,7 +1254,7 @@
             const botMessageContainer = document.createElement('div');
             botMessageContainer.className = 'message-container bot-message';
             botMessageContainer.innerHTML = `
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="message-icon" alt="Chatbot">
+                ${botAvatarHTML}
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
                         <p>${processedResponse}</p>
