@@ -587,11 +587,11 @@
             }
         }
 
-        @media (min-width: 481px) and (orientation: landscape) {
+        @media (min-width: 481px) {
             .chat-assist-widget .chat-window {
-                width: 228px !important;
-                max-width: 280px !important;
-                height: 618px !important;
+                width: 416px !important;
+                max-width: 450px !important;
+                height: 520px !important;
                 top: auto !important;
                 left: auto !important;
                 bottom: 80px !important;
