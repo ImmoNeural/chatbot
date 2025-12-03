@@ -16,6 +16,7 @@ let leads = [];
 let oportunidades = [];
 let propostas = [];
 let instalados = [];
+let instalacoes = []; // Dados de agendamento de instalação (tabela instalacao)
 let tarefas = [];
 let kpis = {};
 let interacoesStats = {}; // Estatísticas de interações por lead_id
@@ -72,6 +73,7 @@ async function loadAllData() {
             loadOportunidades(),
             loadPropostas(),
             loadInstalados(),
+            loadInstalacoes(),
             loadTarefas(),
             loadKPIs(),
             loadInteracoesStats(),
@@ -195,6 +197,21 @@ async function loadInstalados() {
 
     instalados = data || [];
     console.log(`✅ ${instalados.length} clientes instalados`);
+}
+
+async function loadInstalacoes() {
+    const { data, error } = await supabase
+        .from('instalacao')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Erro ao carregar instalações:', error);
+        return;
+    }
+
+    instalacoes = data || [];
+    console.log(`✅ ${instalacoes.length} instalações agendadas`);
 }
 
 async function loadInteracoesStats() {
@@ -797,8 +814,8 @@ function renderKanban() {
                 minute: '2-digit'
             });
 
-            // Verificar se há instalação agendada (buscar no array instalados)
-            const instalacao = instalados.find(inst => inst.oportunidade_id === oportunidade.id);
+            // Verificar se há instalação agendada (buscar no array instalacoes pela tabela instalacao)
+            const instalacao = instalacoes.find(inst => inst.lead_id === oportunidade.lead_id);
             const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
 
             // Determinar badge/ícone de status
@@ -2575,8 +2592,8 @@ function renderKanbanFiltered() {
                 minute: '2-digit'
             });
 
-            // Verificar se há instalação agendada (buscar no array instalados)
-            const instalacao = instalados.find(inst => inst.oportunidade_id === oportunidade.id);
+            // Verificar se há instalação agendada (buscar no array instalacoes pela tabela instalacao)
+            const instalacao = instalacoes.find(inst => inst.lead_id === oportunidade.lead_id);
             const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
 
             // Determinar badge/ícone de status
