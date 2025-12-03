@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preferências do Chatbot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #1f2937;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="color"] {
+            width: 50px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .color-hex {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .logo-upload {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logo-upload:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+        }
+
+        .logo-upload input {
+            display: none;
+        }
+
+        .logo-preview {
+            max-width: 150px;
+            max-height: 80px;
+            margin: 10px auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .logo-upload-text {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* Preview Panel */
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chat-preview {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .preview-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .preview-logo {
+            width: 100px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: white;
+            padding: 4px;
+        }
+
+        .preview-title-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .preview-close {
+            margin-left: auto;
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .preview-body {
+            background: #f9fafb;
+            padding: 20px;
+            min-height: 250px;
+        }
+
+        .preview-message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .preview-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .preview-avatar svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .preview-bubble {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            max-width: 280px;
+        }
+
+        .preview-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .preview-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            flex: 1 1 calc(50% - 4px);
+            text-align: center;
+        }
+
+        .preview-footer {
+            background: white;
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .preview-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .preview-textarea {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .preview-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-send svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .preview-powered {
+            text-align: center;
+            padding: 10px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* Code output */
+        .code-output {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .code-output.visible {
+            display: block;
+        }
+
+        .code-box {
+            background: #1f2937;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .code-box pre {
+            color: #e5e7eb;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background: #10b981;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+        }
+
+        .success-message {
+            color: #10b981;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Settings Panel -->
+        <div class="panel">
+            <h1>Preferências do Chatbot</h1>
+            <p class="subtitle">Personalize a aparência do seu assistente virtual</p>
+
+            <!-- Branding -->
+            <div class="section">
+                <div class="section-title">Identidade Visual</div>
+
+                <div class="form-group">
+                    <label>Título do Chatbot</label>
+                    <input type="text" id="chatTitle" value="Sunbotic 🌞 Energia Solar" placeholder="Nome do seu chatbot">
+                </div>
+
+                <div class="form-group">
+                    <label>Logo (URL ou Upload)</label>
+                    <input type="url" id="logoUrl" value="https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png" placeholder="https://exemplo.com/logo.png">
+                </div>
+
+                <div class="form-group">
+                    <label>Ou faça upload da imagem</label>
+                    <div class="logo-upload" onclick="document.getElementById('logoFile').click()">
+                        <input type="file" id="logoFile" accept="image/*">
+                        <img id="logoPreviewImg" class="logo-preview" style="display: none;">
+                        <p class="logo-upload-text">Clique para fazer upload do logo</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Colors -->
+            <div class="section">
+                <div class="section-title">Cores do Header</div>
+
+                <div class="form-group">
+                    <label>Cor Primária (início do gradiente)</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="headerPrimary" value="#667eea">
+                        <input type="text" class="color-hex" id="headerPrimaryHex" value="#667eea">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor Secundária (fim do gradiente)</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="headerSecondary" value="#764ba2">
+                        <input type="text" class="color-hex" id="headerSecondaryHex" value="#764ba2">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button Colors -->
+            <div class="section">
+                <div class="section-title">Cores dos Botões</div>
+
+                <div class="form-group">
+                    <label>Cor Primária dos Botões</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="buttonPrimary" value="#4a5568">
+                        <input type="text" class="color-hex" id="buttonPrimaryHex" value="#4a5568">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor Secundária dos Botões</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="buttonSecondary" value="#2d3748">
+                        <input type="text" class="color-hex" id="buttonSecondaryHex" value="#2d3748">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bubble Colors -->
+            <div class="section">
+                <div class="section-title">Cores do Bubble (Mensagem do Bot)</div>
+
+                <div class="form-group">
+                    <label>Cor de Fundo do Bubble</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="bubbleBg" value="#ffffff">
+                        <input type="text" class="color-hex" id="bubbleBgHex" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor do Texto do Bubble</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="bubbleText" value="#1f2937">
+                        <input type="text" class="color-hex" id="bubbleTextHex" value="#1f2937">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Color -->
+            <div class="section">
+                <div class="section-title">Cor do Avatar do Bot</div>
+
+                <div class="form-group">
+                    <label>Cor Primária do Avatar</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="avatarPrimary" value="#667eea">
+                        <input type="text" class="color-hex" id="avatarPrimaryHex" value="#667eea">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor Secundária do Avatar</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="avatarSecondary" value="#764ba2">
+                        <input type="text" class="color-hex" id="avatarSecondaryHex" value="#764ba2">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateCode()">Gerar Código de Configuração</button>
+            <button class="btn btn-secondary" onclick="savePreferences()">Salvar Preferências</button>
+
+            <div class="code-output" id="codeOutput">
+                <div class="code-box">
+                    <pre id="generatedCode"></pre>
+                </div>
+                <button class="btn copy-btn" onclick="copyCode()">Copiar Código</button>
+                <p class="success-message" id="copySuccess">Código copiado!</p>
+            </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="panel">
+            <p class="preview-title">Preview em Tempo Real</p>
+
+            <div class="chat-preview">
+                <div class="preview-header" id="previewHeader">
+                    <img class="preview-logo" id="previewLogo" src="https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png" alt="Logo">
+                    <span class="preview-title-text" id="previewTitleText">Sunbotic 🌞 Energia Solar</span>
+                    <div class="preview-close">×</div>
+                </div>
+
+                <div class="preview-body">
+                    <div class="preview-message">
+                        <div class="preview-avatar" id="previewAvatar">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="preview-bubble" id="previewBubble">
+                                Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?
+
+                                <div class="preview-buttons" id="previewButtons">
+                                    <div class="preview-btn">Quero economizar</div>
+                                    <div class="preview-btn">Agendar reunião</div>
+                                    <div class="preview-btn">Falar com alguém</div>
+                                    <div class="preview-btn">Tenho dúvidas</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-footer">
+                    <div class="preview-input">
+                        <div class="preview-textarea">Digite aqui...</div>
+                        <div class="preview-send" id="previewSend">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-powered">Powered by Neureka AI</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sync color inputs with hex inputs
+        function setupColorSync(colorId, hexId) {
+            const colorInput = document.getElementById(colorId);
+            const hexInput = document.getElementById(hexId);
+
+            colorInput.addEventListener('input', () => {
+                hexInput.value = colorInput.value;
+                updatePreview();
+            });
+
+            hexInput.addEventListener('input', () => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) {
+                    colorInput.value = hexInput.value;
+                    updatePreview();
+                }
+            });
+        }
+
+        // Setup all color syncs
+        setupColorSync('headerPrimary', 'headerPrimaryHex');
+        setupColorSync('headerSecondary', 'headerSecondaryHex');
+        setupColorSync('buttonPrimary', 'buttonPrimaryHex');
+        setupColorSync('buttonSecondary', 'buttonSecondaryHex');
+        setupColorSync('bubbleBg', 'bubbleBgHex');
+        setupColorSync('bubbleText', 'bubbleTextHex');
+        setupColorSync('avatarPrimary', 'avatarPrimaryHex');
+        setupColorSync('avatarSecondary', 'avatarSecondaryHex');
+
+        // Title input
+        document.getElementById('chatTitle').addEventListener('input', updatePreview);
+
+        // Logo URL input
+        document.getElementById('logoUrl').addEventListener('input', updatePreview);
+
+        // Logo file upload
+        document.getElementById('logoFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    document.getElementById('logoUrl').value = dataUrl;
+                    document.getElementById('logoPreviewImg').src = dataUrl;
+                    document.getElementById('logoPreviewImg').style.display = 'block';
+                    document.querySelector('.logo-upload-text').style.display = 'none';
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Update preview
+        function updatePreview() {
+            const headerPrimary = document.getElementById('headerPrimary').value;
+            const headerSecondary = document.getElementById('headerSecondary').value;
+            const buttonPrimary = document.getElementById('buttonPrimary').value;
+            const buttonSecondary = document.getElementById('buttonSecondary').value;
+            const bubbleBg = document.getElementById('bubbleBg').value;
+            const bubbleText = document.getElementById('bubbleText').value;
+            const avatarPrimary = document.getElementById('avatarPrimary').value;
+            const avatarSecondary = document.getElementById('avatarSecondary').value;
+            const title = document.getElementById('chatTitle').value;
+            const logoUrl = document.getElementById('logoUrl').value;
+
+            // Update header
+            document.getElementById('previewHeader').style.background =
+                `linear-gradient(135deg, ${headerPrimary} 0%, ${headerSecondary} 100%)`;
+
+            // Update title
+            document.getElementById('previewTitleText').textContent = title;
+
+            // Update logo
+            document.getElementById('previewLogo').src = logoUrl;
+
+            // Update buttons
+            const buttons = document.querySelectorAll('.preview-btn');
+            buttons.forEach(btn => {
+                btn.style.background = `linear-gradient(135deg, ${buttonPrimary} 0%, ${buttonSecondary} 100%)`;
+            });
+
+            // Update bubble
+            document.getElementById('previewBubble').style.background = bubbleBg;
+            document.getElementById('previewBubble').style.color = bubbleText;
+
+            // Update avatar
+            document.getElementById('previewAvatar').style.background =
+                `linear-gradient(135deg, ${avatarPrimary} 0%, ${avatarSecondary} 100%)`;
+
+            // Update send button
+            document.getElementById('previewSend').style.background =
+                `linear-gradient(135deg, ${headerPrimary} 0%, ${headerSecondary} 100%)`;
+            document.getElementById('previewSend').style.color = 'white';
+        }
+
+        // Generate configuration code
+        function generateCode() {
+            const config = {
+                headerPrimary: document.getElementById('headerPrimary').value,
+                headerSecondary: document.getElementById('headerSecondary').value,
+                buttonPrimary: document.getElementById('buttonPrimary').value,
+                buttonSecondary: document.getElementById('buttonSecondary').value,
+                bubbleBg: document.getElementById('bubbleBg').value,
+                bubbleText: document.getElementById('bubbleText').value,
+                avatarPrimary: document.getElementById('avatarPrimary').value,
+                avatarSecondary: document.getElementById('avatarSecondary').value,
+                title: document.getElementById('chatTitle').value,
+                logoUrl: document.getElementById('logoUrl').value
+            };
+
+            const code = `<!-- Cole este código no seu HTML antes do script do chatbot -->
+<script>
+    window.ChatWidgetConfig = {
+        webhook: {
+            url: 'SUA_URL_DO_WEBHOOK',
+            route: 'general'
+        },
+        branding: {
+            name: '${config.title}',
+            logo: '${config.logoUrl}'
+        },
+        style: {
+            primaryColor: '${config.headerPrimary}',
+            secondaryColor: '${config.headerSecondary}',
+            position: 'right',
+            backgroundColor: '#ffffff',
+            fontColor: '#1f2937'
+        },
+        customStyles: {
+            buttonPrimary: '${config.buttonPrimary}',
+            buttonSecondary: '${config.buttonSecondary}',
+            bubbleBackground: '${config.bubbleBg}',
+            bubbleText: '${config.bubbleText}',
+            avatarPrimary: '${config.avatarPrimary}',
+            avatarSecondary: '${config.avatarSecondary}'
+        }
+    };
+<\/script>`;
+
+            document.getElementById('generatedCode').textContent = code;
+            document.getElementById('codeOutput').classList.add('visible');
+        }
+
+        // Copy code to clipboard
+        function copyCode() {
+            const code = document.getElementById('generatedCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                document.getElementById('copySuccess').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('copySuccess').style.display = 'none';
+                }, 2000);
+            });
+        }
+
+        // Save preferences to localStorage
+        function savePreferences() {
+            const prefs = {
+                headerPrimary: document.getElementById('headerPrimary').value,
+                headerSecondary: document.getElementById('headerSecondary').value,
+                buttonPrimary: document.getElementById('buttonPrimary').value,
+                buttonSecondary: document.getElementById('buttonSecondary').value,
+                bubbleBg: document.getElementById('bubbleBg').value,
+                bubbleText: document.getElementById('bubbleText').value,
+                avatarPrimary: document.getElementById('avatarPrimary').value,
+                avatarSecondary: document.getElementById('avatarSecondary').value,
+                title: document.getElementById('chatTitle').value,
+                logoUrl: document.getElementById('logoUrl').value
+            };
+
+            localStorage.setItem('chatbotPreferences', JSON.stringify(prefs));
+            alert('Preferências salvas com sucesso!');
+        }
+
+        // Load saved preferences
+        function loadPreferences() {
+            const saved = localStorage.getItem('chatbotPreferences');
+            if (saved) {
+                const prefs = JSON.parse(saved);
+
+                document.getElementById('headerPrimary').value = prefs.headerPrimary || '#667eea';
+                document.getElementById('headerPrimaryHex').value = prefs.headerPrimary || '#667eea';
+                document.getElementById('headerSecondary').value = prefs.headerSecondary || '#764ba2';
+                document.getElementById('headerSecondaryHex').value = prefs.headerSecondary || '#764ba2';
+                document.getElementById('buttonPrimary').value = prefs.buttonPrimary || '#4a5568';
+                document.getElementById('buttonPrimaryHex').value = prefs.buttonPrimary || '#4a5568';
+                document.getElementById('buttonSecondary').value = prefs.buttonSecondary || '#2d3748';
+                document.getElementById('buttonSecondaryHex').value = prefs.buttonSecondary || '#2d3748';
+                document.getElementById('bubbleBg').value = prefs.bubbleBg || '#ffffff';
+                document.getElementById('bubbleBgHex').value = prefs.bubbleBg || '#ffffff';
+                document.getElementById('bubbleText').value = prefs.bubbleText || '#1f2937';
+                document.getElementById('bubbleTextHex').value = prefs.bubbleText || '#1f2937';
+                document.getElementById('avatarPrimary').value = prefs.avatarPrimary || '#667eea';
+                document.getElementById('avatarPrimaryHex').value = prefs.avatarPrimary || '#667eea';
+                document.getElementById('avatarSecondary').value = prefs.avatarSecondary || '#764ba2';
+                document.getElementById('avatarSecondaryHex').value = prefs.avatarSecondary || '#764ba2';
+                document.getElementById('chatTitle').value = prefs.title || 'Sunbotic 🌞 Energia Solar';
+                document.getElementById('logoUrl').value = prefs.logoUrl || 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png';
+
+                updatePreview();
+            }
+        }
+
+        // Initialize
+        loadPreferences();
+        updatePreview();
+    </script>
+</body>
+</html>
