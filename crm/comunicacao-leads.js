@@ -48,11 +48,11 @@ function createFloatingButtons() {
         <style>
             #comunicacao-floating-btns {
                 position: fixed;
-                right: 80px;
+                right: 220px;
                 top: 18px;
                 display: flex;
                 flex-direction: row;
-                gap: 10px;
+                gap: 8px;
                 z-index: 9999;
             }
 
