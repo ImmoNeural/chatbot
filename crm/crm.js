@@ -222,6 +222,8 @@ function showEmpresaSettings() {
 // Charts
 let funnelChart = null;
 let conversionChart = null;
+let leadsStatusChart = null;
+let propostasResultChart = null;
 
 // =========================================
 // INICIALIZAÇÃO
@@ -648,6 +650,8 @@ function renderKPICards() {
 function renderCharts() {
     renderFunnelChart();
     renderConversionChart();
+    renderLeadsStatusChart();
+    renderPropostasResultChart();
 }
 
 function renderFunnelChart() {
@@ -717,6 +721,150 @@ function renderConversionChart() {
             }
         }
     });
+}
+
+function renderLeadsStatusChart() {
+    const ctx = document.getElementById('leadsStatusChart');
+    if (!ctx) return;
+
+    // Contar leads por status
+    const statusCounts = {
+        novo: leads.filter(l => l.status === 'novo').length,
+        qualificado: leads.filter(l => l.status === 'qualificado').length,
+        em_nutricao: leads.filter(l => l.status === 'em_nutricao').length,
+        nao_qualificado: leads.filter(l => l.status === 'nao_qualificado').length,
+        convertido: leads.filter(l => l.status === 'convertido').length,
+        perdido: leads.filter(l => l.status === 'perdido').length
+    };
+
+    const total = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+    document.getElementById('totalLeadsCount').textContent = total;
+
+    const statusLabels = {
+        novo: 'Novo',
+        qualificado: 'Qualificado',
+        em_nutricao: 'Em Nutrição',
+        nao_qualificado: 'Não Qualificado',
+        convertido: 'Convertido',
+        perdido: 'Perdido'
+    };
+
+    const statusColors = {
+        novo: '#fb923c',        // Laranja
+        qualificado: '#14b8a6', // Teal
+        em_nutricao: '#a78bfa', // Roxo
+        nao_qualificado: '#9ca3af', // Cinza
+        convertido: '#22c55e',  // Verde
+        perdido: '#ef4444'      // Vermelho
+    };
+
+    // Filtrar apenas status com valores > 0
+    const activeStatuses = Object.entries(statusCounts).filter(([_, count]) => count > 0);
+
+    if (leadsStatusChart) leadsStatusChart.destroy();
+
+    leadsStatusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: activeStatuses.map(([status, _]) => statusLabels[status]),
+            datasets: [{
+                data: activeStatuses.map(([_, count]) => count),
+                backgroundColor: activeStatuses.map(([status, _]) => statusColors[status]),
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Renderizar legenda customizada
+    const legendContainer = document.getElementById('leadsStatusLegend');
+    legendContainer.innerHTML = activeStatuses.map(([status, count]) => `
+        <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-50">
+            <div class="w-3 h-3 rounded-full" style="background: ${statusColors[status]}"></div>
+            <span class="text-gray-700">${statusLabels[status]}</span>
+            <span class="font-bold text-gray-800 ml-auto">${count}</span>
+        </div>
+    `).join('');
+}
+
+function renderPropostasResultChart() {
+    const ctx = document.getElementById('propostasResultChart');
+    if (!ctx) return;
+
+    // Contar propostas por status e tipo
+    const propostasCounts = {
+        aceita_residencial: propostas.filter(p => p.status === 'aceita' && p.leads?.tipo_cliente === 'residencial').length,
+        aceita_empresarial: propostas.filter(p => p.status === 'aceita' && p.leads?.tipo_cliente === 'empresarial').length,
+        recusada_residencial: propostas.filter(p => p.status === 'recusada' && p.leads?.tipo_cliente === 'residencial').length,
+        recusada_empresarial: propostas.filter(p => p.status === 'recusada' && p.leads?.tipo_cliente === 'empresarial').length,
+        pendente_residencial: propostas.filter(p => ['enviada', 'visualizada'].includes(p.status) && p.leads?.tipo_cliente === 'residencial').length,
+        pendente_empresarial: propostas.filter(p => ['enviada', 'visualizada'].includes(p.status) && p.leads?.tipo_cliente === 'empresarial').length
+    };
+
+    const total = Object.values(propostasCounts).reduce((a, b) => a + b, 0);
+    document.getElementById('totalPropostasCount').textContent = total;
+
+    const labels = {
+        aceita_residencial: 'Aceitas (Residencial)',
+        aceita_empresarial: 'Aceitas (Empresarial)',
+        recusada_residencial: 'Recusadas (Residencial)',
+        recusada_empresarial: 'Recusadas (Empresarial)',
+        pendente_residencial: 'Pendentes (Residencial)',
+        pendente_empresarial: 'Pendentes (Empresarial)'
+    };
+
+    const colors = {
+        aceita_residencial: '#22c55e',     // Verde claro
+        aceita_empresarial: '#15803d',     // Verde escuro
+        recusada_residencial: '#f87171',   // Vermelho claro
+        recusada_empresarial: '#dc2626',   // Vermelho escuro
+        pendente_residencial: '#60a5fa',   // Azul claro
+        pendente_empresarial: '#2563eb'    // Azul escuro
+    };
+
+    // Filtrar apenas com valores > 0
+    const activeCategories = Object.entries(propostasCounts).filter(([_, count]) => count > 0);
+
+    if (propostasResultChart) propostasResultChart.destroy();
+
+    propostasResultChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: activeCategories.map(([key, _]) => labels[key]),
+            datasets: [{
+                data: activeCategories.map(([_, count]) => count),
+                backgroundColor: activeCategories.map(([key, _]) => colors[key]),
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Renderizar legenda customizada
+    const legendContainer = document.getElementById('propostasResultLegend');
+    legendContainer.innerHTML = activeCategories.map(([key, count]) => `
+        <div class="flex items-center gap-2 p-2 rounded-lg bg-gray-50">
+            <div class="w-3 h-3 rounded-full" style="background: ${colors[key]}"></div>
+            <span class="text-gray-700 text-xs">${labels[key]}</span>
+            <span class="font-bold text-gray-800 ml-auto">${count}</span>
+        </div>
+    `).join('');
 }
 
 function renderRecentLeads() {

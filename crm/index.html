@@ -466,6 +466,42 @@
                 </div>
             </div>
 
+            <!-- Gráficos Circulares -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="module-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-pie text-teal-600 mr-2"></i>
+                        Leads por Status
+                    </h3>
+                    <div class="flex items-center justify-center">
+                        <div class="relative" style="width: 280px; height: 280px;">
+                            <canvas id="leadsStatusChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-3xl font-bold text-gray-800" id="totalLeadsCount">0</span>
+                                <span class="text-sm text-gray-500">Total de Leads</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="leadsStatusLegend" class="mt-4 grid grid-cols-2 gap-2 text-sm"></div>
+                </div>
+                <div class="module-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-file-contract text-blue-600 mr-2"></i>
+                        Propostas por Resultado
+                    </h3>
+                    <div class="flex items-center justify-center">
+                        <div class="relative" style="width: 280px; height: 280px;">
+                            <canvas id="propostasResultChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-3xl font-bold text-gray-800" id="totalPropostasCount">0</span>
+                                <span class="text-sm text-gray-500">Total Propostas</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="propostasResultLegend" class="mt-4 grid grid-cols-2 gap-2 text-sm"></div>
+                </div>
+            </div>
+
             <!-- Leads Recentes -->
             <div class="module-card p-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Leads Recentes (Chatbot)</h3>
