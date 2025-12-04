@@ -1,3 +1,5 @@
+console.log('🟢🟢🟢 comunicacao-leads.js CARREGANDO...');
+
 // =========================================
 // MÓDULO DE COMUNICAÇÃO COM LEADS
 // WhatsApp, Áudio e Texto com Resumo IA
