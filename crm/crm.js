@@ -198,7 +198,7 @@ function getLeadAvatarIcon(lead) {
     if (lead.tipo_cliente === 'empresarial') {
         return {
             icon: 'fa-building',
-            bgColor: '#6b7280', // Cinza
+            bgColor: 'linear-gradient(135deg, #64748b 0%, #475569 100%)', // Cinza elegante
             title: 'Empresa'
         };
     }
@@ -208,14 +208,14 @@ function getLeadAvatarIcon(lead) {
     if (genero === 'feminino') {
         return {
             icon: 'fa-female',
-            bgColor: '#ec4899', // Rosa
+            bgColor: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)', // Rosa vibrante
             title: 'Pessoa Física (Feminino)'
         };
     }
 
     return {
         icon: 'fa-male',
-        bgColor: '#3b82f6', // Azul
+        bgColor: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)', // Azul vibrante
         title: 'Pessoa Física (Masculino)'
     };
 }
