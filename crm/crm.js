@@ -2651,6 +2651,7 @@ function setupEventListeners() {
 }
 
 function filterLeads() {
+    console.log('🔍 filterLeads chamado, leads:', leads.length);
     const searchInput = document.getElementById('lead-search');
     const statusFilter = document.getElementById('lead-status-filter');
     const typeFilter = document.getElementById('lead-type-filter');
@@ -2675,11 +2676,13 @@ function filterLeads() {
         return matchesSearch && matchesStatus && matchesType;
     });
 
+    console.log('🔍 filteredLeads:', filteredLeads.length);
     renderFilteredLeadsTable(filteredLeads);
 }
 
 function renderFilteredLeadsTable(filteredLeads) {
     const tbody = document.getElementById('leads-table-body');
+    console.log('🔍 renderFilteredLeadsTable - tbody:', !!tbody, 'leads:', filteredLeads.length);
     if (!tbody) return;
 
     tbody.innerHTML = filteredLeads.map(lead => {
