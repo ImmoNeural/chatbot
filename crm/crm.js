@@ -298,7 +298,18 @@ async function loadAllData() {
 async function loadLeads() {
     const { data, error } = await supabase
         .from('leads')
-        .select('*')
+        .select(`
+            *,
+            oportunidades (
+                id,
+                propostas (
+                    id,
+                    status,
+                    valor_final,
+                    numero_modulos
+                )
+            )
+        `)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -1283,11 +1294,44 @@ async function toggleFavorito(oportunidadeId) {
 // =========================================
 // TABELA DE LEADS
 // =========================================
+
+// Helper para obter dados da proposta do lead
+function getLeadPropostaData(lead) {
+    // Buscar a proposta mais recente via oportunidades
+    const oportunidade = lead.oportunidades?.[0];
+    const proposta = oportunidade?.propostas?.[0];
+
+    if (!proposta) {
+        return { status: null, modulos: null, preco: null };
+    }
+
+    return {
+        status: proposta.status,
+        modulos: proposta.numero_modulos,
+        preco: proposta.valor_final
+    };
+}
+
+// Helper para cor do status da proposta
+function getPropostaStatusBadge(status) {
+    const statusConfig = {
+        enviada: { class: 'badge-info', label: 'Enviada' },
+        visualizada: { class: 'badge-warning', label: 'Visualizada' },
+        aceita: { class: 'badge-success', label: 'Aceita' },
+        recusada: { class: 'badge-danger', label: 'Recusada' }
+    };
+    return statusConfig[status] || { class: 'badge-gray', label: '-' };
+}
+
 function renderLeadsTable() {
     const tbody = document.getElementById('leads-table-body');
     if (!tbody) return;
 
-    tbody.innerHTML = leads.map(lead => `
+    tbody.innerHTML = leads.map(lead => {
+        const propostaData = getLeadPropostaData(lead);
+        const propostaStatus = getPropostaStatusBadge(propostaData.status);
+
+        return `
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
@@ -1317,7 +1361,15 @@ function renderLeadsTable() {
             <td class="px-6 py-4">
                 <span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600">${lead.user_id ? 'Atribuído' : 'Não atribuído'}</td>
+            <td class="px-6 py-4">
+                <span class="badge ${propostaStatus.class}">${propostaStatus.label}</span>
+            </td>
+            <td class="px-6 py-4 text-center font-semibold text-gray-700">
+                ${propostaData.modulos || '-'}
+            </td>
+            <td class="px-6 py-4 font-semibold text-green-600">
+                ${propostaData.preco ? formatCurrency(propostaData.preco) : '-'}
+            </td>
             <td class="px-6 py-4">
                 <button onclick="event.stopPropagation(); editLead('${lead.id}')" class="text-blue-600 hover:text-blue-800 mr-3">
                     <i class="fas fa-edit"></i>
@@ -1327,7 +1379,7 @@ function renderLeadsTable() {
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
+    `}).join('') || '<tr><td colspan="9" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
 }
 
 // =========================================
@@ -2508,7 +2560,11 @@ function renderFilteredLeadsTable(filteredLeads) {
     const tbody = document.getElementById('leads-table-body');
     if (!tbody) return;
 
-    tbody.innerHTML = filteredLeads.map(lead => `
+    tbody.innerHTML = filteredLeads.map(lead => {
+        const propostaData = getLeadPropostaData(lead);
+        const propostaStatus = getPropostaStatusBadge(propostaData.status);
+
+        return `
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
@@ -2538,16 +2594,25 @@ function renderFilteredLeadsTable(filteredLeads) {
             <td class="px-6 py-4">
                 <span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600">
-                ${lead.users ? lead.users.nome : 'Não atribuído'}
+            <td class="px-6 py-4">
+                <span class="badge ${propostaStatus.class}">${propostaStatus.label}</span>
+            </td>
+            <td class="px-6 py-4 text-center font-semibold text-gray-700">
+                ${propostaData.modulos || '-'}
+            </td>
+            <td class="px-6 py-4 font-semibold text-green-600">
+                ${propostaData.preco ? formatCurrency(propostaData.preco) : '-'}
             </td>
             <td class="px-6 py-4">
-                <button onclick="event.stopPropagation(); openLeadModal('${lead.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
-                    <i class="fas fa-eye"></i>
+                <button onclick="event.stopPropagation(); editLead('${lead.id}')" class="text-blue-600 hover:text-blue-800 mr-3">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="event.stopPropagation(); deleteLead('${lead.id}')" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
+    `}).join('') || '<tr><td colspan="9" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
 }
 
 function showNewLeadModal() {
