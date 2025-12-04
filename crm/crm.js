@@ -273,31 +273,6 @@ async function loadAllData() {
     }
 }
 
-async function loadCurrentUser() {
-    try {
-        // Buscar primeiro usuário ativo (para demo)
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('ativo', true)
-            .limit(1)
-            .single();
-
-        if (data) {
-            document.getElementById('user-name').textContent = data.nome || 'Vendedor';
-            document.getElementById('user-role').textContent = data.role === 'gestor' ? 'Gestor' : 'Vendedor';
-        } else {
-            // Valores padrão se não houver usuário
-            document.getElementById('user-name').textContent = 'Demo User';
-            document.getElementById('user-role').textContent = 'Vendedor';
-        }
-    } catch (error) {
-        console.error('Erro ao carregar usuário:', error);
-        document.getElementById('user-name').textContent = 'Vendedor';
-        document.getElementById('user-role').textContent = 'Vendedor';
-    }
-}
-
 async function loadLeads() {
     const { data, error } = await supabase
         .from('leads')
