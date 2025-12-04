@@ -1572,14 +1572,15 @@ function openWhatsAppForCurrentLead() {
     }
 
     // Configurar estado de comunicação e abrir conversa
-    if (typeof comunicacaoState !== 'undefined' && typeof openConversation === 'function') {
-        comunicacaoState.selectedLead = currentLead;
-        comunicacaoState.conversationType = 'whatsapp';
-        comunicacaoState.messages = [];
-        comunicacaoState.conversationStartTime = new Date();
-        openConversation();
+    if (window.comunicacaoState && typeof window.openConversation === 'function') {
+        window.comunicacaoState.selectedLead = currentLead;
+        window.comunicacaoState.conversationType = 'whatsapp';
+        window.comunicacaoState.messages = [];
+        window.comunicacaoState.conversationStartTime = new Date();
+        window.openConversation();
     } else {
         // Fallback: abrir WhatsApp Web diretamente
+        console.warn('Módulo de comunicação não disponível, abrindo WhatsApp Web');
         const phone = currentLead.phone || currentLead.telefone;
         const phoneClean = phone.replace(/\D/g, '');
         const whatsappUrl = `https://wa.me/${phoneClean}`;
