@@ -417,6 +417,16 @@
                 <p id="module-subtitle" class="text-gray-600 mt-1">Visão geral do funil de vendas</p>
             </div>
             <div class="flex items-center gap-3">
+                <!-- Botão WhatsApp -->
+                <button onclick="window.openLeadSelector('whatsapp')" class="p-3 rounded-lg hover:bg-gray-100 transition" title="Enviar WhatsApp" style="background: #25D366;">
+                    <i class="fab fa-whatsapp text-xl text-white"></i>
+                </button>
+
+                <!-- Botão Configurações -->
+                <button onclick="window.openConfigModal ? window.openConfigModal() : alert('Config não disponível')" class="p-3 rounded-lg hover:bg-gray-100 transition bg-gray-600" title="Configurações API">
+                    <i class="fas fa-cog text-xl text-white"></i>
+                </button>
+
                 <!-- Ícone de Notificações -->
                 <div class="relative">
                     <button onclick="toggleNotificacoes()" class="relative p-3 rounded-lg hover:bg-gray-100 transition" title="Notificações">

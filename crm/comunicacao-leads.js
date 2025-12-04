@@ -47,108 +47,12 @@ function initComunicacaoModule() {
 }
 
 // =========================================
-// CRIAR BOTÕES FLUTUANTES
+// BOTÕES NO HEADER (não mais flutuantes)
 // =========================================
 function createFloatingButtons() {
-    const floatingContainer = document.createElement('div');
-    floatingContainer.id = 'comunicacao-floating-btns';
-    floatingContainer.innerHTML = `
-        <style>
-            #comunicacao-floating-btns {
-                position: fixed;
-                right: 220px;
-                top: 58px;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap: 8px;
-                z-index: 9999;
-            }
-
-            .comunicacao-btn {
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                border: none;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-                transition: all 0.2s ease;
-                position: relative;
-            }
-
-            .comunicacao-btn:hover {
-                transform: scale(1.08);
-                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            }
-
-            .comunicacao-btn svg {
-                width: 18px;
-                height: 18px;
-            }
-
-            .comunicacao-btn-whatsapp {
-                background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-            }
-
-            .comunicacao-btn-whatsapp svg {
-                fill: white;
-            }
-
-            .comunicacao-btn-config {
-                background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-            }
-
-            .comunicacao-btn-config svg {
-                fill: white;
-            }
-
-            .comunicacao-btn-tooltip {
-                position: absolute;
-                top: 50px;
-                right: 0;
-                background: #1f2937;
-                color: white;
-                padding: 6px 10px;
-                border-radius: 6px;
-                font-size: 11px;
-                white-space: nowrap;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.2s;
-            }
-
-            .comunicacao-btn:hover .comunicacao-btn-tooltip {
-                opacity: 1;
-            }
-
-            .comunicacao-btn-tooltip::before {
-                content: '';
-                position: absolute;
-                top: -6px;
-                right: 12px;
-                border: 6px solid transparent;
-                border-bottom-color: #1f2937;
-            }
-        </style>
-
-        <button class="comunicacao-btn comunicacao-btn-whatsapp" onclick="window.openLeadSelector('whatsapp')" title="WhatsApp">
-            <span class="comunicacao-btn-tooltip">Enviar WhatsApp</span>
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
-        </button>
-
-        <button class="comunicacao-btn comunicacao-btn-config" onclick="openConfigModal()" title="Configurações">
-            <span class="comunicacao-btn-tooltip">Configurar API</span>
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-            </svg>
-        </button>
-    `;
-    document.body.appendChild(floatingContainer);
+    // Botões agora estão fixos no header do index.html
+    // Esta função mantida apenas para não quebrar a inicialização
+    console.log('🟢 Botões de comunicação estão no header HTML');
 }
 
 // =========================================
@@ -1680,6 +1584,7 @@ window.closeConversation = closeConversation;
 window.openLeadSelector = openLeadSelector;
 window.closeLeadSelector = closeLeadSelector;
 window.selectLead = selectLead;
+window.openConfigModal = openConfigModal;
 console.log('🟢 Módulo de comunicação exportado para window');
 
 // =========================================
