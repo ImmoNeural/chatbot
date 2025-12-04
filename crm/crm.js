@@ -161,7 +161,66 @@ function getInitials(name) {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 }
 
-// Cores pastel bonitas para avatares
+// Função para inferir gênero pelo primeiro nome (padrões brasileiros)
+function inferirGenero(nome) {
+    if (!nome) return 'desconhecido';
+
+    const primeiroNome = nome.split(' ')[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Nomes femininos comuns que terminam em 'o' (exceções)
+    const nomesFemininosExcecao = ['socorro', 'conceicao', 'aparecida'];
+    if (nomesFemininosExcecao.includes(primeiroNome)) return 'feminino';
+
+    // Nomes masculinos comuns que terminam em 'a' (exceções)
+    const nomesMasculinosExcecao = ['josue', 'andre', 'felipe', 'henrique', 'jorge', 'jose', 'luca', 'nikolas'];
+    if (nomesMasculinosExcecao.includes(primeiroNome)) return 'masculino';
+
+    // Regras gerais por terminação
+    if (primeiroNome.endsWith('a') || primeiroNome.endsWith('e') && !primeiroNome.endsWith('ue')) {
+        return 'feminino';
+    }
+    if (primeiroNome.endsWith('o') || primeiroNome.endsWith('os') || primeiroNome.endsWith('or') || primeiroNome.endsWith('son')) {
+        return 'masculino';
+    }
+
+    // Nomes comuns
+    const nomesFemininos = ['julia', 'camila', 'fernanda', 'patricia', 'sabrina', 'maria', 'ana', 'beatriz', 'larissa', 'leticia', 'gabriela', 'isabela', 'amanda', 'bruna', 'carol', 'daniela'];
+    const nomesMasculinos = ['joao', 'pedro', 'lucas', 'rafael', 'bruno', 'diego', 'roberto', 'carlos', 'daniel', 'gabriel', 'matheus', 'gustavo', 'thiago', 'leonardo', 'marcos', 'rodrigo'];
+
+    if (nomesFemininos.includes(primeiroNome)) return 'feminino';
+    if (nomesMasculinos.includes(primeiroNome)) return 'masculino';
+
+    return 'masculino'; // Default
+}
+
+// Função para obter o ícone do avatar baseado no tipo de lead
+function getLeadAvatarIcon(lead) {
+    if (lead.tipo_cliente === 'empresarial') {
+        return {
+            icon: 'fa-building',
+            bgColor: '#6b7280', // Cinza
+            title: 'Empresa'
+        };
+    }
+
+    const genero = inferirGenero(lead.nome);
+
+    if (genero === 'feminino') {
+        return {
+            icon: 'fa-female',
+            bgColor: '#ec4899', // Rosa
+            title: 'Pessoa Física (Feminino)'
+        };
+    }
+
+    return {
+        icon: 'fa-male',
+        bgColor: '#3b82f6', // Azul
+        title: 'Pessoa Física (Masculino)'
+    };
+}
+
+// Cores pastel bonitas para avatares (mantido para compatibilidade)
 const avatarColors = [
     'linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%)', // Índigo suave
     'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%)', // Violeta suave
@@ -1323,13 +1382,14 @@ function renderLeadsTable() {
     tbody.innerHTML = leads.map(lead => {
         const propostaData = getLeadPropostaData(lead);
         const propostaStatus = getPropostaStatusBadge(propostaData.status);
+        const avatarInfo = getLeadAvatarIcon(lead);
 
         return `
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: ${getAvatarColor(lead.nome || lead.email)};">
-                        ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white mr-3" style="background: ${avatarInfo.bgColor};" title="${avatarInfo.title}">
+                        <i class="fas ${avatarInfo.icon}"></i>
                     </div>
                     <div>
                         <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>
@@ -2556,13 +2616,14 @@ function renderFilteredLeadsTable(filteredLeads) {
     tbody.innerHTML = filteredLeads.map(lead => {
         const propostaData = getLeadPropostaData(lead);
         const propostaStatus = getPropostaStatusBadge(propostaData.status);
+        const avatarInfo = getLeadAvatarIcon(lead);
 
         return `
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: ${getAvatarColor(lead.nome || lead.email)};">
-                        ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white mr-3" style="background: ${avatarInfo.bgColor};" title="${avatarInfo.title}">
+                        <i class="fas ${avatarInfo.icon}"></i>
                     </div>
                     <div>
                         <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>

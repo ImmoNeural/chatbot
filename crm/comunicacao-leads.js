@@ -1042,14 +1042,23 @@ function renderLeadList(leadsToRender) {
     const list = document.getElementById('lead-selector-list');
 
     list.innerHTML = leadsToRender.map(lead => {
-        const initials = getInitials(lead.nome || lead.email || 'Lead');
         const statusClass = getStatusClass(lead.status);
         const statusText = getStatusText(lead.status);
-        const avatarColor = getAvatarColor(lead.nome || lead.email || 'Lead');
+
+        // Usar função de ícone do crm.js se disponível
+        let avatarHtml;
+        if (typeof getLeadAvatarIcon === 'function') {
+            const avatarInfo = getLeadAvatarIcon(lead);
+            avatarHtml = `<div class="lead-selector-avatar" style="background: ${avatarInfo.bgColor}" title="${avatarInfo.title}"><i class="fas ${avatarInfo.icon}"></i></div>`;
+        } else {
+            const initials = getInitials(lead.nome || lead.email || 'Lead');
+            const avatarColor = getAvatarColor(lead.nome || lead.email || 'Lead');
+            avatarHtml = `<div class="lead-selector-avatar" style="background: ${avatarColor}">${initials}</div>`;
+        }
 
         return `
             <div class="lead-selector-item" onclick="selectLead('${lead.id}')">
-                <div class="lead-selector-avatar" style="background: ${avatarColor}">${initials}</div>
+                ${avatarHtml}
                 <div class="lead-selector-info">
                     <div class="lead-selector-name">${lead.nome || lead.email || 'Lead sem nome'}</div>
                     <div class="lead-selector-phone">${lead.phone || 'Sem telefone'}</div>
