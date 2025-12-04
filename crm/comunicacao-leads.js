@@ -1049,7 +1049,7 @@ function renderLeadList(leadsToRender) {
         let avatarHtml;
         if (typeof getLeadAvatarIcon === 'function') {
             const avatarInfo = getLeadAvatarIcon(lead);
-            avatarHtml = `<div class="lead-selector-avatar" style="background: ${avatarInfo.bgColor}" title="${avatarInfo.title}"><i class="fas ${avatarInfo.icon}"></i></div>`;
+            avatarHtml = `<div class="lead-selector-avatar" style="background: ${avatarInfo.bgColor}; overflow: hidden;" title="${avatarInfo.title}">${avatarInfo.svg}</div>`;
         } else {
             const initials = getInitials(lead.nome || lead.email || 'Lead');
             const avatarColor = getAvatarColor(lead.nome || lead.email || 'Lead');

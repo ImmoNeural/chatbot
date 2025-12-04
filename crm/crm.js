@@ -193,13 +193,46 @@ function inferirGenero(nome) {
     return 'masculino'; // Default
 }
 
+// SVG de avatar masculino (homem de negócios)
+const svgAvatarMasculino = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="36" r="20" fill="#e8beac"/>
+    <ellipse cx="50" cy="85" rx="35" ry="25" fill="#2d3748"/>
+    <path d="M50 56 L35 85 L50 75 L65 85 Z" fill="#1a202c"/>
+    <rect x="46" y="56" width="8" height="12" fill="white"/>
+    <polygon points="50,56 42,68 50,65 58,68" fill="#c53030"/>
+    <path d="M30 30 Q35 15 50 15 Q65 15 70 30 Q70 35 65 36 L60 25 Q50 20 40 25 L35 36 Q30 35 30 30" fill="#1a202c"/>
+</svg>`;
+
+// SVG de avatar feminino (mulher de negócios)
+const svgAvatarFeminino = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="36" r="20" fill="#e8beac"/>
+    <ellipse cx="50" cy="85" rx="35" ry="25" fill="#d69e2e"/>
+    <path d="M25 28 Q30 5 50 8 Q70 5 75 28 Q78 45 70 50 L65 35 Q50 30 35 35 L30 50 Q22 45 25 28" fill="#5c4033"/>
+    <circle cx="38" cy="40" r="3" fill="#e8beac"/>
+    <circle cx="62" cy="40" r="3" fill="#e8beac"/>
+</svg>`;
+
+// SVG de avatar empresa
+const svgAvatarEmpresa = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="25" y="30" width="50" height="55" fill="white" rx="2"/>
+    <rect x="30" y="35" width="10" height="10" fill="#60a5fa"/>
+    <rect x="45" y="35" width="10" height="10" fill="#60a5fa"/>
+    <rect x="60" y="35" width="10" height="10" fill="#60a5fa"/>
+    <rect x="30" y="50" width="10" height="10" fill="#60a5fa"/>
+    <rect x="45" y="50" width="10" height="10" fill="#60a5fa"/>
+    <rect x="60" y="50" width="10" height="10" fill="#60a5fa"/>
+    <rect x="30" y="65" width="10" height="10" fill="#60a5fa"/>
+    <rect x="60" y="65" width="10" height="10" fill="#60a5fa"/>
+    <rect x="43" y="65" width="14" height="20" fill="#1e40af"/>
+</svg>`;
+
 // Função para obter o ícone do avatar baseado no tipo de lead
 function getLeadAvatarIcon(lead) {
     if (lead.tipo_cliente === 'empresarial') {
         return {
-            icon: 'fa-building',
-            bgColor: 'linear-gradient(135deg, #64748b 0%, #475569 100%)', // Cinza elegante
-            title: 'Empresa'
+            bgColor: 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)',
+            title: 'Empresa',
+            svg: svgAvatarEmpresa
         };
     }
 
@@ -207,16 +240,16 @@ function getLeadAvatarIcon(lead) {
 
     if (genero === 'feminino') {
         return {
-            icon: 'fa-female',
-            bgColor: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)', // Rosa vibrante
-            title: 'Pessoa Física (Feminino)'
+            bgColor: 'linear-gradient(135deg, #f472b6 0%, #db2777 100%)',
+            title: 'Pessoa Física (Feminino)',
+            svg: svgAvatarFeminino
         };
     }
 
     return {
-        icon: 'fa-male',
-        bgColor: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)', // Azul vibrante
-        title: 'Pessoa Física (Masculino)'
+        bgColor: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)',
+        title: 'Pessoa Física (Masculino)',
+        svg: svgAvatarMasculino
     };
 }
 
@@ -1388,8 +1421,8 @@ function renderLeadsTable() {
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white mr-3" style="background: ${avatarInfo.bgColor};" title="${avatarInfo.title}">
-                        <i class="fas ${avatarInfo.icon}"></i>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden mr-3" style="background: ${avatarInfo.bgColor};" title="${avatarInfo.title}">
+                        ${avatarInfo.svg}
                     </div>
                     <div>
                         <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>
@@ -2622,8 +2655,8 @@ function renderFilteredLeadsTable(filteredLeads) {
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white mr-3" style="background: ${avatarInfo.bgColor};" title="${avatarInfo.title}">
-                        <i class="fas ${avatarInfo.icon}"></i>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden mr-3" style="background: ${avatarInfo.bgColor};" title="${avatarInfo.title}">
+                        ${avatarInfo.svg}
                     </div>
                     <div>
                         <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>
