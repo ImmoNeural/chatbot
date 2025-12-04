@@ -2176,7 +2176,7 @@ async function salvarNovaTarefa() {
         if (leadId) {
             await supabase.from('interacoes').insert([{
                 lead_id: leadId,
-                tipo: 'tarefa',
+                tipo: 'nota',
                 titulo: `📋 Nova Tarefa: ${titulo}`,
                 descricao: descricao || `Tarefa agendada para ${new Date(dataVencimentoCompleta).toLocaleDateString('pt-BR')}`,
                 empresa_id: currentEmpresa?.id || null,
