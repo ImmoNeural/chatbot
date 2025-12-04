@@ -240,14 +240,14 @@ function getLeadAvatarIcon(lead) {
 
     if (genero === 'feminino') {
         return {
-            bgColor: 'linear-gradient(135deg, #f472b6 0%, #db2777 100%)',
+            bgColor: 'linear-gradient(135deg, #fbcfe8 0%, #f9a8d4 100%)',
             title: 'Pessoa Física (Feminino)',
             svg: svgAvatarFeminino
         };
     }
 
     return {
-        bgColor: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)',
+        bgColor: 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)',
         title: 'Pessoa Física (Masculino)',
         svg: svgAvatarMasculino
     };
