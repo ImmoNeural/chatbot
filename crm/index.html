@@ -868,73 +868,95 @@
     </div>
 
     <!-- Modal: Nova Tarefa -->
-    <div id="novaTarefaModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-            <div class="text-white p-6 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-                <h3 class="text-2xl font-bold">➕ Nova Tarefa</h3>
-                <button onclick="closeNovaTarefaModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                    <i class="fas fa-times text-2xl"></i>
+    <div id="novaTarefaModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-5 flex justify-between items-center border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                        <i class="fas fa-tasks text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Nova Tarefa</h3>
+                        <p class="text-xs text-gray-500">Agende uma atividade</p>
+                    </div>
+                </div>
+                <button onclick="closeNovaTarefaModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition">
+                    <i class="fas fa-times text-gray-400"></i>
                 </button>
             </div>
 
-            <form id="form-nova-tarefa" class="p-6 space-y-4">
+            <form id="form-nova-tarefa" class="p-6 space-y-5">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
-                    <input type="text" id="nova-task-title" name="titulo" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: Agendar visita técnica" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Título *</label>
+                    <input type="text" id="nova-task-title" name="titulo"
+                           class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none"
+                           placeholder="Ex: Ligar para cliente" required>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cliente/Lead (opcional)</label>
-                    <select id="nova-task-lead" name="lead_id" class="w-full border rounded-lg px-3 py-2">
-                        <option value="">-- Sem cliente vinculado --</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cliente/Lead (opcional)</label>
+                    <select id="nova-task-lead" name="lead_id"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none bg-white">
+                        <option value="">Sem cliente vinculado</option>
                     </select>
-                    <small class="text-gray-500">Vincule a tarefa a um cliente específico</small>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição/Observações</label>
-                    <textarea id="nova-task-desc" name="descricao" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Detalhes sobre a tarefa..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea id="nova-task-desc" name="descricao" rows="2"
+                              class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none resize-none"
+                              placeholder="Observações..."></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Vencimento *</label>
-                        <input type="date" id="nova-task-date" name="data_vencimento" class="w-full border rounded-lg px-3 py-2" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data *</label>
+                        <div class="relative">
+                            <input type="date" id="nova-task-date" name="data_vencimento"
+                                   class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none" required>
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Horário</label>
-                        <input type="time" id="nova-task-time" name="horario" class="w-full border rounded-lg px-3 py-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Horário</label>
+                        <input type="time" id="nova-task-time" name="horario"
+                               class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade *</label>
-                        <select id="nova-task-priority" name="prioridade" class="w-full border rounded-lg px-3 py-2">
-                            <option value="baixa">🟢 Baixa</option>
-                            <option value="media" selected>🟡 Média</option>
-                            <option value="alta">🔴 Alta</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                        <select id="nova-task-priority" name="prioridade"
+                                class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none bg-white">
+                            <option value="baixa">Baixa</option>
+                            <option value="media" selected>Média</option>
+                            <option value="alta">Alta</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Tarefa</label>
-                        <select id="nova-task-type" name="tipo" class="w-full border rounded-lg px-3 py-2">
-                            <option value="geral">📌 Geral</option>
-                            <option value="follow-up">📞 Follow-up</option>
-                            <option value="visita">🏠 Visita Técnica</option>
-                            <option value="reuniao">👥 Reunião</option>
-                            <option value="documentacao">📄 Documentação</option>
-                            <option value="instalacao">🔧 Instalação</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                        <select id="nova-task-type" name="tipo"
+                                class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-transparent transition outline-none bg-white">
+                            <option value="geral">Geral</option>
+                            <option value="follow-up">Follow-up</option>
+                            <option value="visita">Visita Técnica</option>
+                            <option value="reuniao">Reunião</option>
+                            <option value="documentacao">Documentação</option>
+                            <option value="instalacao">Instalação</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="flex gap-3 justify-end pt-4 border-t">
-                    <button type="button" onclick="closeNovaTarefaModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeNovaTarefaModal()"
+                            class="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-6 py-2 text-white rounded-lg hover:opacity-90" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-                        <i class="fas fa-plus mr-2"></i>Criar Tarefa
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 text-white rounded-xl font-medium hover:opacity-90 transition flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                        <i class="fas fa-check"></i> Criar Tarefa
                     </button>
                 </div>
             </form>

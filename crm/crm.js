@@ -2161,7 +2161,9 @@ async function salvarNovaTarefa() {
             prioridade,
             status: 'pendente',
             tipo,
-            lead_id: leadId
+            lead_id: leadId,
+            empresa_id: currentEmpresa?.id || null,
+            usuario_id: currentUser?.id || null
         };
 
         const { error } = await supabase
@@ -2176,7 +2178,9 @@ async function salvarNovaTarefa() {
                 lead_id: leadId,
                 tipo: 'tarefa',
                 titulo: `📋 Nova Tarefa: ${titulo}`,
-                descricao: descricao || `Tarefa agendada para ${new Date(dataVencimentoCompleta).toLocaleDateString('pt-BR')}`
+                descricao: descricao || `Tarefa agendada para ${new Date(dataVencimentoCompleta).toLocaleDateString('pt-BR')}`,
+                empresa_id: currentEmpresa?.id || null,
+                usuario_id: currentUser?.id || null
             }]);
         }
 
