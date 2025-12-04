@@ -1671,6 +1671,15 @@ if (document.readyState === 'loading') {
     initComunicacaoModule();
 }
 
+// Exportar para uso global IMEDIATAMENTE após inicialização
+window.comunicacaoState = comunicacaoState;
+window.openConversation = openConversation;
+window.closeConversation = closeConversation;
+window.openLeadSelector = openLeadSelector;
+window.closeLeadSelector = closeLeadSelector;
+window.selectLead = selectLead;
+console.log('🟢 Módulo de comunicação exportado para window');
+
 // =========================================
 // FUNÇÃO PARA ADICIONAR LEAD DE TESTE
 // =========================================
@@ -1711,25 +1720,21 @@ async function addTestLead() {
 
 // Executar automaticamente ao carregar (apenas uma vez)
 (async function() {
-    // Verificar se o lead já existe
-    const { data: existingLead } = await supabase
-        .from('leads')
-        .select('id')
-        .eq('phone', '+49 1799044322')
-        .single();
+    try {
+        // Verificar se o lead já existe
+        const { data: existingLead } = await supabase
+            .from('leads')
+            .select('id')
+            .eq('phone', '+49 1799044322')
+            .single();
 
-    if (!existingLead) {
-        console.log('Adicionando lead de teste...');
-        await addTestLead();
-    } else {
-        console.log('Lead de teste já existe');
+        if (!existingLead) {
+            console.log('Adicionando lead de teste...');
+            await addTestLead();
+        } else {
+            console.log('Lead de teste já existe');
+        }
+    } catch (err) {
+        console.log('Verificação de lead de teste ignorada:', err.message);
     }
 })();
-
-// Exportar para uso global (acessível de outros scripts)
-window.comunicacaoState = comunicacaoState;
-window.openConversation = openConversation;
-window.closeConversation = closeConversation;
-window.openLeadSelector = openLeadSelector;
-window.closeLeadSelector = closeLeadSelector;
-window.selectLead = selectLead;
