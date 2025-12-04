@@ -344,7 +344,7 @@ async function loadPropostas() {
             *,
             oportunidades:oportunidade_id (
                 lead_id,
-                leads:lead_id (nome, email)
+                leads:lead_id (nome, email, tipo_cliente)
             )
         `)
         .order('created_at', { ascending: false })
@@ -799,14 +799,16 @@ function renderPropostasResultChart() {
     const ctx = document.getElementById('propostasResultChart');
     if (!ctx) return;
 
-    // Contar propostas por status e tipo
+    // Contar propostas por status e tipo (acesso via oportunidades -> leads)
+    const getTipoCliente = (p) => p.oportunidades?.leads?.tipo_cliente || 'residencial';
+
     const propostasCounts = {
-        aceita_residencial: propostas.filter(p => p.status === 'aceita' && p.leads?.tipo_cliente === 'residencial').length,
-        aceita_empresarial: propostas.filter(p => p.status === 'aceita' && p.leads?.tipo_cliente === 'empresarial').length,
-        recusada_residencial: propostas.filter(p => p.status === 'recusada' && p.leads?.tipo_cliente === 'residencial').length,
-        recusada_empresarial: propostas.filter(p => p.status === 'recusada' && p.leads?.tipo_cliente === 'empresarial').length,
-        pendente_residencial: propostas.filter(p => ['enviada', 'visualizada'].includes(p.status) && p.leads?.tipo_cliente === 'residencial').length,
-        pendente_empresarial: propostas.filter(p => ['enviada', 'visualizada'].includes(p.status) && p.leads?.tipo_cliente === 'empresarial').length
+        aceita_residencial: propostas.filter(p => p.status === 'aceita' && getTipoCliente(p) === 'residencial').length,
+        aceita_empresarial: propostas.filter(p => p.status === 'aceita' && getTipoCliente(p) === 'empresarial').length,
+        recusada_residencial: propostas.filter(p => p.status === 'recusada' && getTipoCliente(p) === 'residencial').length,
+        recusada_empresarial: propostas.filter(p => p.status === 'recusada' && getTipoCliente(p) === 'empresarial').length,
+        pendente_residencial: propostas.filter(p => ['enviada', 'visualizada'].includes(p.status) && getTipoCliente(p) === 'residencial').length,
+        pendente_empresarial: propostas.filter(p => ['enviada', 'visualizada'].includes(p.status) && getTipoCliente(p) === 'empresarial').length
     };
 
     const total = Object.values(propostasCounts).reduce((a, b) => a + b, 0);
