@@ -1618,8 +1618,8 @@ function saveConfig() {
 // UTILITÁRIOS
 // =========================================
 
-// Cores pastel bonitas para avatares
-const avatarColors = [
+// Cores pastel bonitas para avatares (prefixo com_ para evitar conflito com crm.js)
+const comAvatarColors = [
     'linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%)', // Índigo suave
     'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%)', // Violeta suave
     'linear-gradient(135deg, #f0abfc 0%, #e879f9 100%)', // Fúcsia suave
@@ -1633,9 +1633,9 @@ const avatarColors = [
 ];
 
 function getAvatarColor(name) {
-    if (!name) return avatarColors[0];
+    if (!name) return comAvatarColors[0];
     const charCode = name.charCodeAt(0);
-    return avatarColors[charCode % avatarColors.length];
+    return comAvatarColors[charCode % comAvatarColors.length];
 }
 
 function getInitials(name) {
