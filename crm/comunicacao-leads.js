@@ -57,7 +57,7 @@ function createFloatingButtons() {
             #comunicacao-floating-btns {
                 position: fixed;
                 right: 220px;
-                top: 42px;
+                top: 58px;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
