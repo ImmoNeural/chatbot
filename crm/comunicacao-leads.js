@@ -1045,10 +1045,11 @@ function renderLeadList(leadsToRender) {
         const initials = getInitials(lead.nome || lead.email || 'Lead');
         const statusClass = getStatusClass(lead.status);
         const statusText = getStatusText(lead.status);
+        const avatarColor = getAvatarColor(lead.nome || lead.email || 'Lead');
 
         return `
             <div class="lead-selector-item" onclick="selectLead('${lead.id}')">
-                <div class="lead-selector-avatar">${initials}</div>
+                <div class="lead-selector-avatar" style="background: ${avatarColor}">${initials}</div>
                 <div class="lead-selector-info">
                     <div class="lead-selector-name">${lead.nome || lead.email || 'Lead sem nome'}</div>
                     <div class="lead-selector-phone">${lead.phone || 'Sem telefone'}</div>
@@ -1122,6 +1123,7 @@ function openConversation() {
     const messages = document.getElementById('conv-messages');
 
     avatar.textContent = getInitials(lead.nome || lead.email || 'Lead');
+    avatar.style.background = getAvatarColor(lead.nome || lead.email || 'Lead');
     name.textContent = lead.nome || lead.email || 'Lead sem nome';
     phone.textContent = lead.phone || 'Sem telefone';
 
@@ -1593,6 +1595,27 @@ function saveConfig() {
 // =========================================
 // UTILITÁRIOS
 // =========================================
+
+// Cores pastel bonitas para avatares
+const avatarColors = [
+    'linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%)', // Índigo suave
+    'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%)', // Violeta suave
+    'linear-gradient(135deg, #f0abfc 0%, #e879f9 100%)', // Fúcsia suave
+    'linear-gradient(135deg, #fda4af 0%, #fb7185 100%)', // Rosa suave
+    'linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%)', // Âmbar suave
+    'linear-gradient(135deg, #86efac 0%, #4ade80 100%)', // Verde suave
+    'linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%)', // Teal suave
+    'linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%)', // Azul céu suave
+    'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)', // Azul suave
+    'linear-gradient(135deg, #fdba74 0%, #fb923c 100%)', // Laranja suave
+];
+
+function getAvatarColor(name) {
+    if (!name) return avatarColors[0];
+    const charCode = name.charCodeAt(0);
+    return avatarColors[charCode % avatarColors.length];
+}
+
 function getInitials(name) {
     return name
         .split(' ')

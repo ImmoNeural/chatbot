@@ -161,6 +161,26 @@ function getInitials(name) {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 }
 
+// Cores pastel bonitas para avatares
+const avatarColors = [
+    'linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%)', // Índigo suave
+    'linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%)', // Violeta suave
+    'linear-gradient(135deg, #f0abfc 0%, #e879f9 100%)', // Fúcsia suave
+    'linear-gradient(135deg, #fda4af 0%, #fb7185 100%)', // Rosa suave
+    'linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%)', // Âmbar suave
+    'linear-gradient(135deg, #86efac 0%, #4ade80 100%)', // Verde suave
+    'linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%)', // Teal suave
+    'linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%)', // Azul céu suave
+    'linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)', // Azul suave
+    'linear-gradient(135deg, #fdba74 0%, #fb923c 100%)', // Laranja suave
+];
+
+function getAvatarColor(name) {
+    if (!name) return avatarColors[0];
+    const charCode = name.charCodeAt(0);
+    return avatarColors[charCode % avatarColors.length];
+}
+
 function toggleUserMenu() {
     const menu = document.getElementById('user-menu');
     if (menu) {
@@ -710,8 +730,8 @@ function renderRecentLeads() {
     container.innerHTML = recentLeads.map(lead => `
         <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background: #309086;">
-                    <i class="fas fa-user"></i>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background: ${getAvatarColor(lead.nome || lead.email)};">
+                    ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                 </div>
                 <div>
                     <p class="font-semibold text-gray-800">${lead.nome || lead.email}</p>
@@ -1121,7 +1141,7 @@ function renderLeadsTable() {
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: ${getAvatarColor(lead.nome || lead.email)};">
                         ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -2342,7 +2362,7 @@ function renderFilteredLeadsTable(filteredLeads) {
         <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: ${getAvatarColor(lead.nome || lead.email)};">
                         ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
