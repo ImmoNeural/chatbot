@@ -1714,3 +1714,11 @@ async function addTestLead() {
         console.log('Lead de teste já existe');
     }
 })();
+
+// Exportar para uso global (acessível de outros scripts)
+window.comunicacaoState = comunicacaoState;
+window.openConversation = openConversation;
+window.closeConversation = closeConversation;
+window.openLeadSelector = openLeadSelector;
+window.closeLeadSelector = closeLeadSelector;
+window.selectLead = selectLead;
