@@ -298,18 +298,7 @@ async function loadAllData() {
 async function loadLeads() {
     const { data, error } = await supabase
         .from('leads')
-        .select(`
-            *,
-            oportunidades (
-                id,
-                propostas (
-                    id,
-                    status,
-                    valor_final,
-                    numero_modulos
-                )
-            )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -1297,17 +1286,21 @@ async function toggleFavorito(oportunidadeId) {
 
 // Helper para obter dados da proposta do lead
 function getLeadPropostaData(lead) {
-    // Buscar a proposta mais recente via oportunidades
-    const oportunidade = lead.oportunidades?.[0];
-    const proposta = oportunidade?.propostas?.[0];
+    // Buscar oportunidade do lead nas listas globais
+    const oportunidade = oportunidades.find(o => o.lead_id === lead.id);
+    if (!oportunidade) {
+        return { status: null, modulos: null, preco: null };
+    }
 
+    // Buscar proposta da oportunidade
+    const proposta = propostas.find(p => p.oportunidade_id === oportunidade.id);
     if (!proposta) {
         return { status: null, modulos: null, preco: null };
     }
 
     return {
         status: proposta.status,
-        modulos: proposta.numero_modulos,
+        modulos: proposta.num_modulos || proposta.numero_modulos,
         preco: proposta.valor_final
     };
 }
