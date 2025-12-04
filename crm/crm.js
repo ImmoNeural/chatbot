@@ -570,7 +570,7 @@ function renderCurrentModule() {
             renderKanban();
             break;
         case 'leads':
-            renderLeadsTable();
+            filterLeads(); // Usar filterLeads para respeitar os filtros ativos
             break;
         case 'propostas':
             renderPropostas();
@@ -2254,10 +2254,10 @@ function formatProntidao(prontidao) {
 
 function getStatusColor(status) {
     const colorMap = {
-        novo: 'info',
-        qualificado: 'success',
-        nao_qualificado: 'danger',
-        em_nutricao: 'warning',
+        novo: 'orange',
+        qualificado: 'teal',
+        nao_qualificado: 'gray',
+        em_nutricao: 'purple',
         convertido: 'success',
         perdido: 'danger'
     };
