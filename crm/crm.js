@@ -2654,14 +2654,15 @@ function setupEventListeners() {
 }
 
 function filterLeads() {
-    console.log('🔍 filterLeads chamado, leads:', leads.length);
-    const searchInput = document.getElementById('lead-search');
-    const statusFilter = document.getElementById('lead-status-filter');
-    const typeFilter = document.getElementById('lead-type-filter');
+    try {
+        console.log('🔍 filterLeads chamado, leads:', leads ? leads.length : 'UNDEFINED');
+        const searchInput = document.getElementById('lead-search');
+        const statusFilter = document.getElementById('lead-status-filter');
+        const typeFilter = document.getElementById('lead-type-filter');
 
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-    const statusValue = statusFilter ? statusFilter.value : '';
-    const typeValue = typeFilter ? typeFilter.value : '';
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const statusValue = statusFilter ? statusFilter.value : '';
+        const typeValue = typeFilter ? typeFilter.value : '';
 
     const filteredLeads = leads.filter(lead => {
         // Filtro de busca
@@ -2681,6 +2682,9 @@ function filterLeads() {
 
     console.log('🔍 filteredLeads:', filteredLeads.length);
     renderFilteredLeadsTable(filteredLeads);
+    } catch (error) {
+        console.error('❌ Erro em filterLeads:', error);
+    }
 }
 
 function renderFilteredLeadsTable(filteredLeads) {
