@@ -12,6 +12,11 @@ window.supabaseAnonKey = SUPABASE_KEY;
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Estado Global - Autenticação
+let currentUser = null;     // Usuário logado (da tabela usuarios)
+let currentEmpresa = null;  // Empresa do usuário
+let authUser = null;        // Usuário do Supabase Auth
+
 // Estado Global
 let currentModule = 'dashboard';
 let currentLead = null;
@@ -26,6 +31,174 @@ let kpis = {};
 let interacoesStats = {}; // Estatísticas de interações por lead_id
 let notificacoes = []; // Notificações do sistema de automação
 
+// =========================================
+// FUNÇÕES DE AUTENTICAÇÃO
+// =========================================
+async function loadCurrentUser() {
+    try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session) {
+            console.log('Usuário não autenticado, redirecionando...');
+            window.location.href = 'login.html';
+            return false;
+        }
+
+        authUser = session.user;
+        window.authUser = authUser;
+
+        // Buscar dados do usuário na tabela usuarios
+        const { data: usuario, error: userError } = await supabase
+            .from('usuarios')
+            .select('*, empresas(*)')
+            .eq('id', authUser.id)
+            .single();
+
+        if (userError) {
+            // Se não encontrar na tabela usuarios, pode ser usuário antigo
+            // Criar entrada na tabela usuarios
+            console.log('Usuário não encontrado na tabela usuarios, criando...');
+
+            // Verificar se existe empresa padrão
+            const { data: empresa } = await supabase
+                .from('empresas')
+                .select('*')
+                .eq('email', 'neurekaai@gmail.com')
+                .single();
+
+            if (empresa) {
+                // Criar usuário vinculado à empresa padrão
+                const { data: novoUsuario, error: createError } = await supabase
+                    .from('usuarios')
+                    .insert({
+                        id: authUser.id,
+                        empresa_id: empresa.id,
+                        nome: authUser.user_metadata?.nome || authUser.email.split('@')[0],
+                        email: authUser.email,
+                        cargo: 'admin'
+                    })
+                    .select('*, empresas(*)')
+                    .single();
+
+                if (createError) {
+                    console.error('Erro ao criar usuário:', createError);
+                    return false;
+                }
+
+                currentUser = novoUsuario;
+                currentEmpresa = empresa;
+            }
+        } else {
+            currentUser = usuario;
+            currentEmpresa = usuario.empresas;
+        }
+
+        // Expor globalmente
+        window.currentUser = currentUser;
+        window.currentEmpresa = currentEmpresa;
+
+        // Atualizar header com info do usuário
+        updateUserHeader();
+
+        console.log('👤 Usuário:', currentUser?.nome);
+        console.log('🏢 Empresa:', currentEmpresa?.nome);
+
+        return true;
+    } catch (err) {
+        console.error('Erro ao carregar usuário:', err);
+        return false;
+    }
+}
+
+function updateUserHeader() {
+    // Procurar ou criar área do usuário no header
+    let userArea = document.getElementById('user-header-area');
+
+    if (!userArea) {
+        // Criar área do usuário no header (perto do botão Atualizar)
+        const header = document.querySelector('header');
+        if (header) {
+            const rightArea = header.querySelector('.flex.items-center.gap-4');
+            if (rightArea) {
+                userArea = document.createElement('div');
+                userArea.id = 'user-header-area';
+                userArea.className = 'flex items-center gap-3 ml-4 pl-4 border-l border-gray-200';
+                userArea.innerHTML = `
+                    <div class="text-right">
+                        <div class="text-sm font-medium text-gray-700" id="header-user-name">${currentUser?.nome || 'Usuário'}</div>
+                        <div class="text-xs text-gray-500" id="header-empresa-name">${currentEmpresa?.nome || 'Empresa'}</div>
+                    </div>
+                    <div class="relative">
+                        <button onclick="toggleUserMenu()" class="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 text-white font-semibold flex items-center justify-center shadow-md hover:shadow-lg transition-all">
+                            ${getInitials(currentUser?.nome || 'U')}
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 top-12 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <div class="text-sm font-medium text-gray-700">${currentUser?.nome}</div>
+                                <div class="text-xs text-gray-500">${currentUser?.email}</div>
+                            </div>
+                            <a href="#" onclick="showProfile()" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-user"></i> Meu Perfil
+                            </a>
+                            <a href="#" onclick="showEmpresaSettings()" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-building"></i> Configurações
+                            </a>
+                            <hr class="my-1">
+                            <a href="#" onclick="handleLogout()" class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt"></i> Sair
+                            </a>
+                        </div>
+                    </div>
+                `;
+                rightArea.appendChild(userArea);
+            }
+        }
+    }
+}
+
+function getInitials(name) {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+}
+
+function toggleUserMenu() {
+    const menu = document.getElementById('user-menu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+// Fechar menu ao clicar fora
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('user-menu');
+    const userArea = document.getElementById('user-header-area');
+    if (menu && userArea && !userArea.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
+
+async function handleLogout() {
+    try {
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
+    } catch (err) {
+        console.error('Erro ao fazer logout:', err);
+        showNotification('Erro ao sair', 'danger');
+    }
+}
+
+function showProfile() {
+    // TODO: Implementar tela de perfil
+    showNotification('Perfil em desenvolvimento', 'info');
+    toggleUserMenu();
+}
+
+function showEmpresaSettings() {
+    // TODO: Implementar configurações da empresa
+    showNotification('Configurações em desenvolvimento', 'info');
+    toggleUserMenu();
+}
+
 // Charts
 let funnelChart = null;
 let conversionChart = null;
@@ -35,6 +208,13 @@ let conversionChart = null;
 // =========================================
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando CRM Solar...');
+
+    // PRIMEIRO: Carregar informações do usuário (inclui verificação de autenticação)
+    const userLoaded = await loadCurrentUser();
+    if (!userLoaded) {
+        console.log('Falha ao carregar usuário');
+        return;
+    }
 
     // Verificar conexão Supabase
     try {
@@ -49,11 +229,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Erro crítico:', err);
     }
 
-    // Carregar dados iniciais
+    // Carregar dados iniciais (agora filtrados pela empresa do usuário via RLS)
     await loadAllData();
-
-    // Carregar informações do usuário
-    await loadCurrentUser();
 
     // Inicializar Kanban Drag & Drop
     initializeKanban();
