@@ -324,7 +324,7 @@ function createLeadSelectorModal() {
             </div>
 
             <div class="lead-selector-search">
-                <input type="text" id="lead-search-input" placeholder="Buscar por nome ou telefone..." oninput="filterLeads(this.value)">
+                <input type="text" id="lead-search-input" placeholder="Buscar por nome ou telefone..." oninput="comFilterLeads(this.value)">
             </div>
 
             <div class="lead-selector-list" id="lead-selector-list">
@@ -1087,7 +1087,7 @@ function closeLeadSelector() {
     document.getElementById('lead-search-input').value = '';
 }
 
-function filterLeads(searchTerm) {
+function comFilterLeads(searchTerm) {
     const leadsCache = comunicacaoState.leadsCache || [];
 
     if (!searchTerm || searchTerm.trim() === '') {
