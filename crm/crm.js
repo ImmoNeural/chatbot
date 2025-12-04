@@ -1560,6 +1560,11 @@ function closeLeadModal() {
 
 // Abrir WhatsApp para o lead atual no modal
 function openWhatsAppForCurrentLead() {
+    console.log('🔵 openWhatsAppForCurrentLead chamado');
+    console.log('🔵 currentLead:', currentLead);
+    console.log('🔵 window.comunicacaoState:', window.comunicacaoState);
+    console.log('🔵 window.openConversation:', typeof window.openConversation);
+
     if (!currentLead) {
         showNotification('Nenhum lead selecionado', 'error');
         return;
@@ -1573,6 +1578,7 @@ function openWhatsAppForCurrentLead() {
 
     // Configurar estado de comunicação e abrir conversa
     if (window.comunicacaoState && typeof window.openConversation === 'function') {
+        console.log('🔵 Abrindo modal de conversa...');
         window.comunicacaoState.selectedLead = currentLead;
         window.comunicacaoState.conversationType = 'whatsapp';
         window.comunicacaoState.messages = [];
@@ -1580,7 +1586,7 @@ function openWhatsAppForCurrentLead() {
         window.openConversation();
     } else {
         // Fallback: abrir WhatsApp Web diretamente
-        console.warn('Módulo de comunicação não disponível, abrindo WhatsApp Web');
+        console.warn('🔵 Módulo de comunicação não disponível, abrindo WhatsApp Web');
         const phone = currentLead.phone || currentLead.telefone;
         const phoneClean = phone.replace(/\D/g, '');
         const whatsappUrl = `https://wa.me/${phoneClean}`;
