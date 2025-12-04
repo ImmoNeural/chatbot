@@ -1064,8 +1064,8 @@ function renderLeadList(leadsToRender) {
             const avatarInfo = getLeadAvatarIcon(lead);
             avatarHtml = `<div class="lead-selector-avatar" style="background: ${avatarInfo.bgColor}; overflow: hidden;" title="${avatarInfo.title}">${avatarInfo.svg}</div>`;
         } else {
-            const initials = getInitials(lead.nome || lead.email || 'Lead');
-            const avatarColor = getAvatarColor(lead.nome || lead.email || 'Lead');
+            const initials = comGetInitials(lead.nome || lead.email || 'Lead');
+            const avatarColor = comGetAvatarColor(lead.nome || lead.email || 'Lead');
             avatarHtml = `<div class="lead-selector-avatar" style="background: ${avatarColor}">${initials}</div>`;
         }
 
@@ -1144,8 +1144,8 @@ function openConversation() {
     const typeText = document.getElementById('conv-type-text');
     const messages = document.getElementById('conv-messages');
 
-    avatar.textContent = getInitials(lead.nome || lead.email || 'Lead');
-    avatar.style.background = getAvatarColor(lead.nome || lead.email || 'Lead');
+    avatar.textContent = comGetInitials(lead.nome || lead.email || 'Lead');
+    avatar.style.background = comGetAvatarColor(lead.nome || lead.email || 'Lead');
     name.textContent = lead.nome || lead.email || 'Lead sem nome';
     phone.textContent = lead.phone || 'Sem telefone';
 
@@ -1632,13 +1632,13 @@ const comAvatarColors = [
     'linear-gradient(135deg, #fdba74 0%, #fb923c 100%)', // Laranja suave
 ];
 
-function getAvatarColor(name) {
+function comGetAvatarColor(name) {
     if (!name) return comAvatarColors[0];
     const charCode = name.charCodeAt(0);
     return comAvatarColors[charCode % comAvatarColors.length];
 }
 
-function getInitials(name) {
+function comGetInitials(name) {
     return name
         .split(' ')
         .map(n => n[0])
