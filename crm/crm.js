@@ -620,6 +620,7 @@ function calcularNPSMedio() {
 // NAVEGAÇÃO ENTRE MÓDULOS
 // =========================================
 function showModule(moduleName) {
+    console.log('📍 showModule chamado:', moduleName);
     currentModule = moduleName;
 
     // Ocultar todos os módulos
@@ -656,6 +657,7 @@ function showModule(moduleName) {
 }
 
 function renderCurrentModule() {
+    console.log('📍 renderCurrentModule:', currentModule);
     switch(currentModule) {
         case 'dashboard':
             renderDashboard();
@@ -664,6 +666,7 @@ function renderCurrentModule() {
             renderKanban();
             break;
         case 'leads':
+            console.log('📍 Chamando filterLeads...');
             filterLeads(); // Usar filterLeads para respeitar os filtros ativos
             break;
         case 'propostas':
