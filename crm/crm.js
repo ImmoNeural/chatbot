@@ -1558,6 +1558,35 @@ function closeLeadModal() {
     hideAddInteractionForm();
 }
 
+// Abrir WhatsApp para o lead atual no modal
+function openWhatsAppForCurrentLead() {
+    if (!currentLead) {
+        showNotification('Nenhum lead selecionado', 'error');
+        return;
+    }
+
+    // Verificar se o lead tem telefone
+    if (!currentLead.phone && !currentLead.telefone) {
+        showNotification('Este lead não possui telefone cadastrado', 'error');
+        return;
+    }
+
+    // Configurar estado de comunicação e abrir conversa
+    if (typeof comunicacaoState !== 'undefined' && typeof openConversation === 'function') {
+        comunicacaoState.selectedLead = currentLead;
+        comunicacaoState.conversationType = 'whatsapp';
+        comunicacaoState.messages = [];
+        comunicacaoState.conversationStartTime = new Date();
+        openConversation();
+    } else {
+        // Fallback: abrir WhatsApp Web diretamente
+        const phone = currentLead.phone || currentLead.telefone;
+        const phoneClean = phone.replace(/\D/g, '');
+        const whatsappUrl = `https://wa.me/${phoneClean}`;
+        window.open(whatsappUrl, '_blank');
+    }
+}
+
 function showAddInteractionForm() {
     document.getElementById('interaction-form').classList.remove('hidden');
     document.getElementById('btn-show-interaction-form').classList.add('hidden');
@@ -4479,6 +4508,7 @@ async function marcarComoInstalado(leadId) {
 window.showModule = showModule;
 window.openLeadModal = openLeadModal;
 window.closeLeadModal = closeLeadModal;
+window.openWhatsAppForCurrentLead = openWhatsAppForCurrentLead;
 window.showTab = showTab;
 window.toggleSidebar = toggleSidebar;
 window.refreshData = refreshData;
