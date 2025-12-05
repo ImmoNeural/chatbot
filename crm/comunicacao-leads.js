@@ -1071,7 +1071,7 @@ async function fetchWhatsAppMessages() {
                         minute: '2-digit'
                     });
 
-                    addMessageToConversation(msg.conteudo, tipo, time);
+                    addMessageToConversation(msg.mensagem, tipo, time);
                 }
             });
         }
