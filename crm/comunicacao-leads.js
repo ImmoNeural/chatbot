@@ -1032,7 +1032,7 @@ function selectLead(leadId) {
 // =========================================
 
 // Buscar mensagens do banco de dados
-async function fetchWhatsAppMessages() {
+async function fetchWhatsAppMessages(forceReload = false) {
     const lead = comunicacaoState.selectedLead;
     if (!lead || !lead.phone) {
         console.log('⚠️ Polling: Lead ou telefone não disponível');
@@ -1040,7 +1040,7 @@ async function fetchWhatsAppMessages() {
     }
 
     try {
-        // Formatar telefone para busca
+        // Formatar telefone para busca - remover espaços e caracteres especiais
         let phone = lead.phone.replace(/[^\d+]/g, '');
         if (!phone.startsWith('+')) {
             if (phone.length === 11 || phone.length === 10) {
@@ -1050,13 +1050,17 @@ async function fetchWhatsAppMessages() {
             }
         }
 
-        console.log('🔍 Polling: Buscando mensagens para telefone:', phone);
+        // Também criar versão sem o +
+        const phoneWithoutPlus = phone.replace('+', '');
+
+        console.log('🔍 Polling: Buscando mensagens para telefone:', phone, 'ou', phoneWithoutPlus);
+        console.log('🔍 Polling: loadedMessageIds atual:', comunicacaoState.loadedMessageIds.size);
 
         // Buscar mensagens da tabela mensagens_whatsapp
         const { data: mensagens, error } = await supabase
             .from('mensagens_whatsapp')
             .select('*')
-            .or(`telefone.eq.${phone},telefone.eq.${phone.replace('+', '')}`)
+            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus}`)
             .order('created_at', { ascending: true });
 
         if (error) {
@@ -1067,41 +1071,56 @@ async function fetchWhatsAppMessages() {
         console.log('📨 Polling: Encontradas', mensagens?.length || 0, 'mensagens');
 
         if (mensagens && mensagens.length > 0) {
+            console.log('📨 Mensagens encontradas:', mensagens.map(m => ({
+                id: m.id,
+                direcao: m.direcao,
+                telefone: m.telefone,
+                mensagem: m.mensagem?.substring(0, 30) + '...'
+            })));
+        }
+
+        if (mensagens && mensagens.length > 0) {
             // Adicionar mensagens novas que ainda não foram exibidas
+            let novasMensagens = 0;
             mensagens.forEach(msg => {
-                if (!comunicacaoState.loadedMessageIds.has(msg.id)) {
-                    comunicacaoState.loadedMessageIds.add(msg.id);
-                    console.log('📩 Nova mensagem:', msg.direcao, '-', msg.mensagem?.substring(0, 50));
+                const msgId = String(msg.id); // Garantir que é string
+                const jaCarregada = comunicacaoState.loadedMessageIds.has(msgId);
+
+                console.log(`📩 Verificando msg ${msgId}: já carregada = ${jaCarregada}`);
+
+                if (!jaCarregada || forceReload) {
+                    comunicacaoState.loadedMessageIds.add(msgId);
+                    console.log('📩 Adicionando mensagem:', msg.direcao, '-', msg.mensagem?.substring(0, 50));
 
                     const tipo = msg.direcao === 'recebida' ? 'received' : 'sent';
                     const time = new Date(msg.created_at).toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
                         minute: '2-digit'
                     });
+                    const date = new Date(msg.created_at).toLocaleDateString('pt-BR');
 
-                    addMessageToConversation(msg.mensagem, tipo, time);
+                    addMessageToConversation(msg.mensagem || '[sem conteúdo]', tipo, `${date} ${time}`);
+                    novasMensagens++;
                 }
             });
+            console.log('📩 Total de novas mensagens adicionadas:', novasMensagens);
         }
     } catch (err) {
         console.error('Erro no polling de mensagens:', err);
     }
 }
 
-// Iniciar polling de mensagens
+// Iniciar polling de mensagens (fallback para Realtime)
 function startMessagePolling() {
     // Parar polling anterior se existir
     stopMessagePolling();
 
-    // Carregar mensagens existentes primeiro
-    fetchWhatsAppMessages();
-
-    // Iniciar polling a cada 3 segundos
+    // Iniciar polling a cada 10 segundos (fallback para Realtime)
     comunicacaoState.pollInterval = setInterval(() => {
         fetchWhatsAppMessages();
-    }, 3000);
+    }, 10000);
 
-    console.log('🟢 Polling de mensagens iniciado');
+    console.log('🟢 Polling de mensagens iniciado (fallback, 10s)');
 }
 
 // Parar polling de mensagens
@@ -1113,9 +1132,180 @@ function stopMessagePolling() {
     }
 }
 
+// =========================================
+// SUPABASE REALTIME - ATUALIZAÇÕES INSTANTÂNEAS
+// =========================================
+
+// Armazenar subscription para poder cancelar depois
+let realtimeSubscription = null;
+
+// Carregar histórico completo e iniciar Realtime
+async function loadConversationHistory() {
+    const lead = comunicacaoState.selectedLead;
+    if (!lead || !lead.phone) {
+        console.log('⚠️ Lead ou telefone não disponível');
+        return;
+    }
+
+    const messagesContainer = document.getElementById('conv-messages');
+
+    try {
+        // Formatar telefone para busca
+        let phone = lead.phone.replace(/[^\d+]/g, '');
+        if (!phone.startsWith('+')) {
+            if (phone.length === 11 || phone.length === 10) {
+                phone = '+55' + phone;
+            } else {
+                phone = '+' + phone;
+            }
+        }
+        const phoneWithoutPlus = phone.replace('+', '');
+
+        console.log('🔍 Carregando histórico para:', phone);
+
+        // Buscar TODAS as mensagens do histórico ordenadas por data
+        const { data: mensagens, error } = await supabase
+            .from('mensagens_whatsapp')
+            .select('*')
+            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus}`)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('❌ Erro ao carregar histórico:', error);
+            messagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #ef4444;">
+                    <div>Erro ao carregar histórico</div>
+                    <div style="font-size: 12px; margin-top: 5px;">${error.message}</div>
+                </div>
+            `;
+            return;
+        }
+
+        // Limpar área de mensagens
+        messagesContainer.innerHTML = '';
+
+        if (!mensagens || mensagens.length === 0) {
+            messagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #6b7280;">
+                    <div>📭 Nenhuma mensagem ainda</div>
+                    <div style="font-size: 12px; margin-top: 5px;">Envie uma mensagem para iniciar a conversa</div>
+                </div>
+            `;
+        } else {
+            console.log('📨 Histórico carregado:', mensagens.length, 'mensagens');
+
+            // Agrupar mensagens por data
+            let lastDate = null;
+
+            mensagens.forEach(msg => {
+                const msgId = String(msg.id);
+                comunicacaoState.loadedMessageIds.add(msgId);
+
+                const msgDate = new Date(msg.created_at);
+                const dateStr = msgDate.toLocaleDateString('pt-BR');
+                const timeStr = msgDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                // Adicionar separador de data se mudou o dia
+                if (dateStr !== lastDate) {
+                    const dateSeparator = document.createElement('div');
+                    dateSeparator.style.cssText = 'text-align: center; padding: 10px; color: #9ca3af; font-size: 12px;';
+                    dateSeparator.innerHTML = `<span style="background: #f3f4f6; padding: 4px 12px; border-radius: 10px;">${dateStr}</span>`;
+                    messagesContainer.appendChild(dateSeparator);
+                    lastDate = dateStr;
+                }
+
+                const tipo = msg.direcao === 'recebida' ? 'received' : 'sent';
+                addMessageToConversation(msg.mensagem || '[sem conteúdo]', tipo, timeStr);
+            });
+
+            // Scroll para o final
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Iniciar Supabase Realtime para atualizações instantâneas
+        setupRealtimeSubscription(phone, phoneWithoutPlus);
+
+    } catch (err) {
+        console.error('Erro ao carregar histórico:', err);
+        messagesContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #ef4444;">
+                <div>Erro ao carregar histórico</div>
+            </div>
+        `;
+    }
+}
+
+// Configurar Supabase Realtime para receber mensagens em tempo real
+function setupRealtimeSubscription(phone, phoneWithoutPlus) {
+    // Cancelar subscription anterior se existir
+    if (realtimeSubscription) {
+        supabase.removeChannel(realtimeSubscription);
+        realtimeSubscription = null;
+    }
+
+    console.log('🔔 Configurando Supabase Realtime para:', phone);
+
+    // Criar subscription para novas mensagens
+    realtimeSubscription = supabase
+        .channel('mensagens-whatsapp-realtime')
+        .on(
+            'postgres_changes',
+            {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'mensagens_whatsapp'
+            },
+            (payload) => {
+                console.log('🔔 Realtime: Nova mensagem recebida!', payload);
+
+                const newMsg = payload.new;
+                const msgPhone = newMsg.telefone;
+
+                // Verificar se a mensagem é para o lead atual
+                if (msgPhone === phone || msgPhone === phoneWithoutPlus) {
+                    const msgId = String(newMsg.id);
+
+                    // Verificar se já foi carregada
+                    if (!comunicacaoState.loadedMessageIds.has(msgId)) {
+                        comunicacaoState.loadedMessageIds.add(msgId);
+
+                        const msgDate = new Date(newMsg.created_at);
+                        const timeStr = msgDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        const tipo = newMsg.direcao === 'recebida' ? 'received' : 'sent';
+
+                        console.log('🔔 Adicionando mensagem em tempo real:', newMsg.mensagem?.substring(0, 30));
+                        addMessageToConversation(newMsg.mensagem || '[sem conteúdo]', tipo, timeStr);
+
+                        // Notificar o usuário se for mensagem recebida
+                        if (newMsg.direcao === 'recebida' && typeof showNotification === 'function') {
+                            showNotification('Nova mensagem recebida!', 'info');
+                        }
+                    }
+                }
+            }
+        )
+        .subscribe((status) => {
+            console.log('🔔 Realtime subscription status:', status);
+        });
+
+    // Também manter polling como fallback (menos frequente)
+    startMessagePolling();
+}
+
+// Cancelar subscription do Realtime
+function cancelRealtimeSubscription() {
+    if (realtimeSubscription) {
+        console.log('🔔 Cancelando Supabase Realtime subscription');
+        supabase.removeChannel(realtimeSubscription);
+        realtimeSubscription = null;
+    }
+}
+
 function openConversation() {
     const lead = comunicacaoState.selectedLead;
     if (!lead) return;
+
+    console.log('🟢 Abrindo conversa com lead:', lead.nome, lead.phone);
 
     const modal = document.getElementById('conversation-modal');
     const avatar = document.getElementById('conv-avatar');
@@ -1123,7 +1313,7 @@ function openConversation() {
     const phone = document.getElementById('conv-phone');
     const typeIcon = document.getElementById('conv-type-icon');
     const typeText = document.getElementById('conv-type-text');
-    const messages = document.getElementById('conv-messages');
+    const messagesContainer = document.getElementById('conv-messages');
 
     avatar.textContent = comGetInitials(lead.nome || lead.email || 'Lead');
     avatar.style.background = comGetAvatarColor(lead.nome || lead.email || 'Lead');
@@ -1138,10 +1328,11 @@ function openConversation() {
         typeIcon.innerHTML = '<path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>';
     }
 
-    messages.innerHTML = `
-        <div class="conv-message conv-message-received">
-            <div>Conversa iniciada com ${lead.nome || 'o lead'}</div>
-            <div class="conv-message-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+    // Limpar completamente a área de mensagens - apenas mostrar status de carregamento
+    messagesContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #6b7280;">
+            <div class="summary-spinner" style="width: 30px; height: 30px; margin: 0 auto 10px;"></div>
+            <div>Carregando histórico de mensagens...</div>
         </div>
     `;
 
@@ -1153,14 +1344,20 @@ function openConversation() {
 
     modal.classList.add('visible');
 
-    // Reset e iniciar polling de mensagens
+    // Reset estado completamente
     comunicacaoState.loadedMessageIds = new Set();
-    startMessagePolling();
+    comunicacaoState.messages = [];
+
+    // Carregar histórico e iniciar listeners em tempo real
+    loadConversationHistory();
 }
 
 function closeConversation() {
     // Parar polling de mensagens
     stopMessagePolling();
+
+    // Cancelar Supabase Realtime subscription
+    cancelRealtimeSubscription();
 
     document.getElementById('conversation-modal').classList.remove('visible');
     comunicacaoState.selectedLead = null;
