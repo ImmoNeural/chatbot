@@ -1150,7 +1150,7 @@ async function loadConversationHistory() {
     const messagesContainer = document.getElementById('conv-messages');
 
     try {
-        // Formatar telefone para busca
+        // Formatar telefone para busca - remover TODOS os caracteres não numéricos exceto +
         let phone = lead.phone.replace(/[^\d+]/g, '');
         if (!phone.startsWith('+')) {
             if (phone.length === 11 || phone.length === 10) {
@@ -1161,14 +1161,33 @@ async function loadConversationHistory() {
         }
         const phoneWithoutPlus = phone.replace('+', '');
 
-        console.log('🔍 Carregando histórico para:', phone);
+        // Extrair apenas os dígitos para busca mais flexível
+        const phoneDigitsOnly = phone.replace(/\D/g, '');
 
-        // Buscar TODAS as mensagens do histórico ordenadas por data
+        console.log('🔍 Carregando histórico para:', phone);
+        console.log('🔍 Variações de busca:', { phone, phoneWithoutPlus, phoneDigitsOnly });
+
+        // Primeiro, vamos ver TODAS as mensagens na tabela para debug
+        const { data: todasMensagens, error: errAll } = await supabase
+            .from('mensagens_whatsapp')
+            .select('id, telefone, direcao, mensagem, created_at')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        console.log('📋 DEBUG - Todas as mensagens na tabela:', todasMensagens);
+
+        if (todasMensagens && todasMensagens.length > 0) {
+            console.log('📋 Telefones únicos na tabela:', [...new Set(todasMensagens.map(m => m.telefone))]);
+        }
+
+        // Buscar mensagens usando ILIKE para ser mais flexível com o formato
         const { data: mensagens, error } = await supabase
             .from('mensagens_whatsapp')
             .select('*')
-            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus}`)
+            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus},telefone.ilike.%${phoneDigitsOnly}%`)
             .order('created_at', { ascending: true });
+
+        console.log('🔍 Query executada, resultado:', mensagens?.length || 0, 'mensagens');
 
         if (error) {
             console.error('❌ Erro ao carregar histórico:', error);
@@ -1864,6 +1883,52 @@ if (document.readyState === 'loading') {
     initComunicacaoModule();
 }
 
+// Função de debug para verificar mensagens no banco
+async function debugMensagens() {
+    console.log('🔍 DEBUG: Verificando todas as mensagens no banco...');
+
+    try {
+        const { data: mensagens, error } = await supabase
+            .from('mensagens_whatsapp')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) {
+            console.error('❌ Erro:', error);
+            return;
+        }
+
+        console.log('📋 Total de mensagens:', mensagens?.length || 0);
+
+        if (mensagens && mensagens.length > 0) {
+            console.table(mensagens.map(m => ({
+                id: m.id,
+                telefone: m.telefone,
+                direcao: m.direcao,
+                mensagem: (m.mensagem || '').substring(0, 30),
+                created_at: m.created_at
+            })));
+
+            console.log('📞 Telefones únicos:', [...new Set(mensagens.map(m => m.telefone))]);
+        } else {
+            console.log('⚠️ Nenhuma mensagem encontrada na tabela mensagens_whatsapp');
+        }
+
+        // Verificar leads também
+        const { data: leads, error: errLeads } = await supabase
+            .from('leads')
+            .select('id, nome, phone, telefone')
+            .limit(10);
+
+        console.log('👥 Leads:', leads);
+
+        return mensagens;
+    } catch (err) {
+        console.error('Erro no debug:', err);
+    }
+}
+
 // Exportar para uso global IMEDIATAMENTE após inicialização
 window.comunicacaoState = comunicacaoState;
 window.openConversation = openConversation;
@@ -1872,7 +1937,9 @@ window.openLeadSelector = openLeadSelector;
 window.closeLeadSelector = closeLeadSelector;
 window.selectLead = selectLead;
 window.openConfigModal = openConfigModal;
+window.debugMensagens = debugMensagens;
 console.log('🟢 Módulo de comunicação exportado para window');
+console.log('💡 Use debugMensagens() no console para verificar as mensagens no banco');
 
 // =========================================
 // FUNÇÃO PARA ADICIONAR LEAD DE TESTE
