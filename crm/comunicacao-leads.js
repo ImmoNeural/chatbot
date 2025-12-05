@@ -1235,6 +1235,14 @@ async function loadConversationHistory() {
 
                 const tipo = msg.direcao === 'recebida' ? 'received' : 'sent';
                 addMessageToConversation(msg.mensagem || '[sem conteúdo]', tipo, timeStr);
+
+                // IMPORTANTE: Adicionar ao array de mensagens para o resumo da IA
+                comunicacaoState.messages.push({
+                    type: 'whatsapp',
+                    content: msg.mensagem || '[sem conteúdo]',
+                    direction: msg.direcao === 'recebida' ? 'received' : 'sent',
+                    timestamp: msg.created_at
+                });
             });
 
             // Scroll para o final
@@ -1775,23 +1783,52 @@ async function saveConversationToSupabase() {
     const lead = comunicacaoState.selectedLead;
     const summary = document.getElementById('summary-textarea').value;
 
-    if (!lead) return;
+    if (!lead) {
+        alert('Erro: Lead não selecionado');
+        return;
+    }
+
+    console.log('💾 Salvando conversa para lead:', lead.id, lead.nome);
+    console.log('💾 Resumo:', summary);
+    console.log('💾 Tipo de contato:', selectedContactType);
 
     try {
-        // Salvar interação no Supabase
+        // Tentar salvar na tabela interacoes (formato padrão do CRM)
         const interacao = {
             lead_id: lead.id,
-            tipo: selectedContactType === 'ligacao' ? 'ligacao' :
-                  selectedContactType === 'audio' ? 'whatsapp' : 'mensagem',
+            tipo: selectedContactType === 'ligacao' ? 'Ligação' :
+                  selectedContactType === 'audio' ? 'WhatsApp' : 'Mensagem',
             descricao: summary,
-            data_interacao: new Date().toISOString()
+            data: new Date().toISOString()
         };
+
+        console.log('💾 Dados da interação:', interacao);
 
         const { data, error } = await supabase
             .from('interacoes')
-            .insert([interacao]);
+            .insert([interacao])
+            .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Erro ao salvar interação:', error);
+
+            // Se a tabela não existe, tentar criar ou informar o usuário
+            if (error.code === '42P01' || error.message.includes('does not exist')) {
+                alert('Tabela de interações não encontrada. Criando estrutura...');
+
+                // Tentar criar a tabela
+                const createResult = await supabase.rpc('create_interacoes_table');
+                if (createResult.error) {
+                    console.error('Erro ao criar tabela:', createResult.error);
+                    alert(`Erro: A tabela 'interacoes' não existe no Supabase.\n\nPor favor, crie a tabela manualmente no Supabase Dashboard com as colunas:\n- id (uuid)\n- lead_id (uuid)\n- tipo (text)\n- descricao (text)\n- data (timestamptz)`);
+                }
+                return;
+            }
+
+            throw error;
+        }
+
+        console.log('✅ Interação salva:', data);
 
         // Mostrar notificação de sucesso
         if (typeof showNotification === 'function') {
@@ -1808,8 +1845,8 @@ async function saveConversationToSupabase() {
         closeConversation();
 
     } catch (err) {
-        console.error('Erro ao salvar conversa:', err);
-        alert('Erro ao salvar conversa. Tente novamente.');
+        console.error('❌ Erro ao salvar conversa:', err);
+        alert(`Erro ao salvar conversa: ${err.message || 'Erro desconhecido'}`);
     }
 }
 
