@@ -32,7 +32,8 @@ let comunicacaoState = {
     conversationStartTime: null,
     pollInterval: null,
     lastMessageId: null,
-    loadedMessageIds: new Set()
+    loadedMessageIds: new Set(),
+    recentSentMessages: [] // Para evitar duplicação de mensagens enviadas
 };
 
 // Inicializar módulo de comunicação
@@ -1383,6 +1384,7 @@ function closeConversation() {
     comunicacaoState.messages = [];
     comunicacaoState.isRecording = false;
     comunicacaoState.loadedMessageIds = new Set();
+    comunicacaoState.recentSentMessages = [];
     stopRecording();
 }
 
@@ -1457,7 +1459,19 @@ async function sendViaWhatsApp() {
         const result = await response.json();
 
         if (result.success) {
-            addMessageToConversation(text, 'sent');
+            // Registrar mensagem enviada para evitar duplicação
+            comunicacaoState.recentSentMessages.push({
+                content: text,
+                timestamp: Date.now()
+            });
+
+            // Limpar mensagens antigas (mais de 60 segundos)
+            comunicacaoState.recentSentMessages = comunicacaoState.recentSentMessages.filter(
+                msg => Date.now() - msg.timestamp < 60000
+            );
+
+            // Adicionar mensagem na UI com flag para pular verificação de duplicação
+            addMessageToConversation(text, 'sent', false, true);
             comunicacaoState.messages.push({
                 type: 'whatsapp',
                 content: text,
@@ -1496,8 +1510,22 @@ async function sendViaWhatsApp() {
     }
 }
 
-function addMessageToConversation(content, direction, timeOrAudio = false) {
+function addMessageToConversation(content, direction, timeOrAudio = false, skipDuplicateCheck = false) {
     const messages = document.getElementById('conv-messages');
+
+    // Verificar se é uma mensagem enviada que já foi adicionada (evita duplicação)
+    if (direction === 'sent' && !skipDuplicateCheck) {
+        const now = Date.now();
+        const isDuplicate = comunicacaoState.recentSentMessages.some(msg => {
+            const timeDiff = now - msg.timestamp;
+            return msg.content === content && timeDiff < 30000; // 30 segundos
+        });
+
+        if (isDuplicate) {
+            console.log('⚠️ Mensagem duplicada ignorada:', content.substring(0, 30));
+            return;
+        }
+    }
 
     // Se timeOrAudio for string, usa como tempo; se for boolean true, é áudio
     const isAudio = timeOrAudio === true;
