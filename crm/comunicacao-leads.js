@@ -1354,7 +1354,7 @@ function openConversation() {
     document.getElementById('summary-section').classList.remove('visible');
     document.getElementById('summary-loading').style.display = 'flex';
     document.getElementById('summary-textarea').style.display = 'none';
-    document.getElementById('contact-type-selector').style.display = 'none';
+    // Seletor de tipo removido - não precisa mais resetar
 
     modal.classList.add('visible');
 
@@ -1685,11 +1685,9 @@ async function finishConversation() {
 async function generateSummary() {
     const loadingEl = document.getElementById('summary-loading');
     const textareaEl = document.getElementById('summary-textarea');
-    const typeSelector = document.getElementById('contact-type-selector');
 
     loadingEl.style.display = 'flex';
     textareaEl.style.display = 'none';
-    typeSelector.style.display = 'none';
 
     // Preparar contexto da conversa
     const lead = comunicacaoState.selectedLead;
