@@ -33,7 +33,8 @@ let comunicacaoState = {
     pollInterval: null,
     lastMessageId: null,
     loadedMessageIds: new Set(),
-    recentSentMessages: [] // Para evitar duplicação de mensagens enviadas
+    recentSentMessages: [], // Para evitar duplicação de mensagens enviadas
+    currentSession: null // Sessão atual da conversa
 };
 
 // Inicializar módulo de comunicação
@@ -1126,6 +1127,105 @@ function stopMessagePolling() {
 // Armazenar subscription para poder cancelar depois
 let realtimeSubscription = null;
 
+// =========================================
+// GERENCIAMENTO DE SESSÕES DE CONVERSA
+// =========================================
+
+// Buscar ou criar sessão ativa para o lead
+async function getOrCreateCurrentSession(leadId) {
+    try {
+        console.log('🔄 Buscando sessão ativa para lead:', leadId);
+
+        // Buscar sessão ativa (não encerrada) para este lead
+        const { data: sessaoAtiva, error: errBusca } = await supabase
+            .from('conversas_sessoes')
+            .select('*')
+            .eq('lead_id', leadId)
+            .is('encerrada_em', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (sessaoAtiva && !errBusca) {
+            console.log('✅ Sessão ativa encontrada:', sessaoAtiva.sessao_numero);
+            return sessaoAtiva;
+        }
+
+        // Se não existe sessão ativa, buscar o último número de sessão
+        const { data: ultimaSessao } = await supabase
+            .from('conversas_sessoes')
+            .select('sessao_numero')
+            .eq('lead_id', leadId)
+            .order('sessao_numero', { ascending: false })
+            .limit(1)
+            .single();
+
+        const proximoNumero = (ultimaSessao?.sessao_numero || 0) + 1;
+
+        // Criar nova sessão
+        const { data: novaSessao, error: errCriar } = await supabase
+            .from('conversas_sessoes')
+            .insert([{
+                lead_id: leadId,
+                sessao_numero: proximoNumero,
+                iniciada_em: new Date().toISOString()
+            }])
+            .select()
+            .single();
+
+        if (errCriar) {
+            console.error('❌ Erro ao criar sessão:', errCriar);
+            return null;
+        }
+
+        console.log('✅ Nova sessão criada:', novaSessao.sessao_numero);
+        return novaSessao;
+
+    } catch (err) {
+        console.error('❌ Erro ao gerenciar sessão:', err);
+        return null;
+    }
+}
+
+// Encerrar sessão atual e criar nova
+async function endCurrentSession(leadId, resumo) {
+    try {
+        const sessaoAtual = comunicacaoState.currentSession;
+
+        if (!sessaoAtual) {
+            console.log('⚠️ Nenhuma sessão ativa para encerrar');
+            return null;
+        }
+
+        console.log('🔄 Encerrando sessão:', sessaoAtual.sessao_numero);
+
+        // Marcar sessão como encerrada
+        const { error: errEncerrar } = await supabase
+            .from('conversas_sessoes')
+            .update({
+                encerrada_em: new Date().toISOString(),
+                resumo: resumo
+            })
+            .eq('id', sessaoAtual.id);
+
+        if (errEncerrar) {
+            console.error('❌ Erro ao encerrar sessão:', errEncerrar);
+            return null;
+        }
+
+        console.log('✅ Sessão', sessaoAtual.sessao_numero, 'encerrada com sucesso');
+
+        // Limpar sessão atual do estado
+        comunicacaoState.currentSession = null;
+
+        return true;
+
+    } catch (err) {
+        console.error('❌ Erro ao encerrar sessão:', err);
+        return null;
+    }
+}
+
 // Carregar histórico completo e iniciar Realtime
 async function loadConversationHistory() {
     const lead = comunicacaoState.selectedLead;
@@ -1137,6 +1237,12 @@ async function loadConversationHistory() {
     const messagesContainer = document.getElementById('conv-messages');
 
     try {
+        // Buscar ou criar sessão ativa para este lead
+        const sessao = await getOrCreateCurrentSession(lead.id);
+        comunicacaoState.currentSession = sessao;
+
+        console.log('📋 Sessão atual:', sessao ? `#${sessao.sessao_numero} (iniciada em ${sessao.iniciada_em})` : 'Nenhuma');
+
         // Formatar telefone para busca - remover TODOS os caracteres não numéricos exceto +
         let phone = lead.phone.replace(/[^\d+]/g, '');
         if (!phone.startsWith('+')) {
@@ -1154,25 +1260,27 @@ async function loadConversationHistory() {
         console.log('🔍 Carregando histórico para:', phone);
         console.log('🔍 Variações de busca:', { phone, phoneWithoutPlus, phoneDigitsOnly });
 
-        // Primeiro, vamos ver TODAS as mensagens na tabela para debug
-        const { data: todasMensagens, error: errAll } = await supabase
-            .from('mensagens_whatsapp')
-            .select('id, telefone, direcao, mensagem, created_at')
-            .order('created_at', { ascending: false })
-            .limit(20);
-
-        console.log('📋 DEBUG - Todas as mensagens na tabela:', todasMensagens);
-
-        if (todasMensagens && todasMensagens.length > 0) {
-            console.log('📋 Telefones únicos na tabela:', [...new Set(todasMensagens.map(m => m.telefone))]);
+        // Definir filtro de data baseado na sessão
+        // Se existe sessão, carregar apenas mensagens a partir do início da sessão
+        let dataFiltro = null;
+        if (sessao && sessao.iniciada_em) {
+            dataFiltro = sessao.iniciada_em;
+            console.log('🔍 Filtrando mensagens a partir de:', dataFiltro);
         }
 
         // Buscar mensagens usando ILIKE para ser mais flexível com o formato
-        const { data: mensagens, error } = await supabase
+        // Filtrar por data se houver sessão ativa
+        let query = supabase
             .from('mensagens_whatsapp')
             .select('*')
-            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus},telefone.ilike.%${phoneDigitsOnly}%`)
-            .order('created_at', { ascending: true });
+            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus},telefone.ilike.%${phoneDigitsOnly}%`);
+
+        // Aplicar filtro de data da sessão
+        if (dataFiltro) {
+            query = query.gte('created_at', dataFiltro);
+        }
+
+        const { data: mensagens, error } = await query.order('created_at', { ascending: true });
 
         console.log('🔍 Query executada, resultado:', mensagens?.length || 0, 'mensagens');
 
@@ -1779,15 +1887,16 @@ async function saveConversationToSupabase() {
 
     console.log('💾 Salvando conversa para lead:', lead.id, lead.nome);
     console.log('💾 Resumo:', summary);
-    console.log('💾 Tipo de contato:', selectedContactType);
+    console.log('💾 Sessão atual:', comunicacaoState.currentSession?.sessao_numero);
 
     try {
         // Salvar interação na tabela interacoes
         // Valores permitidos: email, whatsapp, chamada, visita, nota, upload, sistema
+        const sessaoNumero = comunicacaoState.currentSession?.sessao_numero || 1;
         const interacao = {
             lead_id: lead.id,
             tipo: 'whatsapp',  // minúsculo conforme constraint
-            titulo: `Conversa WhatsApp - ${new Date().toLocaleDateString('pt-BR')}`,
+            titulo: `Conversa WhatsApp #${sessaoNumero} - ${new Date().toLocaleDateString('pt-BR')}`,
             descricao: summary
         };
 
@@ -1808,11 +1917,15 @@ async function saveConversationToSupabase() {
 
         console.log('✅ Interação salva:', data);
 
+        // Encerrar a sessão atual (isso iniciará uma nova sessão na próxima conversa)
+        await endCurrentSession(lead.id, summary);
+        console.log('✅ Sessão encerrada, próxima conversa iniciará nova sessão');
+
         // Mostrar notificação de sucesso
         if (typeof showNotification === 'function') {
-            showNotification('Conversa salva com sucesso!', 'success');
+            showNotification('Conversa salva e sessão encerrada!', 'success');
         } else {
-            alert('Conversa salva com sucesso!');
+            alert('Conversa salva e sessão encerrada!');
         }
 
         // Recarregar dados do CRM
