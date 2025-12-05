@@ -1794,12 +1794,14 @@ async function saveConversationToSupabase() {
 
     try {
         // Salvar interação na tabela interacoes
+        const tipoInteracao = selectedContactType === 'ligacao' ? 'Ligação' :
+                              selectedContactType === 'audio' ? 'WhatsApp' : 'Mensagem';
+
         const interacao = {
             lead_id: lead.id,
-            tipo: selectedContactType === 'ligacao' ? 'Ligação' :
-                  selectedContactType === 'audio' ? 'WhatsApp' : 'Mensagem',
+            tipo: tipoInteracao,
+            titulo: `${tipoInteracao} - ${new Date().toLocaleDateString('pt-BR')}`,
             descricao: summary
-            // Não incluir 'data' - deixar o banco usar o default ou created_at
         };
 
         console.log('💾 Dados da interação:', interacao);
