@@ -1094,13 +1094,12 @@ async function fetchWhatsAppMessages(forceReload = false) {
                     console.log('📩 Adicionando mensagem:', msg.direcao, '-', msg.mensagem?.substring(0, 50));
 
                     const tipo = msg.direcao === 'recebida' ? 'received' : 'sent';
-                    const time = new Date(msg.created_at).toLocaleTimeString('pt-BR', {
+                    const timeStr = new Date(msg.created_at).toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
                         minute: '2-digit'
                     });
-                    const date = new Date(msg.created_at).toLocaleDateString('pt-BR');
 
-                    addMessageToConversation(msg.mensagem || '[sem conteúdo]', tipo, `${date} ${time}`);
+                    addMessageToConversation(msg.mensagem || '[sem conteúdo]', tipo, timeStr);
                     novasMensagens++;
                 }
             });
@@ -1512,18 +1511,32 @@ async function sendViaWhatsApp() {
 
 function addMessageToConversation(content, direction, timeOrAudio = false, skipDuplicateCheck = false) {
     const messages = document.getElementById('conv-messages');
+    if (!messages) return;
 
-    // Verificar se é uma mensagem enviada que já foi adicionada (evita duplicação)
-    if (direction === 'sent' && !skipDuplicateCheck) {
+    // Verificar duplicação de QUALQUER mensagem (enviada ou recebida)
+    if (!skipDuplicateCheck) {
+        // Verificar nas mensagens recentemente enviadas
         const now = Date.now();
-        const isDuplicate = comunicacaoState.recentSentMessages.some(msg => {
+        const isDuplicateSent = comunicacaoState.recentSentMessages.some(msg => {
             const timeDiff = now - msg.timestamp;
-            return msg.content === content && timeDiff < 30000; // 30 segundos
+            return msg.content === content && timeDiff < 60000; // 60 segundos
         });
 
-        if (isDuplicate) {
-            console.log('⚠️ Mensagem duplicada ignorada:', content.substring(0, 30));
+        if (isDuplicateSent) {
+            console.log('⚠️ Mensagem enviada duplicada ignorada:', content.substring(0, 30));
             return;
+        }
+
+        // Verificar se já existe uma mensagem com o mesmo conteúdo nas últimas mensagens do DOM
+        const existingMessages = messages.querySelectorAll('.conv-message');
+        const lastMessages = Array.from(existingMessages).slice(-10); // Últimas 10 mensagens
+
+        for (const msgEl of lastMessages) {
+            const msgText = msgEl.querySelector('div:first-child')?.textContent;
+            if (msgText === content) {
+                console.log('⚠️ Mensagem já existe no chat, ignorando:', content.substring(0, 30));
+                return;
+            }
         }
     }
 
