@@ -29,7 +29,10 @@ let comunicacaoState = {
     isRecording: false,
     mediaRecorder: null,
     audioChunks: [],
-    conversationStartTime: null
+    conversationStartTime: null,
+    pollInterval: null,
+    lastMessageId: null,
+    loadedMessageIds: new Set()
 };
 
 // Inicializar módulo de comunicação
@@ -1024,6 +1027,84 @@ function selectLead(leadId) {
     openConversation();
 }
 
+// =========================================
+// POLLING DE MENSAGENS WHATSAPP
+// =========================================
+
+// Buscar mensagens do banco de dados
+async function fetchWhatsAppMessages() {
+    const lead = comunicacaoState.selectedLead;
+    if (!lead || !lead.phone) return;
+
+    try {
+        // Formatar telefone para busca
+        let phone = lead.phone.replace(/[^\d+]/g, '');
+        if (!phone.startsWith('+')) {
+            if (phone.length === 11 || phone.length === 10) {
+                phone = '+55' + phone;
+            } else {
+                phone = '+' + phone;
+            }
+        }
+
+        // Buscar mensagens da tabela mensagens_whatsapp
+        const { data: mensagens, error } = await supabase
+            .from('mensagens_whatsapp')
+            .select('*')
+            .or(`telefone.eq.${phone},telefone.eq.${phone.replace('+', '')}`)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error('Erro ao buscar mensagens:', error);
+            return;
+        }
+
+        if (mensagens && mensagens.length > 0) {
+            // Adicionar mensagens novas que ainda não foram exibidas
+            mensagens.forEach(msg => {
+                if (!comunicacaoState.loadedMessageIds.has(msg.id)) {
+                    comunicacaoState.loadedMessageIds.add(msg.id);
+
+                    const tipo = msg.direcao === 'recebida' ? 'received' : 'sent';
+                    const time = new Date(msg.created_at).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    addMessageToConversation(msg.conteudo, tipo, time);
+                }
+            });
+        }
+    } catch (err) {
+        console.error('Erro no polling de mensagens:', err);
+    }
+}
+
+// Iniciar polling de mensagens
+function startMessagePolling() {
+    // Parar polling anterior se existir
+    stopMessagePolling();
+
+    // Carregar mensagens existentes primeiro
+    fetchWhatsAppMessages();
+
+    // Iniciar polling a cada 3 segundos
+    comunicacaoState.pollInterval = setInterval(() => {
+        fetchWhatsAppMessages();
+    }, 3000);
+
+    console.log('🟢 Polling de mensagens iniciado');
+}
+
+// Parar polling de mensagens
+function stopMessagePolling() {
+    if (comunicacaoState.pollInterval) {
+        clearInterval(comunicacaoState.pollInterval);
+        comunicacaoState.pollInterval = null;
+        console.log('🟢 Polling de mensagens parado');
+    }
+}
+
 function openConversation() {
     const lead = comunicacaoState.selectedLead;
     if (!lead) return;
@@ -1063,13 +1144,21 @@ function openConversation() {
     document.getElementById('contact-type-selector').style.display = 'none';
 
     modal.classList.add('visible');
+
+    // Reset e iniciar polling de mensagens
+    comunicacaoState.loadedMessageIds = new Set();
+    startMessagePolling();
 }
 
 function closeConversation() {
+    // Parar polling de mensagens
+    stopMessagePolling();
+
     document.getElementById('conversation-modal').classList.remove('visible');
     comunicacaoState.selectedLead = null;
     comunicacaoState.messages = [];
     comunicacaoState.isRecording = false;
+    comunicacaoState.loadedMessageIds = new Set();
     stopRecording();
 }
 
@@ -1183,9 +1272,14 @@ async function sendViaWhatsApp() {
     }
 }
 
-function addMessageToConversation(content, direction, isAudio = false) {
+function addMessageToConversation(content, direction, timeOrAudio = false) {
     const messages = document.getElementById('conv-messages');
-    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    // Se timeOrAudio for string, usa como tempo; se for boolean true, é áudio
+    const isAudio = timeOrAudio === true;
+    const time = typeof timeOrAudio === 'string'
+        ? timeOrAudio
+        : new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     const messageDiv = document.createElement('div');
     messageDiv.className = `conv-message conv-message-${direction}`;
