@@ -1774,10 +1774,10 @@ async function saveConversationToSupabase() {
 
     try {
         // Salvar interação na tabela interacoes
-        // Usar valores que provavelmente estão na constraint de tipo
+        // Valores permitidos: email, whatsapp, chamada, visita, nota, upload, sistema
         const interacao = {
             lead_id: lead.id,
-            tipo: 'WhatsApp',  // Valor simples que provavelmente está na constraint
+            tipo: 'whatsapp',  // minúsculo conforme constraint
             titulo: `Conversa WhatsApp - ${new Date().toLocaleDateString('pt-BR')}`,
             descricao: summary
         };
