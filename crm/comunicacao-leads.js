@@ -1034,7 +1034,10 @@ function selectLead(leadId) {
 // Buscar mensagens do banco de dados
 async function fetchWhatsAppMessages() {
     const lead = comunicacaoState.selectedLead;
-    if (!lead || !lead.phone) return;
+    if (!lead || !lead.phone) {
+        console.log('⚠️ Polling: Lead ou telefone não disponível');
+        return;
+    }
 
     try {
         // Formatar telefone para busca
@@ -1047,6 +1050,8 @@ async function fetchWhatsAppMessages() {
             }
         }
 
+        console.log('🔍 Polling: Buscando mensagens para telefone:', phone);
+
         // Buscar mensagens da tabela mensagens_whatsapp
         const { data: mensagens, error } = await supabase
             .from('mensagens_whatsapp')
@@ -1055,15 +1060,18 @@ async function fetchWhatsAppMessages() {
             .order('created_at', { ascending: true });
 
         if (error) {
-            console.error('Erro ao buscar mensagens:', error);
+            console.error('❌ Erro ao buscar mensagens:', error);
             return;
         }
+
+        console.log('📨 Polling: Encontradas', mensagens?.length || 0, 'mensagens');
 
         if (mensagens && mensagens.length > 0) {
             // Adicionar mensagens novas que ainda não foram exibidas
             mensagens.forEach(msg => {
                 if (!comunicacaoState.loadedMessageIds.has(msg.id)) {
                     comunicacaoState.loadedMessageIds.add(msg.id);
+                    console.log('📩 Nova mensagem:', msg.direcao, '-', msg.mensagem?.substring(0, 50));
 
                     const tipo = msg.direcao === 'recebida' ? 'received' : 'sent';
                     const time = new Date(msg.created_at).toLocaleTimeString('pt-BR', {
