@@ -1597,8 +1597,10 @@ async function startRecording() {
         comunicacaoState.mediaRecorder.start();
         comunicacaoState.isRecording = true;
 
-        document.getElementById('btn-record').classList.add('recording');
-        document.getElementById('recording-indicator').classList.add('visible');
+        const btnRecord = document.getElementById('btn-record');
+        if (btnRecord) btnRecord.classList.add('recording');
+        const recordingIndicator = document.getElementById('recording-indicator');
+        if (recordingIndicator) recordingIndicator.classList.add('visible');
 
         recordingSeconds = 0;
         recordingTimer = setInterval(() => {
@@ -1621,8 +1623,10 @@ function stopRecording() {
     }
 
     comunicacaoState.isRecording = false;
-    document.getElementById('btn-record').classList.remove('recording');
-    document.getElementById('recording-indicator').classList.remove('visible');
+    const btnRecord = document.getElementById('btn-record');
+    if (btnRecord) btnRecord.classList.remove('recording');
+    const recordingIndicator = document.getElementById('recording-indicator');
+    if (recordingIndicator) recordingIndicator.classList.remove('visible');
 
     if (recordingTimer) {
         clearInterval(recordingTimer);
@@ -1676,7 +1680,9 @@ function selectContactType(type) {
 
 async function finishConversation() {
     const summarySection = document.getElementById('summary-section');
-    summarySection.classList.add('visible');
+    if (summarySection) {
+        summarySection.classList.add('visible');
+    }
 
     // Gerar resumo com IA
     await generateSummary();
@@ -1685,6 +1691,11 @@ async function finishConversation() {
 async function generateSummary() {
     const loadingEl = document.getElementById('summary-loading');
     const textareaEl = document.getElementById('summary-textarea');
+
+    if (!loadingEl || !textareaEl) {
+        console.error('❌ Elementos do resumo não encontrados');
+        return;
+    }
 
     loadingEl.style.display = 'flex';
     textareaEl.style.display = 'none';
@@ -1824,6 +1835,10 @@ finishConversation = async function() {
 
     // Adicionar botão de salvar após o resumo
     const summarySection = document.getElementById('summary-section');
+    if (!summarySection) {
+        console.error('❌ summary-section não encontrado');
+        return;
+    }
 
     // Remover botão existente se houver
     const existingBtn = summarySection.querySelector('.btn-save-summary');
