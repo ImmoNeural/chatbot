@@ -1793,13 +1793,13 @@ async function saveConversationToSupabase() {
     console.log('💾 Tipo de contato:', selectedContactType);
 
     try {
-        // Tentar salvar na tabela interacoes (formato padrão do CRM)
+        // Salvar interação na tabela interacoes
         const interacao = {
             lead_id: lead.id,
             tipo: selectedContactType === 'ligacao' ? 'Ligação' :
                   selectedContactType === 'audio' ? 'WhatsApp' : 'Mensagem',
-            descricao: summary,
-            data: new Date().toISOString()
+            descricao: summary
+            // Não incluir 'data' - deixar o banco usar o default ou created_at
         };
 
         console.log('💾 Dados da interação:', interacao);
@@ -1812,20 +1812,9 @@ async function saveConversationToSupabase() {
         if (error) {
             console.error('❌ Erro ao salvar interação:', error);
 
-            // Se a tabela não existe, tentar criar ou informar o usuário
-            if (error.code === '42P01' || error.message.includes('does not exist')) {
-                alert('Tabela de interações não encontrada. Criando estrutura...');
-
-                // Tentar criar a tabela
-                const createResult = await supabase.rpc('create_interacoes_table');
-                if (createResult.error) {
-                    console.error('Erro ao criar tabela:', createResult.error);
-                    alert(`Erro: A tabela 'interacoes' não existe no Supabase.\n\nPor favor, crie a tabela manualmente no Supabase Dashboard com as colunas:\n- id (uuid)\n- lead_id (uuid)\n- tipo (text)\n- descricao (text)\n- data (timestamptz)`);
-                }
-                return;
-            }
-
-            throw error;
+            // Mostrar erro detalhado para ajudar no debug
+            alert(`Erro ao salvar: ${error.message}\n\nVerifique se a tabela 'interacoes' tem as colunas:\n- lead_id (uuid)\n- tipo (text)\n- descricao (text)`);
+            return;
         }
 
         console.log('✅ Interação salva:', data);
