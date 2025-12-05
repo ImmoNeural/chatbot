@@ -71,16 +71,35 @@ serve(async (req) => {
     // Extrair número de telefone limpo (sem prefixo whatsapp:)
     const phoneNumber = from.replace('whatsapp:', '')
 
-    // Buscar lead pelo telefone
-    const { data: lead, error: leadError } = await supabaseClient
+    // Criar variações do telefone para busca flexível
+    const phoneWithoutPlus = phoneNumber.replace('+', '')
+    const phoneDigitsOnly = phoneNumber.replace(/\D/g, '')
+
+    console.log('📞 Buscando lead com telefone:', phoneNumber, 'ou', phoneWithoutPlus)
+
+    // Buscar lead pelo telefone - usando coluna correta 'phone' e busca flexível
+    const { data: leads, error: leadError } = await supabaseClient
       .from('leads')
-      .select('id, nome, telefone')
-      .or(`telefone.eq.${phoneNumber},telefone.eq.${phoneNumber.replace('+', '')}`)
-      .single()
+      .select('id, nome, phone')
+
+    let lead = null
+    if (!leadError && leads && leads.length > 0) {
+      // Buscar lead que tenha telefone compatível
+      lead = leads.find(l => {
+        if (!l.phone) return false
+        const leadPhoneDigits = l.phone.replace(/\D/g, '')
+        return leadPhoneDigits === phoneDigitsOnly ||
+               l.phone === phoneNumber ||
+               l.phone === phoneWithoutPlus ||
+               l.phone.replace(/\D/g, '') === phoneDigitsOnly
+      })
+    }
 
     if (leadError && leadError.code !== 'PGRST116') {
       console.error('Erro ao buscar lead:', leadError)
     }
+
+    console.log('👤 Lead encontrado:', lead ? lead.nome : 'Nenhum')
 
     // Salvar mensagem recebida na tabela
     const { data: savedMessage, error: saveError } = await supabaseClient
