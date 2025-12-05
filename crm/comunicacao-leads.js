@@ -1020,9 +1020,11 @@ function selectLead(leadId) {
 // POLLING DE MENSAGENS WHATSAPP
 // =========================================
 
-// Buscar mensagens do banco de dados
+// Buscar mensagens do banco de dados (respeitando a sessão atual)
 async function fetchWhatsAppMessages(forceReload = false) {
     const lead = comunicacaoState.selectedLead;
+    const sessao = comunicacaoState.currentSession;
+
     if (!lead || !lead.phone) {
         console.log('⚠️ Polling: Lead ou telefone não disponível');
         return;
@@ -1042,15 +1044,24 @@ async function fetchWhatsAppMessages(forceReload = false) {
         // Também criar versão sem o +
         const phoneWithoutPlus = phone.replace('+', '');
 
-        console.log('🔍 Polling: Buscando mensagens para telefone:', phone, 'ou', phoneWithoutPlus);
+        // Filtro de data da sessão atual
+        const dataFiltro = sessao?.iniciada_em || null;
+
+        console.log('🔍 Polling: Buscando mensagens para telefone:', phone, 'sessão desde:', dataFiltro);
         console.log('🔍 Polling: loadedMessageIds atual:', comunicacaoState.loadedMessageIds.size);
 
-        // Buscar mensagens da tabela mensagens_whatsapp
-        const { data: mensagens, error } = await supabase
+        // Buscar mensagens da tabela mensagens_whatsapp COM FILTRO DE SESSÃO
+        let query = supabase
             .from('mensagens_whatsapp')
             .select('*')
-            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus}`)
-            .order('created_at', { ascending: true });
+            .or(`telefone.eq.${phone},telefone.eq.${phoneWithoutPlus}`);
+
+        // Aplicar filtro de data da sessão
+        if (dataFiltro) {
+            query = query.gte('created_at', dataFiltro);
+        }
+
+        const { data: mensagens, error } = await query.order('created_at', { ascending: true });
 
         if (error) {
             console.error('❌ Erro ao buscar mensagens:', error);
