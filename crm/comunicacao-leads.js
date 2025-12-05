@@ -1173,11 +1173,13 @@ async function getOrCreateCurrentSession(leadId) {
 
         const proximoNumero = (ultimaSessao?.sessao_numero || 0) + 1;
 
-        // Criar nova sessão
+        // Criar nova sessão (incluindo empresa_id para multi-tenant)
+        const empresaId = window.currentEmpresa?.id || null;
         const { data: novaSessao, error: errCriar } = await supabase
             .from('conversas_sessoes')
             .insert([{
                 lead_id: leadId,
+                empresa_id: empresaId,
                 sessao_numero: proximoNumero,
                 iniciada_em: new Date().toISOString()
             }])
