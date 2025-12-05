@@ -2842,9 +2842,19 @@ function exportLeads() {
     showNotification('Leads exportados com sucesso!', 'success');
 }
 
-function logout() {
-    // Implementar logout
-    window.location.href = '/';
+async function logout() {
+    try {
+        // Fazer signOut do Supabase
+        await supabase.auth.signOut();
+        // Limpar localStorage
+        localStorage.removeItem('supabase.auth.token');
+        // Redirecionar para login
+        window.location.href = 'login.html';
+    } catch (err) {
+        console.error('Erro ao fazer logout:', err);
+        // Mesmo com erro, redireciona
+        window.location.href = 'login.html';
+    }
 }
 
 // =========================================
