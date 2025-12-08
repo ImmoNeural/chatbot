@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste Chatbot - Energia Solar</title>
+    <title>Teste Chatbot - Sunbotic Energia Solar</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -24,7 +24,7 @@
             max-width: 600px;
         }
         h1 {
-            color: #333;
+            color: #06a288;
             margin-bottom: 20px;
         }
         p {
@@ -32,23 +32,23 @@
             line-height: 1.6;
         }
         .info {
-            background: #f0f9ff;
+            background: #e0f7f5;
             padding: 20px;
             border-radius: 10px;
             margin-top: 20px;
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid #06a288;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌞 Chatbot de Energia Solar</h1>
+        <h1>🌞 Sunbotic - Energia Solar</h1>
         <p>Bem-vindo à página de teste do chatbot!</p>
         <p>O botão do chat deve aparecer no canto inferior direito da tela.</p>
         <div class="info">
             <strong>💡 Funcionalidades:</strong>
             <ul style="text-align: left; margin-top: 10px;">
-                <li>Funil de qualificação com 3 etapas</li>
+                <li>Funil de qualificação com 5 etapas</li>
                 <li>Imagens de painéis solares</li>
                 <li>Cálculo de potencial de economia</li>
                 <li>Agendamento integrado</li>
@@ -56,30 +56,17 @@
         </div>
     </div>
 
-    <!-- Configuração do Chatbot -->
+    <!-- Configuração do Chatbot Sunbotic -->
     <script>
         window.ChatWidgetConfig = {
             webhook: {
                 url: 'https://seu-webhook-n8n.com/webhook',
-                route: 'chatbot'
-            },
-            branding: {
-                logo: 'https://via.placeholder.com/128x64?text=Solar+Energy',
-                name: 'Energia Solar',
-                poweredBy: {
-                    text: 'Powered by Neureka AI',
-                    link: 'https://neureka-ai.com'
-                }
-            },
-            style: {
-                primaryColor: '#10b981',
-                secondaryColor: '#059669',
-                position: 'right'
+                route: 'general'
             }
         };
     </script>
 
-    <!-- Carrega o Chatbot -->
-    <script src="./chat/chat-widget-pastro-v236.js"></script>
+    <!-- Carrega o Chatbot v237 com tema Sunbotic -->
+    <script src="./chat/chat-widget-pastro-v237.js"></script>
 </body>
 </html>
