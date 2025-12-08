@@ -707,6 +707,7 @@
 
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
+                credentials: 'omit',  // IMPORTANTE: Ignora cookies de sessão
                 headers: {
                     'Content-Type': 'application/json',
                     'apikey': SUPABASE_KEY,
