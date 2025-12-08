@@ -2132,12 +2132,22 @@ console.log('💡 Use debugMensagens() no console para verificar as mensagens no
 // =========================================
 async function addTestLead() {
     try {
+        // Obter empresa_id do usuário atual (necessário para RLS)
+        const empresaId = window.currentEmpresa?.id;
+
+        if (!empresaId) {
+            alert('Erro: Não foi possível identificar sua empresa. Faça login novamente.');
+            console.error('empresa_id não encontrado. currentEmpresa:', window.currentEmpresa);
+            return;
+        }
+
         const testLead = {
             nome: 'Thiago RS Pastro',
             email: 'thiago.pastro@test.com',
             phone: '+49 1799044322',
             status: 'novo',
             origem: 'teste',
+            empresa_id: empresaId,
             created_at: new Date().toISOString()
         };
 
@@ -2165,23 +2175,6 @@ async function addTestLead() {
     }
 }
 
-// Executar automaticamente ao carregar (apenas uma vez)
-(async function() {
-    try {
-        // Verificar se o lead já existe
-        const { data: existingLead } = await supabase
-            .from('leads')
-            .select('id')
-            .eq('phone', '+49 1799044322')
-            .single();
-
-        if (!existingLead) {
-            console.log('Adicionando lead de teste...');
-            await addTestLead();
-        } else {
-            console.log('Lead de teste já existe');
-        }
-    } catch (err) {
-        console.log('Verificação de lead de teste ignorada:', err.message);
-    }
-})();
+// Função addTestLead disponível globalmente para testes manuais
+// Para adicionar um lead de teste, use: addTestLead() no console do navegador
+window.addTestLead = addTestLead;
