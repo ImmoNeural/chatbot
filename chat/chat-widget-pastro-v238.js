@@ -1,7 +1,14 @@
-// Interactive Chat Widget for n8n - Versão com Funil de Qualificação
+// Interactive Chat Widget for n8n - Versão v238 Sunbotic Theme
 (function() {
-    // Initialize widget only once
-    if (window.N8nChatWidgetLoaded) return;
+    // Remove widget anterior se existir (força atualização de cores)
+    const oldWidget = document.querySelector('.chat-assist-widget');
+    if (oldWidget) oldWidget.remove();
+    const oldStyles = document.querySelectorAll('style[data-chat-widget]');
+    oldStyles.forEach(s => s.remove());
+
+    // Initialize widget v238
+    if (window.N8nChatWidgetV238) return;
+    window.N8nChatWidgetV238 = true;
     window.N8nChatWidgetLoaded = true;
 
     // Load font resource - using Poppins for a fresh look
