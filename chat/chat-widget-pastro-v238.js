@@ -684,12 +684,7 @@
 
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
-        console.log('=== SUPABASE INSERT DEBUG ===');
         try {
-            console.log('[Supabase] 1. Input data:', JSON.stringify(data, null, 2));
-            console.log('[Supabase] 2. settings.empresa_id:', settings.empresa_id);
-            console.log('[Supabase] 3. typeof empresa_id:', typeof settings.empresa_id);
-
             const leadData = {
                 email: data.email || null,
                 phone: data.phone || null,
@@ -698,57 +693,43 @@
                 status: 'novo'
             };
 
-            // Adicionar campos opcionais apenas se existirem
             if (data.familySize) leadData.family_size = data.familySize;
             if (data.kwhConsumption) leadData.kwh_consumption = data.kwhConsumption;
             if (data.roofType) leadData.roof_type = data.roofType;
 
-            const requestUrl = `${SUPABASE_URL}/rest/v1/leads`;
-            const requestHeaders = {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Prefer': 'return=representation'
-            };
-            const requestBody = JSON.stringify(leadData);
+            // DEBUG POPUP 1 - Dados sendo enviados
+            alert('DEBUG 1 - Dados a enviar:\n\n' +
+                'empresa_id: ' + settings.empresa_id + '\n' +
+                'email: ' + leadData.email + '\n' +
+                'phone: ' + leadData.phone + '\n' +
+                'origem: ' + leadData.origem + '\n' +
+                'status: ' + leadData.status);
 
-            console.log('[Supabase] 4. Request URL:', requestUrl);
-            console.log('[Supabase] 5. Request Headers:', JSON.stringify(requestHeaders, null, 2));
-            console.log('[Supabase] 6. Request Body:', requestBody);
-            console.log('[Supabase] 7. leadData object:', JSON.stringify(leadData, null, 2));
-
-            const response = await fetch(requestUrl, {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
-                headers: requestHeaders,
-                body: requestBody
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(leadData)
             });
 
-            console.log('[Supabase] 8. Response status:', response.status);
-            console.log('[Supabase] 9. Response statusText:', response.statusText);
-            console.log('[Supabase] 10. Response headers:', JSON.stringify([...response.headers.entries()], null, 2));
-
             const responseText = await response.text();
-            console.log('[Supabase] 11. Response body (raw):', responseText);
+
+            // DEBUG POPUP 2 - Resposta do servidor
+            alert('DEBUG 2 - Resposta Supabase:\n\n' +
+                'Status: ' + response.status + '\n' +
+                'Body: ' + responseText.substring(0, 300));
 
             if (!response.ok) {
-                console.error('[Supabase] 12. ERROR - Insert failed');
-                try {
-                    const errorData = JSON.parse(responseText);
-                    console.error('[Supabase] 13. Error parsed:', JSON.stringify(errorData, null, 2));
-                } catch (e) {
-                    console.error('[Supabase] 13. Could not parse error as JSON');
-                }
-                console.log('=== SUPABASE INSERT DEBUG END (FAILED) ===');
                 return false;
             }
 
-            console.log('[Supabase] 12. SUCCESS - Lead saved');
-            console.log('=== SUPABASE INSERT DEBUG END (SUCCESS) ===');
             return true;
         } catch (error) {
-            console.error('[Supabase] EXCEPTION:', error);
-            console.error('[Supabase] Exception stack:', error.stack);
-            console.log('=== SUPABASE INSERT DEBUG END (EXCEPTION) ===');
+            alert('DEBUG 3 - ERRO:\n\n' + error.message);
             return false;
         }
     }
