@@ -676,7 +676,6 @@
 
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
-        alert('DEBUG: saveLeadToSupabase chamado! empresa_id=' + settings.empresa_id);
         try {
             const leadData = {
                 email: data.email,
@@ -689,10 +688,6 @@
                 empresa_id: settings.empresa_id,
                 created_at: new Date().toISOString()
             };
-
-            alert('DEBUG: leadData=' + JSON.stringify(leadData));
-
-            console.log('💾 Salvando lead:', leadData);
 
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
@@ -707,15 +702,13 @@
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('❌ Erro ao salvar lead:', errorData);
+                console.error('Erro ao salvar lead:', errorData);
                 return false;
             }
 
-            const savedLead = await response.json();
-            console.log('✅ Lead salvo com sucesso:', savedLead);
             return true;
         } catch (error) {
-            console.error('❌ Erro ao salvar lead:', error);
+            console.error('Erro ao salvar lead:', error);
             return false;
         }
     }
