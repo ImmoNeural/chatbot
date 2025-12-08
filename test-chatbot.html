@@ -62,7 +62,10 @@
             webhook: {
                 url: 'https://seu-webhook-n8n.com/webhook',
                 route: 'general'
-            }
+            },
+            // IMPORTANTE: empresa_id necessário para RLS multi-tenant
+            // Use o ID da sua empresa no Supabase
+            empresa_id: 'a0000000-0000-0000-0000-000000000001' // Neureka AI - Solar
         };
     </script>
 

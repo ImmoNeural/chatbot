@@ -651,7 +651,8 @@
         branding: { ...defaultSettings.branding, ...window.ChatWidgetConfig.branding },
         style: { ...defaultSettings.style, ...window.ChatWidgetConfig.style },
         customStyles: { ...defaultSettings.customStyles, ...window.ChatWidgetConfig.customStyles },
-        suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions
+        suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions,
+        empresa_id: window.ChatWidgetConfig.empresa_id || null
     } : defaultSettings;
 
     // Session tracking
@@ -676,25 +677,46 @@
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
         try {
+            const leadData = {
+                email: data.email,
+                phone: data.phone,
+                family_size: data.familySize,
+                kwh_consumption: data.kwhConsumption,
+                roof_type: data.roofType,
+                origem: 'chatbot',
+                status: 'novo',
+                created_at: new Date().toISOString()
+            };
+
+            // Adicionar empresa_id se configurado (necessário para RLS multi-tenant)
+            if (settings.empresa_id) {
+                leadData.empresa_id = settings.empresa_id;
+            }
+
+            console.log('💾 Salvando lead:', leadData);
+
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Prefer': 'return=representation'
                 },
-                body: JSON.stringify({
-                    email: data.email,
-                    phone: data.phone,
-                    family_size: data.familySize,
-                    kwh_consumption: data.kwhConsumption,
-                    roof_type: data.roofType,
-                    created_at: new Date().toISOString()
-                })
+                body: JSON.stringify(leadData)
             });
-            return response.ok;
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('❌ Erro ao salvar lead:', errorData);
+                return false;
+            }
+
+            const savedLead = await response.json();
+            console.log('✅ Lead salvo com sucesso:', savedLead);
+            return true;
         } catch (error) {
-            console.error('Erro ao salvar lead:', error);
+            console.error('❌ Erro ao salvar lead:', error);
             return false;
         }
     }
