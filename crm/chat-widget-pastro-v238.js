@@ -676,6 +676,7 @@
 
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
+        alert('DEBUG: saveLeadToSupabase chamado! empresa_id=' + settings.empresa_id);
         try {
             const leadData = {
                 email: data.email,
@@ -685,13 +686,11 @@
                 roof_type: data.roofType,
                 origem: 'chatbot',
                 status: 'novo',
+                empresa_id: settings.empresa_id,
                 created_at: new Date().toISOString()
             };
 
-            // Adicionar empresa_id se configurado (necessário para RLS multi-tenant)
-            if (settings.empresa_id) {
-                leadData.empresa_id = settings.empresa_id;
-            }
+            alert('DEBUG: leadData=' + JSON.stringify(leadData));
 
             console.log('💾 Salvando lead:', leadData);
 
