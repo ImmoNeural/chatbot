@@ -645,6 +645,11 @@
         suggestedQuestions: []
     };
 
+    // DEBUG: Log ChatWidgetConfig on load
+    console.log('=== CHATBOT DEBUG START ===');
+    console.log('[Chatbot Init] window.ChatWidgetConfig:', JSON.stringify(window.ChatWidgetConfig, null, 2));
+    console.log('[Chatbot Init] empresa_id from config:', window.ChatWidgetConfig?.empresa_id);
+
     // Merge user settings with defaults
     const settings = window.ChatWidgetConfig ? {
         webhook: { ...defaultSettings.webhook, ...window.ChatWidgetConfig.webhook },
@@ -654,6 +659,9 @@
         suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions,
         empresa_id: window.ChatWidgetConfig.empresa_id || null
     } : defaultSettings;
+
+    console.log('[Chatbot Init] Final settings.empresa_id:', settings.empresa_id);
+    console.log('=== CHATBOT DEBUG END ===');
 
     // Session tracking
     let conversationId = '';
@@ -676,9 +684,11 @@
 
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
+        console.log('=== SUPABASE INSERT DEBUG ===');
         try {
-            console.log('[Chatbot] saveLeadToSupabase called with:', data);
-            console.log('[Chatbot] settings.empresa_id:', settings.empresa_id);
+            console.log('[Supabase] 1. Input data:', JSON.stringify(data, null, 2));
+            console.log('[Supabase] 2. settings.empresa_id:', settings.empresa_id);
+            console.log('[Supabase] 3. typeof empresa_id:', typeof settings.empresa_id);
 
             const leadData = {
                 email: data.email || null,
@@ -693,32 +703,52 @@
             if (data.kwhConsumption) leadData.kwh_consumption = data.kwhConsumption;
             if (data.roofType) leadData.roof_type = data.roofType;
 
-            console.log('[Chatbot] Sending to Supabase:', leadData);
+            const requestUrl = `${SUPABASE_URL}/rest/v1/leads`;
+            const requestHeaders = {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Prefer': 'return=representation'
+            };
+            const requestBody = JSON.stringify(leadData);
 
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+            console.log('[Supabase] 4. Request URL:', requestUrl);
+            console.log('[Supabase] 5. Request Headers:', JSON.stringify(requestHeaders, null, 2));
+            console.log('[Supabase] 6. Request Body:', requestBody);
+            console.log('[Supabase] 7. leadData object:', JSON.stringify(leadData, null, 2));
+
+            const response = await fetch(requestUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify(leadData)
+                headers: requestHeaders,
+                body: requestBody
             });
 
-            console.log('[Chatbot] Response status:', response.status);
+            console.log('[Supabase] 8. Response status:', response.status);
+            console.log('[Supabase] 9. Response statusText:', response.statusText);
+            console.log('[Supabase] 10. Response headers:', JSON.stringify([...response.headers.entries()], null, 2));
+
+            const responseText = await response.text();
+            console.log('[Supabase] 11. Response body (raw):', responseText);
 
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('[Chatbot] Error response:', errorData);
+                console.error('[Supabase] 12. ERROR - Insert failed');
+                try {
+                    const errorData = JSON.parse(responseText);
+                    console.error('[Supabase] 13. Error parsed:', JSON.stringify(errorData, null, 2));
+                } catch (e) {
+                    console.error('[Supabase] 13. Could not parse error as JSON');
+                }
+                console.log('=== SUPABASE INSERT DEBUG END (FAILED) ===');
                 return false;
             }
 
-            const result = await response.json();
-            console.log('[Chatbot] Lead saved successfully:', result);
+            console.log('[Supabase] 12. SUCCESS - Lead saved');
+            console.log('=== SUPABASE INSERT DEBUG END (SUCCESS) ===');
             return true;
         } catch (error) {
-            console.error('[Chatbot] Exception:', error);
+            console.error('[Supabase] EXCEPTION:', error);
+            console.error('[Supabase] Exception stack:', error.stack);
+            console.log('=== SUPABASE INSERT DEBUG END (EXCEPTION) ===');
             return false;
         }
     }
