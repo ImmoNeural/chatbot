@@ -678,16 +678,17 @@
     async function saveLeadToSupabase(data) {
         try {
             const leadData = {
-                email: data.email,
-                phone: data.phone,
-                family_size: data.familySize,
-                kwh_consumption: data.kwhConsumption,
-                roof_type: data.roofType,
-                origem: 'chatbot',
-                status: 'novo',
+                email: data.email || null,
+                phone: data.phone || null,
                 empresa_id: settings.empresa_id,
-                created_at: new Date().toISOString()
+                origem: 'chatbot',
+                status: 'novo'
             };
+
+            // Adicionar campos opcionais apenas se existirem
+            if (data.familySize) leadData.family_size = data.familySize;
+            if (data.kwhConsumption) leadData.kwh_consumption = data.kwhConsumption;
+            if (data.roofType) leadData.roof_type = data.roofType;
 
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
