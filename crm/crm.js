@@ -1631,6 +1631,7 @@ async function salvarNovaInteracao() {
             .from('interacoes')
             .insert([{
                 lead_id: currentLead.id,
+                empresa_id: currentEmpresa?.id,
                 tipo: tipo,
                 titulo: titulo,
                 descricao: descricao || null
@@ -2050,6 +2051,13 @@ async function salvarQualificacao(leadId) {
     const form = document.getElementById('form-qualificacao');
     const formData = new FormData(form);
 
+    // Obter empresa_id do usuário atual (necessário para RLS)
+    const empresaId = window.currentEmpresa?.id;
+    if (!empresaId) {
+        showNotification('Erro: Empresa não identificada. Faça login novamente.', 'danger');
+        return;
+    }
+
     try {
         // Buscar qualificação existente para preservar dados do chatbot
         const { data: existingQual } = await supabase
@@ -2062,6 +2070,7 @@ async function salvarQualificacao(leadId) {
         const qualificacaoData = {
             ...(existingQual || {}), // Preserva TODOS os campos existentes (family_size, kwh_consumption, roof_type, sombreamento_percentual, etc)
             lead_id: leadId,
+            empresa_id: empresaId,
             // Sobrescrever apenas com os campos do formulário
             telhado_bom_estado: formData.get('telhado_bom_estado') === 'on',
             pouco_sombreamento: formData.get('pouco_sombreamento') === 'on',
@@ -2086,6 +2095,7 @@ async function salvarQualificacao(leadId) {
         // Registrar na timeline
         await supabase.from('interacoes').insert([{
             lead_id: leadId,
+            empresa_id: empresaId,
             tipo: 'sistema',
             titulo: 'Qualificação Atualizada',
             descricao: `Viabilidade: ${qualificacaoData.telhado_bom_estado && qualificacaoData.pouco_sombreamento ? 'OK' : 'Pendente'} | Prontidão: ${formatProntidao(qualificacaoData.prontidao_compra)}`
@@ -2110,6 +2120,7 @@ async function salvarQualificacao(leadId) {
             // Registrar na timeline
             await supabase.from('interacoes').insert([{
                 lead_id: leadId,
+                empresa_id: empresaId,
                 tipo: 'sistema',
                 titulo: 'Lead Qualificado Automaticamente',
                 descricao: `Lead qualificado por atingir score ${leadAtualizado.lead_score} (≥ 50 pontos)`
@@ -3856,6 +3867,7 @@ async function uploadDocumento(leadId) {
         // Registrar na timeline
         await supabase.from('interacoes').insert([{
             lead_id: leadId,
+            empresa_id: currentEmpresa?.id,
             tipo: 'sistema',
             titulo: 'Documento Enviado',
             descricao: `${formatTipo(tipo)}: ${arquivo.name}`
@@ -4069,6 +4081,7 @@ async function enviarPropostaPorEmail(propostaId, leadId) {
     // Por enquanto, apenas registrar na timeline
     await supabase.from('interacoes').insert([{
         lead_id: leadId,
+        empresa_id: currentEmpresa?.id,
         tipo: 'email',
         titulo: 'Proposta Enviada por Email',
         descricao: `Proposta enviada para ${currentLead.email}`
@@ -4209,6 +4222,7 @@ async function salvarStatusNegociacao(leadId) {
         // Registrar na timeline
         await supabase.from('interacoes').insert([{
             lead_id: leadId,
+            empresa_id: currentEmpresa?.id,
             tipo: 'sistema',
             titulo: 'Status de Negociação Atualizado',
             descricao: statusData.cliente_agendou_reuniao ?
@@ -4404,6 +4418,7 @@ async function salvarAgendamentoInstalacao(leadId) {
         // Registrar na timeline
         await supabase.from('interacoes').insert([{
             lead_id: leadId,
+            empresa_id: currentEmpresa?.id,
             tipo: 'sistema',
             titulo: 'Instalação Agendada',
             descricao: `Instalação agendada para ${new Date(instalacaoData.data_agendamento_instalacao).toLocaleDateString('pt-BR')} | ART: ${instalacaoData.art_aprovada ? 'OK' : 'Pendente'} | Homologação: ${instalacaoData.homologacao_aprovada ? 'OK' : 'Pendente'}`
@@ -4513,6 +4528,7 @@ async function marcarComoInstalado(leadId) {
         // 7. Registrar na timeline
         await supabase.from('interacoes').insert([{
             lead_id: leadId,
+            empresa_id: currentEmpresa?.id,
             tipo: 'sistema',
             titulo: '🎉 Cliente Instalado com Sucesso!',
             descricao: `Sistema de ${clienteInstaladoData.potencia_instalada_kwp} kWp instalado | Valor: ${formatCurrency(clienteInstaladoData.valor_final_negociado)} | ART: ${instalacao.numero_art || 'N/A'} | Homologação: ${instalacao.protocolo_homologacao || 'N/A'}`
