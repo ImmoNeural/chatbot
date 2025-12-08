@@ -677,6 +677,9 @@
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
         try {
+            console.log('[Chatbot] saveLeadToSupabase called with:', data);
+            console.log('[Chatbot] settings.empresa_id:', settings.empresa_id);
+
             const leadData = {
                 email: data.email || null,
                 phone: data.phone || null,
@@ -690,6 +693,8 @@
             if (data.kwhConsumption) leadData.kwh_consumption = data.kwhConsumption;
             if (data.roofType) leadData.roof_type = data.roofType;
 
+            console.log('[Chatbot] Sending to Supabase:', leadData);
+
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
                 headers: {
@@ -701,15 +706,19 @@
                 body: JSON.stringify(leadData)
             });
 
+            console.log('[Chatbot] Response status:', response.status);
+
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Erro ao salvar lead:', errorData);
+                console.error('[Chatbot] Error response:', errorData);
                 return false;
             }
 
+            const result = await response.json();
+            console.log('[Chatbot] Lead saved successfully:', result);
             return true;
         } catch (error) {
-            console.error('Erro ao salvar lead:', error);
+            console.error('[Chatbot] Exception:', error);
             return false;
         }
     }
