@@ -645,11 +645,6 @@
         suggestedQuestions: []
     };
 
-    // DEBUG: Log ChatWidgetConfig on load
-    console.log('=== CHATBOT DEBUG START ===');
-    console.log('[Chatbot Init] window.ChatWidgetConfig:', JSON.stringify(window.ChatWidgetConfig, null, 2));
-    console.log('[Chatbot Init] empresa_id from config:', window.ChatWidgetConfig?.empresa_id);
-
     // Merge user settings with defaults
     const settings = window.ChatWidgetConfig ? {
         webhook: { ...defaultSettings.webhook, ...window.ChatWidgetConfig.webhook },
@@ -659,9 +654,6 @@
         suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions,
         empresa_id: window.ChatWidgetConfig.empresa_id || null
     } : defaultSettings;
-
-    console.log('[Chatbot Init] Final settings.empresa_id:', settings.empresa_id);
-    console.log('=== CHATBOT DEBUG END ===');
 
     // Session tracking
     let conversationId = '';
@@ -697,40 +689,26 @@
             if (data.kwhConsumption) leadData.kwh_consumption = data.kwhConsumption;
             if (data.roofType) leadData.roof_type = data.roofType;
 
-            // DEBUG POPUP 1 - Dados sendo enviados
-            alert('DEBUG 1 - Dados a enviar:\n\n' +
-                'empresa_id: ' + settings.empresa_id + '\n' +
-                'email: ' + leadData.email + '\n' +
-                'phone: ' + leadData.phone + '\n' +
-                'origem: ' + leadData.origem + '\n' +
-                'status: ' + leadData.status);
-
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
-                credentials: 'omit',  // IMPORTANTE: Ignora cookies de sessão
+                credentials: 'omit',
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Prefer': 'return=representation'
+                    'apikey': SUPABASE_KEY
                 },
                 body: JSON.stringify(leadData)
             });
 
-            const responseText = await response.text();
-
-            // DEBUG POPUP 2 - Resposta do servidor
-            alert('DEBUG 2 - Resposta Supabase:\n\n' +
-                'Status: ' + response.status + '\n' +
-                'Body: ' + responseText.substring(0, 300));
-
             if (!response.ok) {
+                const errorData = await response.json();
+                console.error('[Chatbot] Erro ao salvar lead:', errorData);
                 return false;
             }
 
+            console.log('[Chatbot] Lead salvo com sucesso!');
             return true;
         } catch (error) {
-            alert('DEBUG 3 - ERRO:\n\n' + error.message);
+            console.error('[Chatbot] Exceção ao salvar lead:', error);
             return false;
         }
     }
