@@ -711,8 +711,8 @@ function renderKPICards() {
             change: '+12%'
         },
         {
-            title: 'Pipeline',
-            value: formatCurrency(kpis.pipeline_valor),
+            title: 'Receita Total',
+            value: formatCurrency(kpis.receita_total),
             icon: 'fa-dollar-sign',
             color: 'green',
             change: '+8%'
