@@ -4067,6 +4067,24 @@ async function renderResumoProposta(leadId) {
 
             <!-- Ações -->
             <div class="space-y-3">
+                ${proposta.status !== 'aceita' && proposta.status !== 'recusada' ? `
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="aceitarProposta('${proposta.id}', '${leadId}')"
+                                class="w-full bg-green-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition shadow-md">
+                            <i class="fas fa-check-circle mr-2"></i>Aceitar Proposta
+                        </button>
+                        <button onclick="recusarProposta('${proposta.id}', '${leadId}')"
+                                class="w-full bg-red-600 text-white px-6 py-4 rounded-lg font-semibold text-lg hover:bg-red-700 transition shadow-md">
+                            <i class="fas fa-times-circle mr-2"></i>Recusar Proposta
+                        </button>
+                    </div>
+                ` : `
+                    <div class="p-4 rounded-lg ${proposta.status === 'aceita' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                        <i class="fas fa-${proposta.status === 'aceita' ? 'check-circle' : 'times-circle'} mr-2"></i>
+                        <strong>Proposta ${proposta.status === 'aceita' ? 'Aceita' : 'Recusada'}</strong>
+                    </div>
+                `}
+
                 <button onclick="enviarPropostaPorEmail('${proposta.id}', '${leadId}')"
                         class="w-full text-white px-6 py-4 rounded-lg font-semibold text-lg transition shadow-md hover:shadow-lg"
                         style="background: linear-gradient(135deg, #42a5f5 0%, #5c6bc0 100%);"
@@ -4108,6 +4126,102 @@ async function enviarPropostaPorEmail(propostaId, leadId) {
     }]);
 
     await renderLeadTimeline(leadId);
+}
+
+// Aceitar proposta - atualiza AMBAS as tabelas
+async function aceitarProposta(propostaId, leadId) {
+    const empresaId = window.currentEmpresa?.id;
+
+    try {
+        // 1. Atualizar status na tabela propostas
+        const { error: errProposta } = await supabase
+            .from('propostas')
+            .update({ status: 'aceita' })
+            .eq('id', propostaId);
+
+        if (errProposta) throw errProposta;
+
+        // 2. Atualizar/criar registro na tabela status_negociacao
+        const { error: errStatus } = await supabase
+            .from('status_negociacao')
+            .upsert({
+                lead_id: leadId,
+                empresa_id: empresaId,
+                proposta_aceita: true,
+                data_aceite: new Date().toISOString()
+            }, { onConflict: 'lead_id' });
+
+        if (errStatus) {
+            console.warn('Aviso ao atualizar status_negociacao:', errStatus);
+        }
+
+        // 3. Registrar na timeline
+        await supabase.from('interacoes').insert([{
+            lead_id: leadId,
+            empresa_id: empresaId,
+            tipo: 'sistema',
+            titulo: 'Proposta Aceita',
+            descricao: 'Cliente aceitou a proposta comercial'
+        }]);
+
+        showNotification('Proposta aceita com sucesso!', 'success');
+
+        // Recarregar a visualização
+        await renderResumoProposta(leadId);
+        await renderLeadTimeline(leadId);
+
+    } catch (error) {
+        console.error('Erro ao aceitar proposta:', error);
+        showNotification('Erro ao aceitar proposta: ' + error.message, 'danger');
+    }
+}
+
+// Recusar proposta - atualiza AMBAS as tabelas
+async function recusarProposta(propostaId, leadId) {
+    const empresaId = window.currentEmpresa?.id;
+
+    try {
+        // 1. Atualizar status na tabela propostas
+        const { error: errProposta } = await supabase
+            .from('propostas')
+            .update({ status: 'recusada' })
+            .eq('id', propostaId);
+
+        if (errProposta) throw errProposta;
+
+        // 2. Atualizar/criar registro na tabela status_negociacao
+        const { error: errStatus } = await supabase
+            .from('status_negociacao')
+            .upsert({
+                lead_id: leadId,
+                empresa_id: empresaId,
+                proposta_aceita: false,
+                data_aceite: null
+            }, { onConflict: 'lead_id' });
+
+        if (errStatus) {
+            console.warn('Aviso ao atualizar status_negociacao:', errStatus);
+        }
+
+        // 3. Registrar na timeline
+        await supabase.from('interacoes').insert([{
+            lead_id: leadId,
+            empresa_id: empresaId,
+            tipo: 'sistema',
+            titulo: 'Proposta Recusada',
+            descricao: 'Cliente recusou a proposta comercial'
+        }]);
+
+        showNotification('Proposta marcada como recusada', 'warning');
+
+        // Recarregar a visualização
+        await renderResumoProposta(leadId);
+        await renderLeadTimeline(leadId);
+
+    } catch (error) {
+        console.error('Erro ao recusar proposta:', error);
+        showNotification('Erro ao recusar proposta: ' + error.message, 'danger');
+    }
 }
 
 function getStatusBadge(status) {
