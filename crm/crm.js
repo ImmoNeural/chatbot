@@ -4619,8 +4619,10 @@ async function marcarComoInstalado(leadId) {
         if (instError) throw instError;
 
         // 4. Criar registro em clientes_instalados com TODOS os dados
+        const empresaId = window.currentEmpresa?.id;
         const clienteInstaladoData = {
             lead_id: leadId,
+            empresa_id: empresaId,
             numero_contrato: proposta?.numero_proposta || `CONTRATO-${Date.now()}`,
             data_instalacao: instalacao.data_agendamento_instalacao || new Date().toISOString(),
             data_assinatura: proposta?.created_at || new Date().toISOString(), // Data da proposta ou data atual
@@ -4640,7 +4642,7 @@ async function marcarComoInstalado(leadId) {
 
         const { error: insertError } = await supabase
             .from('clientes_instalados')
-            .insert([clienteInstaladoData]);
+            .upsert(clienteInstaladoData, { onConflict: 'lead_id' });
 
         if (insertError) throw insertError;
 
