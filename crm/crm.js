@@ -4387,7 +4387,7 @@ async function renderInstalacao(leadId) {
         .from('instalacao')
         .select('*')
         .eq('lead_id', leadId)
-        .single();
+        .maybeSingle();
 
     const inst = instalacao || {};
 
@@ -4531,8 +4531,11 @@ async function renderInstalacao(leadId) {
 }
 
 async function salvarAgendamentoInstalacao(leadId) {
+    const empresaId = window.currentEmpresa?.id;
+
     const instalacaoData = {
         lead_id: leadId,
+        empresa_id: empresaId,
         art_aprovada: document.getElementById('checkbox-art').checked,
         data_art: document.getElementById('data-art').value || null,
         numero_art: document.getElementById('numero-art').value || null,
