@@ -651,8 +651,7 @@
         branding: { ...defaultSettings.branding, ...window.ChatWidgetConfig.branding },
         style: { ...defaultSettings.style, ...window.ChatWidgetConfig.style },
         customStyles: { ...defaultSettings.customStyles, ...window.ChatWidgetConfig.customStyles },
-        suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions,
-        empresa_id: window.ChatWidgetConfig.empresa_id || null
+        suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions
     } : defaultSettings;
 
     // Session tracking
@@ -677,38 +676,25 @@
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
         try {
-            const leadData = {
-                email: data.email || null,
-                phone: data.phone || null,
-                empresa_id: settings.empresa_id,
-                origem: 'chatbot',
-                status: 'novo'
-            };
-
-            if (data.familySize) leadData.family_size = data.familySize;
-            if (data.kwhConsumption) leadData.kwh_consumption = data.kwhConsumption;
-            if (data.roofType) leadData.roof_type = data.roofType;
-
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
-                credentials: 'omit',
                 headers: {
                     'Content-Type': 'application/json',
-                    'apikey': SUPABASE_KEY
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
-                body: JSON.stringify(leadData)
+                body: JSON.stringify({
+                    email: data.email,
+                    phone: data.phone,
+                    family_size: data.familySize,
+                    kwh_consumption: data.kwhConsumption,
+                    roof_type: data.roofType,
+                    created_at: new Date().toISOString()
+                })
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('[Chatbot] Erro ao salvar lead:', errorData);
-                return false;
-            }
-
-            console.log('[Chatbot] Lead salvo com sucesso!');
-            return true;
+            return response.ok;
         } catch (error) {
-            console.error('[Chatbot] Exceção ao salvar lead:', error);
+            console.error('Erro ao salvar lead:', error);
             return false;
         }
     }
