@@ -1147,18 +1147,32 @@ async function validarCompletudeEtapa(leadId, etapa) {
 
             case 'negociacao':
                 // Verificar se proposta foi aceita
-                const { data: oppNegociacao } = await supabase
+                console.log('🔍 Validação Negociação - leadId:', leadId);
+
+                const { data: oppNegociacao, error: oppNegError } = await supabase
                     .from('oportunidades')
                     .select('id')
                     .eq('lead_id', leadId)
                     .maybeSingle();
 
+                console.log('🔍 Oportunidade encontrada:', oppNegociacao, 'Erro:', oppNegError);
+
                 if (oppNegociacao) {
-                    const { data: propostasAceitas } = await supabase
+                    const { data: propostasAceitas, error: propAceitaError } = await supabase
                         .from('propostas')
-                        .select('status')
+                        .select('id, status, oportunidade_id')
                         .eq('oportunidade_id', oppNegociacao.id)
                         .eq('status', 'aceita');
+
+                    console.log('🔍 Propostas aceitas:', propostasAceitas, 'Erro:', propAceitaError);
+
+                    // Também vamos ver TODAS as propostas dessa oportunidade
+                    const { data: todasPropostas } = await supabase
+                        .from('propostas')
+                        .select('id, status, oportunidade_id')
+                        .eq('oportunidade_id', oppNegociacao.id);
+
+                    console.log('🔍 TODAS as propostas da oportunidade:', todasPropostas);
 
                     if (!propostasAceitas || propostasAceitas.length === 0) {
                         return {
@@ -1166,6 +1180,8 @@ async function validarCompletudeEtapa(leadId, etapa) {
                             mensagem: 'A proposta precisa estar aceita para ir ao fechamento'
                         };
                     }
+                } else {
+                    console.log('⚠️ Nenhuma oportunidade encontrada para este lead');
                 }
                 break;
 
