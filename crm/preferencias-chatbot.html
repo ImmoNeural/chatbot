@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preferências do Chatbot</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -14,189 +15,125 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f3f4f6;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        @media (max-width: 900px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .panel {
+        /* Header */
+        .page-header {
             background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
-        h1 {
-            color: #1f2937;
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 12px;
+            padding: 20px 30px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 2px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            color: #4b5563;
-            margin-bottom: 6px;
-        }
-
-        input[type="text"],
-        input[type="url"] {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s;
-        }
-
-        input[type="text"]:focus,
-        input[type="url"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-
-        .color-input-wrapper {
+        .page-header h1 {
+            font-size: 20px;
+            color: #1f2937;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        input[type="color"] {
-            width: 50px;
-            height: 40px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            padding: 0;
+        .page-header h1 i {
+            color: #309086;
         }
 
-        .color-hex {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .logo-upload {
-            border: 2px dashed #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .logo-upload:hover {
-            border-color: #667eea;
-            background: #f9fafb;
-        }
-
-        .logo-upload input {
-            display: none;
-        }
-
-        .logo-preview {
-            max-width: 150px;
-            max-height: 80px;
-            margin: 10px auto;
-            display: block;
-            border-radius: 8px;
-        }
-
-        .logo-upload-text {
-            color: #6b7280;
-            font-size: 13px;
+        .header-actions {
+            display: flex;
+            gap: 10px;
         }
 
         .btn {
-            width: 100%;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border: none;
             border-radius: 8px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
             font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #309086 0%, #26a69a 100%);
             color: white;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(48, 144, 134, 0.3);
         }
 
         .btn-secondary {
-            background: #f3f4f6;
+            background: white;
             color: #374151;
-            margin-top: 10px;
+            border: 1px solid #e5e7eb;
         }
 
         .btn-secondary:hover {
-            background: #e5e7eb;
+            background: #f9fafb;
         }
 
-        /* Preview Panel */
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #f3f4f6;
+            color: #309086;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Preview Container */
+        .preview-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            max-width: 500px;
+            width: 100%;
+        }
+
         .preview-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: #1f2937;
             margin-bottom: 20px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-title i {
+            color: #309086;
         }
 
         .chat-preview {
@@ -217,8 +154,8 @@
         }
 
         .preview-logo {
-            width: 100px;
-            height: 50px;
+            width: 80px;
+            height: 40px;
             border-radius: 8px;
             object-fit: contain;
             background: white;
@@ -228,10 +165,10 @@
         .preview-title-text {
             font-size: 14px;
             font-weight: 600;
+            flex: 1;
         }
 
         .preview-close {
-            margin-left: auto;
             width: 28px;
             height: 28px;
             background: rgba(255,255,255,0.2);
@@ -240,6 +177,7 @@
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            cursor: pointer;
         }
 
         .preview-body {
@@ -336,6 +274,253 @@
             color: #9ca3af;
         }
 
+        /* Side Panel Overlay */
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 200;
+        }
+
+        .panel-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: -500px;
+            width: 480px;
+            max-width: 100%;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-panel.active {
+            right: 0;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9fafb;
+        }
+
+        .panel-header h2 {
+            font-size: 18px;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-header h2 i {
+            color: #309086;
+        }
+
+        .panel-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .panel-close:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .panel-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+            display: flex;
+            gap: 10px;
+        }
+
+        .panel-footer .btn {
+            flex: 1;
+        }
+
+        /* Form Styles */
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #309086;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #309086;
+            box-shadow: 0 0 0 3px rgba(48, 144, 134, 0.15);
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="color"] {
+            width: 44px;
+            height: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
+        .color-hex {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .logo-upload {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logo-upload:hover {
+            border-color: #309086;
+            background: #f0fdfa;
+        }
+
+        .logo-upload input {
+            display: none;
+        }
+
+        .logo-preview {
+            max-width: 150px;
+            max-height: 80px;
+            margin: 10px auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .logo-upload-text {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .logo-upload-text i {
+            display: block;
+            font-size: 24px;
+            color: #309086;
+            margin-bottom: 8px;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #fef3c7;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .info-box p {
+            font-size: 12px;
+            color: #92400e;
+            margin: 0;
+        }
+
+        .info-box pre {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 11px;
+            overflow-x: auto;
+        }
+
         /* Code output */
         .code-output {
             margin-top: 20px;
@@ -365,6 +550,7 @@
             margin-top: 10px;
             background: #10b981;
             color: white;
+            width: 100%;
         }
 
         .copy-btn:hover {
@@ -375,170 +561,94 @@
             color: #10b981;
             font-size: 13px;
             margin-top: 8px;
+            text-align: center;
             display: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 400;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            background: #059669;
+        }
+
+        .toast i {
+            font-size: 18px;
+        }
+
+        /* Back Button */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #309086;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Settings Panel -->
-        <div class="panel">
-            <h1>Preferências do Chatbot</h1>
-            <p class="subtitle">Personalize a aparência do seu assistente virtual</p>
-
-            <!-- Branding -->
-            <div class="section">
-                <div class="section-title">Identidade Visual</div>
-
-                <div class="form-group">
-                    <label>Título do Chatbot</label>
-                    <input type="text" id="chatTitle" value="Sunbotic 🌞 Energia Solar" placeholder="Nome do seu chatbot">
-                </div>
-
-                <div class="form-group">
-                    <label>Logo (URL ou Upload)</label>
-                    <input type="url" id="logoUrl" value="https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png" placeholder="https://exemplo.com/logo.png">
-                </div>
-
-                <div class="form-group">
-                    <label>Ou faça upload da imagem</label>
-                    <div class="logo-upload" onclick="document.getElementById('logoFile').click()">
-                        <input type="file" id="logoFile" accept="image/*">
-                        <img id="logoPreviewImg" class="logo-preview" style="display: none;">
-                        <p class="logo-upload-text">Clique para fazer upload do logo</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Header Colors -->
-            <div class="section">
-                <div class="section-title">Cores do Header</div>
-
-                <div class="form-group">
-                    <label>Cor Primária (início do gradiente)</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="headerPrimary" value="#667eea">
-                        <input type="text" class="color-hex" id="headerPrimaryHex" value="#667eea">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Cor Secundária (fim do gradiente)</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="headerSecondary" value="#764ba2">
-                        <input type="text" class="color-hex" id="headerSecondaryHex" value="#764ba2">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Button Colors -->
-            <div class="section">
-                <div class="section-title">Cores dos Botões</div>
-
-                <div class="form-group">
-                    <label>Cor Primária dos Botões</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="buttonPrimary" value="#4a5568">
-                        <input type="text" class="color-hex" id="buttonPrimaryHex" value="#4a5568">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Cor Secundária dos Botões</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="buttonSecondary" value="#2d3748">
-                        <input type="text" class="color-hex" id="buttonSecondaryHex" value="#2d3748">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bubble Colors -->
-            <div class="section">
-                <div class="section-title">Cores do Bubble (Mensagem do Bot)</div>
-
-                <div class="form-group">
-                    <label>Cor de Fundo do Bubble</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="bubbleBg" value="#ffffff">
-                        <input type="text" class="color-hex" id="bubbleBgHex" value="#ffffff">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Cor do Texto do Bubble</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="bubbleText" value="#1f2937">
-                        <input type="text" class="color-hex" id="bubbleTextHex" value="#1f2937">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Avatar Color -->
-            <div class="section">
-                <div class="section-title">Cor do Avatar do Bot</div>
-
-                <div class="form-group">
-                    <label>Cor Primária do Avatar</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="avatarPrimary" value="#667eea">
-                        <input type="text" class="color-hex" id="avatarPrimaryHex" value="#667eea">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Cor Secundária do Avatar</label>
-                    <div class="color-input-wrapper">
-                        <input type="color" id="avatarSecondary" value="#764ba2">
-                        <input type="text" class="color-hex" id="avatarSecondaryHex" value="#764ba2">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Twilio WhatsApp -->
-            <div class="section">
-                <div class="section-title">Integração Twilio WhatsApp</div>
-
-                <div class="form-group">
-                    <label>Número do Twilio WhatsApp</label>
-                    <input type="text" id="twilioPhone" value="+14155238886" placeholder="+14155238886">
-                    <p style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Número do sandbox ou seu número verificado</p>
-                </div>
-
-                <div class="form-group">
-                    <label>URL do Supabase</label>
-                    <input type="url" id="supabaseUrl" value="https://zralzmgsdmwispfvgqvy.supabase.co" placeholder="https://seu-projeto.supabase.co">
-                </div>
-
-                <div style="background: #fef3c7; border-radius: 8px; padding: 12px; margin-top: 12px;">
-                    <p style="font-size: 12px; color: #92400e; margin: 0;">
-                        <strong>Importante:</strong> Configure os secrets do Twilio no Supabase via CLI:
-                    </p>
-                    <pre style="background: #1f2937; color: #e5e7eb; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 11px; overflow-x: auto;">supabase secrets set TWILIO_ACCOUNT_SID=ACxxxxx
-supabase secrets set TWILIO_AUTH_TOKEN=xxxxx
-supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="generateCode()">Gerar Código de Configuração</button>
-            <button class="btn btn-secondary" onclick="savePreferences()">Salvar Preferências</button>
-
-            <div class="code-output" id="codeOutput">
-                <div class="code-box">
-                    <pre id="generatedCode"></pre>
-                </div>
-                <button class="btn copy-btn" onclick="copyCode()">Copiar Código</button>
-                <p class="success-message" id="copySuccess">Código copiado!</p>
-            </div>
+    <!-- Header -->
+    <header class="page-header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Voltar ao CRM
+            </a>
+            <h1>
+                <i class="fas fa-robot"></i>
+                Preferências do Chatbot
+            </h1>
         </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="generateCode()">
+                <i class="fas fa-code"></i>
+                Gerar Código
+            </button>
+            <button class="btn btn-primary" onclick="openPanel()">
+                <i class="fas fa-palette"></i>
+                Personalizar
+            </button>
+        </div>
+    </header>
 
-        <!-- Preview Panel -->
-        <div class="panel">
-            <p class="preview-title">Preview em Tempo Real</p>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="preview-container">
+            <div class="preview-title">
+                <i class="fas fa-eye"></i>
+                Preview em Tempo Real
+            </div>
 
             <div class="chat-preview">
                 <div class="preview-header" id="previewHeader">
                     <img class="preview-logo" id="previewLogo" src="https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png" alt="Logo">
-                    <span class="preview-title-text" id="previewTitleText">Sunbotic 🌞 Energia Solar</span>
+                    <span class="preview-title-text" id="previewTitleText">Sunbotic Energia Solar</span>
                     <div class="preview-close">×</div>
                 </div>
 
@@ -551,7 +661,7 @@ supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
                         </div>
                         <div>
                             <div class="preview-bubble" id="previewBubble">
-                                Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?
+                                Olá! Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?
 
                                 <div class="preview-buttons" id="previewButtons">
                                     <div class="preview-btn">Quero economizar</div>
@@ -577,10 +687,220 @@ supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
 
                 <div class="preview-powered">Powered by Neureka AI</div>
             </div>
+
+            <!-- Code Output -->
+            <div class="code-output" id="codeOutput">
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                    <div class="preview-title">
+                        <i class="fas fa-code"></i>
+                        Código de Configuração
+                    </div>
+                    <div class="code-box">
+                        <pre id="generatedCode"></pre>
+                    </div>
+                    <button class="btn copy-btn" onclick="copyCode()">
+                        <i class="fas fa-copy"></i>
+                        Copiar Código
+                    </button>
+                    <p class="success-message" id="copySuccess">
+                        <i class="fas fa-check-circle"></i> Código copiado!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Panel Overlay -->
+    <div class="panel-overlay" onclick="closePanel()"></div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <h2>
+                <i class="fas fa-sliders-h"></i>
+                Configurações
+            </h2>
+            <button class="panel-close" onclick="closePanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <!-- Branding -->
+            <div class="section">
+                <div class="section-title">Identidade Visual</div>
+
+                <div class="form-group">
+                    <label>Título do Chatbot</label>
+                    <input type="text" id="chatTitle" value="Sunbotic Energia Solar" placeholder="Nome do seu chatbot">
+                </div>
+
+                <div class="form-group">
+                    <label>Logo (URL)</label>
+                    <input type="url" id="logoUrl" value="https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png" placeholder="https://exemplo.com/logo.png">
+                </div>
+
+                <div class="form-group">
+                    <label>Ou faça upload</label>
+                    <div class="logo-upload" onclick="document.getElementById('logoFile').click()">
+                        <input type="file" id="logoFile" accept="image/*">
+                        <img id="logoPreviewImg" class="logo-preview" style="display: none;">
+                        <p class="logo-upload-text">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Clique para fazer upload
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Colors -->
+            <div class="section">
+                <div class="section-title">Cores do Header</div>
+
+                <div class="form-group">
+                    <label>Cor Primária</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="headerPrimary" value="#309086">
+                        <input type="text" class="color-hex" id="headerPrimaryHex" value="#309086">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor Secundária</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="headerSecondary" value="#26a69a">
+                        <input type="text" class="color-hex" id="headerSecondaryHex" value="#26a69a">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button Colors -->
+            <div class="section">
+                <div class="section-title">Cores dos Botões</div>
+
+                <div class="form-group">
+                    <label>Cor Primária</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="buttonPrimary" value="#309086">
+                        <input type="text" class="color-hex" id="buttonPrimaryHex" value="#309086">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor Secundária</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="buttonSecondary" value="#1f6e66">
+                        <input type="text" class="color-hex" id="buttonSecondaryHex" value="#1f6e66">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bubble Colors -->
+            <div class="section">
+                <div class="section-title">Mensagem do Bot</div>
+
+                <div class="form-group">
+                    <label>Cor de Fundo</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="bubbleBg" value="#ffffff">
+                        <input type="text" class="color-hex" id="bubbleBgHex" value="#ffffff">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor do Texto</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="bubbleText" value="#1f2937">
+                        <input type="text" class="color-hex" id="bubbleTextHex" value="#1f2937">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Color -->
+            <div class="section">
+                <div class="section-title">Avatar do Bot</div>
+
+                <div class="form-group">
+                    <label>Cor Primária</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="avatarPrimary" value="#309086">
+                        <input type="text" class="color-hex" id="avatarPrimaryHex" value="#309086">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor Secundária</label>
+                    <div class="color-input-wrapper">
+                        <input type="color" id="avatarSecondary" value="#26a69a">
+                        <input type="text" class="color-hex" id="avatarSecondaryHex" value="#26a69a">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Twilio WhatsApp -->
+            <div class="section">
+                <div class="section-title">Integração WhatsApp</div>
+
+                <div class="form-group">
+                    <label>Número Twilio WhatsApp</label>
+                    <input type="text" id="twilioPhone" value="+14155238886" placeholder="+14155238886">
+                </div>
+
+                <div class="form-group">
+                    <label>URL do Supabase</label>
+                    <input type="url" id="supabaseUrl" value="https://zralzmgsdmwispfvgqvy.supabase.co" placeholder="https://seu-projeto.supabase.co">
+                </div>
+
+                <div class="info-box">
+                    <p><strong>Importante:</strong> Configure os secrets do Twilio no Supabase:</p>
+                    <pre>supabase secrets set TWILIO_ACCOUNT_SID=ACxxxxx
+supabase secrets set TWILIO_AUTH_TOKEN=xxxxx</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer">
+            <button class="btn btn-secondary" onclick="closePanel()">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </button>
+            <button class="btn btn-primary" onclick="savePreferences()">
+                <i class="fas fa-save"></i>
+                Salvar
+            </button>
         </div>
     </div>
 
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Preferências salvas!</span>
+    </div>
+
     <script>
+        // Open/Close Panel
+        function openPanel() {
+            document.getElementById('sidePanel').classList.add('active');
+            document.querySelector('.panel-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePanel() {
+            document.getElementById('sidePanel').classList.remove('active');
+            document.querySelector('.panel-overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Show Toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         // Sync color inputs with hex inputs
         function setupColorSync(colorId, hexId) {
             const colorInput = document.getElementById(colorId);
@@ -690,7 +1010,7 @@ supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
                 logoUrl: document.getElementById('logoUrl').value
             };
 
-            const code = `<!-- Cole este código no seu HTML antes do script do chatbot -->
+            const code = `<!-- Cole este código no seu HTML -->
 <script>
     window.ChatWidgetConfig = {
         webhook: {
@@ -752,12 +1072,11 @@ supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
             };
 
             localStorage.setItem('chatbotPreferences', JSON.stringify(prefs));
-
-            // Salvar também as configs do Twilio separadamente para o módulo de comunicação
             localStorage.setItem('twilio_phone', prefs.twilioPhone);
             localStorage.setItem('supabase_url', prefs.supabaseUrl);
 
-            alert('Preferências salvas com sucesso!');
+            closePanel();
+            showToast('Preferências salvas com sucesso!', 'success');
         }
 
         // Load saved preferences
@@ -766,23 +1085,23 @@ supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
             if (saved) {
                 const prefs = JSON.parse(saved);
 
-                document.getElementById('headerPrimary').value = prefs.headerPrimary || '#667eea';
-                document.getElementById('headerPrimaryHex').value = prefs.headerPrimary || '#667eea';
-                document.getElementById('headerSecondary').value = prefs.headerSecondary || '#764ba2';
-                document.getElementById('headerSecondaryHex').value = prefs.headerSecondary || '#764ba2';
-                document.getElementById('buttonPrimary').value = prefs.buttonPrimary || '#4a5568';
-                document.getElementById('buttonPrimaryHex').value = prefs.buttonPrimary || '#4a5568';
-                document.getElementById('buttonSecondary').value = prefs.buttonSecondary || '#2d3748';
-                document.getElementById('buttonSecondaryHex').value = prefs.buttonSecondary || '#2d3748';
+                document.getElementById('headerPrimary').value = prefs.headerPrimary || '#309086';
+                document.getElementById('headerPrimaryHex').value = prefs.headerPrimary || '#309086';
+                document.getElementById('headerSecondary').value = prefs.headerSecondary || '#26a69a';
+                document.getElementById('headerSecondaryHex').value = prefs.headerSecondary || '#26a69a';
+                document.getElementById('buttonPrimary').value = prefs.buttonPrimary || '#309086';
+                document.getElementById('buttonPrimaryHex').value = prefs.buttonPrimary || '#309086';
+                document.getElementById('buttonSecondary').value = prefs.buttonSecondary || '#1f6e66';
+                document.getElementById('buttonSecondaryHex').value = prefs.buttonSecondary || '#1f6e66';
                 document.getElementById('bubbleBg').value = prefs.bubbleBg || '#ffffff';
                 document.getElementById('bubbleBgHex').value = prefs.bubbleBg || '#ffffff';
                 document.getElementById('bubbleText').value = prefs.bubbleText || '#1f2937';
                 document.getElementById('bubbleTextHex').value = prefs.bubbleText || '#1f2937';
-                document.getElementById('avatarPrimary').value = prefs.avatarPrimary || '#667eea';
-                document.getElementById('avatarPrimaryHex').value = prefs.avatarPrimary || '#667eea';
-                document.getElementById('avatarSecondary').value = prefs.avatarSecondary || '#764ba2';
-                document.getElementById('avatarSecondaryHex').value = prefs.avatarSecondary || '#764ba2';
-                document.getElementById('chatTitle').value = prefs.title || 'Sunbotic 🌞 Energia Solar';
+                document.getElementById('avatarPrimary').value = prefs.avatarPrimary || '#309086';
+                document.getElementById('avatarPrimaryHex').value = prefs.avatarPrimary || '#309086';
+                document.getElementById('avatarSecondary').value = prefs.avatarSecondary || '#26a69a';
+                document.getElementById('avatarSecondaryHex').value = prefs.avatarSecondary || '#26a69a';
+                document.getElementById('chatTitle').value = prefs.title || 'Sunbotic Energia Solar';
                 document.getElementById('logoUrl').value = prefs.logoUrl || 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png';
                 document.getElementById('twilioPhone').value = prefs.twilioPhone || '+14155238886';
                 document.getElementById('supabaseUrl').value = prefs.supabaseUrl || 'https://zralzmgsdmwispfvgqvy.supabase.co';
@@ -790,6 +1109,13 @@ supabase secrets set TWILIO_PHONE_NUMBER=whatsapp:+14155238886</pre>
                 updatePreview();
             }
         }
+
+        // Keyboard shortcut to close panel
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePanel();
+            }
+        });
 
         // Initialize
         loadPreferences();
