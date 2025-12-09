@@ -3602,6 +3602,9 @@ async function gerarPropostaComercial(propostaIndex) {
             const proposta = resultado.propostas[propostaIndex];
             const { configuracao, custos, economia, payback } = proposta;
 
+            // Obter empresa_id do usuário logado
+            const empresaId = window.currentEmpresa?.id;
+
             const dadosProposta = {
                 oportunidade_id: oportunidade.id,
                 empresa_id: empresaId,
