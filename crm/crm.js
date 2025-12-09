@@ -363,6 +363,7 @@ async function loadAllData() {
     showLoading(true);
 
     try {
+        // Primeiro: carregar todos os dados em paralelo
         await Promise.all([
             loadLeads(),
             loadOportunidades(),
@@ -370,10 +371,12 @@ async function loadAllData() {
             loadInstalados(),
             loadInstalacoes(),
             loadTarefas(),
-            loadKPIs(),
             loadInteracoesStats(),
             loadNotificacoes()
         ]);
+
+        // Depois: calcular KPIs (depende dos dados carregados acima)
+        await loadKPIs();
 
         // Renderizar módulo atual
         renderCurrentModule();
