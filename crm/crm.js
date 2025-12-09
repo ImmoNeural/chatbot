@@ -430,6 +430,8 @@ async function loadOportunidades() {
 }
 
 async function loadPropostas() {
+    const empresaId = window.currentEmpresa?.id;
+
     const { data, error } = await supabase
         .from('propostas')
         .select(`
@@ -439,6 +441,7 @@ async function loadPropostas() {
                 leads:lead_id (nome, email, tipo_cliente)
             )
         `)
+        .eq('empresa_id', empresaId)
         .order('created_at', { ascending: false })
         .limit(50);
 
