@@ -3604,6 +3604,7 @@ async function gerarPropostaComercial(propostaIndex) {
 
             const dadosProposta = {
                 oportunidade_id: oportunidade.id,
+                empresa_id: empresaId,
                 numero_proposta: `PROP-${Date.now()}`,
                 potencia_total_kwp: configuracao.potenciaRealKwp,
                 num_modulos: configuracao.numModulos,
