@@ -1151,17 +1151,16 @@ async function validarCompletudeEtapa(leadId, etapa) {
                     .from('oportunidades')
                     .select('id')
                     .eq('lead_id', leadId)
-                    .single();
+                    .maybeSingle();
 
                 if (oppNegociacao) {
-                    const { data: propostaAceita } = await supabase
+                    const { data: propostasAceitas } = await supabase
                         .from('propostas')
                         .select('status')
                         .eq('oportunidade_id', oppNegociacao.id)
-                        .eq('status', 'aceita')
-                        .single();
+                        .eq('status', 'aceita');
 
-                    if (!propostaAceita) {
+                    if (!propostasAceitas || propostasAceitas.length === 0) {
                         return {
                             completo: false,
                             mensagem: 'A proposta precisa estar aceita para ir ao fechamento'
@@ -4118,7 +4117,7 @@ async function renderStatusNegociacao(leadId) {
         .from('status_negociacao')
         .select('*')
         .eq('lead_id', leadId)
-        .single();
+        .maybeSingle();
 
     const st = status || {};
 
@@ -4210,8 +4209,11 @@ async function renderStatusNegociacao(leadId) {
 }
 
 async function salvarStatusNegociacao(leadId) {
+    const empresaId = window.currentEmpresa?.id;
+
     const statusData = {
         lead_id: leadId,
+        empresa_id: empresaId,
         cliente_agendou_reuniao: document.getElementById('checkbox-reuniao-agendada').checked,
         data_reuniao_agendada: document.getElementById('data-reuniao').value || null,
         observacoes_reuniao: document.getElementById('obs-reuniao').value
