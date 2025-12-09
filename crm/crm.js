@@ -432,7 +432,7 @@ async function loadOportunidades() {
 async function loadPropostas() {
     const empresaId = window.currentEmpresa?.id;
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('propostas')
         .select(`
             *,
@@ -441,9 +441,15 @@ async function loadPropostas() {
                 leads:lead_id (nome, email, tipo_cliente)
             )
         `)
-        .eq('empresa_id', empresaId)
         .order('created_at', { ascending: false })
         .limit(50);
+
+    // Só filtra por empresa se empresaId existir
+    if (empresaId) {
+        query = query.eq('empresa_id', empresaId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Erro ao carregar propostas:', error);
