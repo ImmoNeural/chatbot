@@ -1141,34 +1141,32 @@ async function validarCompletudeEtapa(leadId, etapa) {
                 break;
 
             case 'proposta':
-                // Verificar se tem dados de negociação
-                const { data: negociacao } = await supabase
-                    .from('negociacao')
-                    .select('*')
-                    .eq('lead_id', leadId)
-                    .single();
-
-                if (!negociacao || !negociacao.status_proposta) {
-                    return {
-                        completo: false,
-                        mensagem: 'Atualize o status da proposta na aba Negociação'
-                    };
-                }
+                // Para avançar de Proposta para Negociação, basta ter proposta enviada
+                // (já validado na etapa anterior)
                 break;
 
             case 'negociacao':
                 // Verificar se proposta foi aceita
-                const { data: negociacaoStatus } = await supabase
-                    .from('negociacao')
-                    .select('status_proposta')
+                const { data: oppNegociacao } = await supabase
+                    .from('oportunidades')
+                    .select('id')
                     .eq('lead_id', leadId)
                     .single();
 
-                if (!negociacaoStatus || negociacaoStatus.status_proposta !== 'aceita') {
-                    return {
-                        completo: false,
-                        mensagem: 'A proposta precisa estar aceita para ir ao fechamento'
-                    };
+                if (oppNegociacao) {
+                    const { data: propostaAceita } = await supabase
+                        .from('propostas')
+                        .select('status')
+                        .eq('oportunidade_id', oppNegociacao.id)
+                        .eq('status', 'aceita')
+                        .single();
+
+                    if (!propostaAceita) {
+                        return {
+                            completo: false,
+                            mensagem: 'A proposta precisa estar aceita para ir ao fechamento'
+                        };
+                    }
                 }
                 break;
 
