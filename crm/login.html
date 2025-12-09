@@ -571,7 +571,7 @@
         async function handleRegister(e) {
             e.preventDefault();
 
-            const empresa = document.getElementById('registerEmpresa').value;
+            const empresaNome = document.getElementById('registerEmpresa').value;
             const nome = document.getElementById('registerNome').value;
             const cargo = document.getElementById('registerCargo').value;
             const email = document.getElementById('registerEmail').value;
@@ -591,21 +591,36 @@
             setLoading('registerBtn', true);
 
             try {
-                // Criar usuário no Supabase Auth
+                // 1. Primeiro criar a empresa
+                const { data: empresaData, error: empresaError } = await supabase
+                    .from('empresas')
+                    .insert({ nome: empresaNome })
+                    .select()
+                    .single();
+
+                if (empresaError) throw empresaError;
+
+                const empresaId = empresaData.id;
+
+                // 2. Criar usuário no Supabase Auth com empresa_id nos metadados
                 const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
                         data: {
-                            nome_empresa: empresa,
                             nome: nome,
-                            cargo: cargo,
+                            empresa_id: empresaId,
+                            role: cargo === 'admin' ? 'admin' : 'user',
                             telefone: telefone
                         }
                     }
                 });
 
-                if (error) throw error;
+                if (error) {
+                    // Se falhar ao criar usuário, deletar a empresa criada
+                    await supabase.from('empresas').delete().eq('id', empresaId);
+                    throw error;
+                }
 
                 showAlert('registerAlert', 'Conta criada com sucesso! Verifique seu e-mail para confirmar o cadastro.', 'success');
 
