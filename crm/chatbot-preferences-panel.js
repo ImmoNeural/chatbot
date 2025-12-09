@@ -116,7 +116,7 @@
 
         /* Preview Section */
         .chatbot-prefs-preview {
-            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            background: #f3f4f6;
             padding: 24px;
             display: flex;
             flex-direction: column;
@@ -125,7 +125,7 @@
         }
 
         .chatbot-prefs-preview-label {
-            color: rgba(255,255,255,0.7);
+            color: #6b7280;
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
