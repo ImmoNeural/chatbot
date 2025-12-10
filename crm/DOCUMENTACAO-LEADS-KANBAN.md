@@ -52,7 +52,55 @@ Quando o lead atinge **score >= 50 pontos**, ele é automaticamente movido para 
 
 ---
 
-## 3. Kanban de Oportunidades
+## 3. Sistema de Automação
+
+O sistema executa automações diárias para mover leads automaticamente baseado em inatividade.
+
+### 3.1 Lead → Em Nutrição (Automático)
+
+Um lead é movido **automaticamente** para `em_nutricao` quando:
+
+| Critério | Condição |
+|----------|----------|
+| Status atual | `qualificado` |
+| Dias sem interação | Entre **7 e 14 dias** |
+| Motivo de espera | **Preenchido** (campo `motivo_espera` não vazio) |
+
+**Motivos de espera comuns:**
+- "Vai construir a casa em 6 meses"
+- "Aguardando aprovação de financiamento"
+- "Precisa consultar cônjuge"
+- "Esperando mudança de residência"
+
+### 3.2 Lead → Perdido (Automático)
+
+Um lead é marcado **automaticamente** como `perdido` quando:
+
+| Critério | Condição |
+|----------|----------|
+| Status atual | NÃO é `perdido` nem `convertido` |
+| Dias sem resposta | **30 dias ou mais** |
+| Tentativas de contato | **3 ou mais** tentativas sem resposta |
+
+### 3.3 Oportunidade → Perdida (Automático)
+
+Uma oportunidade no Kanban é marcada como `perdido` quando:
+
+| Critério | Condição |
+|----------|----------|
+| Etapa atual | NÃO é `perdido` nem `concluida` |
+| Dias sem atualização | **60 dias ou mais** |
+
+### 3.4 Notificações e Reversão
+
+Quando uma mudança automática acontece:
+1. O sistema cria uma **notificação** para o usuário
+2. A mudança fica registrada no **histórico**
+3. O usuário pode **reverter** a mudança se necessário
+
+---
+
+## 4. Kanban de Oportunidades
 
 O Kanban representa o funil de vendas com 5 etapas:
 
@@ -60,7 +108,7 @@ O Kanban representa o funil de vendas com 5 etapas:
 LEVANTAMENTO → SIMULAÇÃO → PROPOSTA → NEGOCIAÇÃO → FECHAMENTO
 ```
 
-### 3.1 Etapas e Requisitos
+### 4.1 Etapas e Requisitos
 
 #### Etapa 1: Levantamento
 **O que fazer:** Coletar documentos, fotos do local e fazer qualificação técnica
@@ -112,7 +160,7 @@ Isso é atualizado em dois lugares:
 
 ---
 
-### 3.2 Regras de Movimentação
+### 4.2 Regras de Movimentação
 
 1. **Só pode avançar uma etapa por vez** - Não é permitido pular etapas
 2. **Pode voltar etapas** - É permitido voltar para etapas anteriores
@@ -120,7 +168,7 @@ Isso é atualizado em dois lugares:
 
 ---
 
-## 4. Fluxo: Lead → Oportunidade → Cliente Instalado
+## 5. Fluxo Completo: Lead → Cliente Instalado
 
 ```
 ┌─────────────┐      ┌──────────────────┐      ┌───────────────────┐
@@ -128,6 +176,15 @@ Isso é atualizado em dois lugares:
 │             │      │    (Kanban)      │      │                   │
 │ score >= 50 │      │ 5 etapas         │      │ Instalação OK     │
 └─────────────┘      └──────────────────┘      └───────────────────┘
+       │                     │
+       │                     │
+       ▼                     ▼
+┌─────────────┐      ┌──────────────────┐
+│ EM NUTRIÇÃO │      │     PERDIDO      │
+│             │      │                  │
+│ 7-14 dias + │      │ 30 dias + 3 tent │
+│ motivo esp. │      │ ou 60 dias opp   │
+└─────────────┘      └──────────────────┘
 ```
 
 ### Quando um lead vira oportunidade?
@@ -141,48 +198,29 @@ Quando o usuário clica em "Marcar como Instalado" na etapa de Fechamento, após
 
 ---
 
-## 5. Lead Perdido
+## 6. Resumo das Automações
 
-Um lead pode ser marcado como **perdido** a qualquer momento. Isso acontece quando:
-
-- O cliente desiste da compra
-- O cliente não tem viabilidade técnica
-- O cliente foi para um concorrente
-- Contato perdido (não responde)
-
-**Como marcar:** Alterar o status do lead para `perdido` na tela de edição.
-
-Se o lead estava no Kanban (tinha oportunidade), a oportunidade também é marcada como `perdido`.
+| Situação | Condições | Resultado |
+|----------|-----------|-----------|
+| Lead qualificado sem interação | 7-14 dias + motivo espera | → `em_nutricao` |
+| Lead sem resposta | 30+ dias + 3+ tentativas | → `perdido` |
+| Oportunidade parada | 60+ dias sem atualização | → `perdido` |
+| Lead com score alto | score >= 50 | → `qualificado` |
 
 ---
 
-## 6. Lead em Nutrição
+## 7. Campos Importantes para Automação
 
-Um lead entra em **nutrição** quando:
-
-- Ainda não está pronto para comprar (prontidão = "6-12 meses" ou "apenas pesquisando")
-- Está aguardando algo (construção, financiamento, etc.)
-- Score baixo mas com potencial futuro
-
-**Campo importante:** `motivo_espera` - descreve por que o lead está em espera
-
-O status `em_nutricao` indica que o lead precisa receber comunicações periódicas (e-mails, WhatsApp) para manter o relacionamento até que esteja pronto.
+| Campo | Tabela | Descrição |
+|-------|--------|-----------|
+| `motivo_espera` | leads | Por que o lead está esperando |
+| `data_prevista_retorno` | leads | Quando o cliente estará pronto |
+| `tentativas_contato` | leads | Quantas vezes tentou contato sem resposta |
+| `data_ultima_tentativa` | leads | Data da última tentativa de contato |
 
 ---
 
-## 7. Resumo dos Requisitos por Etapa
-
-| Etapa | Requisito para Avançar |
-|-------|------------------------|
-| Levantamento → Simulação | Qualificação técnica preenchida |
-| Simulação → Proposta | Proposta gerada |
-| Proposta → Negociação | Proposta enviada |
-| Negociação → Fechamento | Proposta aceita pelo cliente |
-| Fechamento → Instalado | ART + Homologação + Data instalação |
-
----
-
-## 8. Tabelas Envolvidas
+## 8. Tabelas do Sistema
 
 | Tabela | Descrição |
 |--------|-----------|
@@ -193,3 +231,6 @@ O status `em_nutricao` indica que o lead precisa receber comunicações periódi
 | `status_negociacao` | Status da negociação (proposta aceita, contrato assinado) |
 | `instalacao` | Dados de agendamento (ART, homologação, data) |
 | `clientes_instalados` | Clientes com instalação concluída |
+| `notificacoes` | Notificações de automação para o usuário |
+| `historico_mudancas_automaticas` | Histórico de mudanças automáticas (reversíveis) |
+| `interacoes` | Timeline de interações com o lead |
