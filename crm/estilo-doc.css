@@ -1,7 +1,7 @@
 body {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
-    max-width: 850px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 40px;
     color: #2d3748;
@@ -11,88 +11,175 @@ body {
 /* Título principal - estilo capa */
 h1:first-of-type {
     font-size: 2.4em;
-    color: #1a365d;
+    color: #0f172a;
     text-align: center;
-    padding: 40px 0 20px;
+    padding: 50px 0 20px;
     margin-bottom: 0;
     font-weight: 700;
     letter-spacing: -0.5px;
 }
 
-/* Subtítulo */
 h1:first-of-type + p {
     text-align: center;
-    font-size: 1.1em;
-    color: #4a5568;
+    font-size: 1.2em;
+    color: #475569;
     margin-top: 5px;
+    font-weight: 500;
+}
+
+h1:first-of-type + p + p {
+    text-align: center;
+    font-size: 1em;
+    color: #64748b;
 }
 
 h1 {
     font-size: 1.7em;
-    color: #1a365d;
+    color: #0f172a;
     margin-top: 50px;
-    padding-bottom: 10px;
-    border-bottom: 3px solid #3182ce;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #0ea5e9;
     font-weight: 700;
 }
 
 h2 {
     font-size: 1.25em;
-    color: #2c5282;
+    color: #1e293b;
     margin-top: 35px;
-    padding-left: 12px;
-    border-left: 4px solid #3182ce;
+    padding-left: 15px;
+    border-left: 4px solid #0ea5e9;
     font-weight: 600;
 }
 
 h3 {
     font-size: 1.1em;
-    color: #2d3748;
+    color: #334155;
     margin-top: 25px;
     font-weight: 600;
 }
 
-/* Tabelas modernas */
+/* TABELAS MODERNAS */
 table {
     width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 25px 0;
     font-size: 0.95em;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    border-radius: 12px;
     overflow: hidden;
 }
 
 thead {
-    background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
-    color: white;
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%);
 }
 
 th {
-    padding: 15px 18px;
+    padding: 16px 20px;
     text-align: left;
-    font-weight: 600;
+    font-weight: 700;
+    color: white;
     text-transform: uppercase;
-    font-size: 0.85em;
-    letter-spacing: 0.5px;
+    font-size: 0.8em;
+    letter-spacing: 1px;
+    border: none;
 }
 
 td {
-    padding: 14px 18px;
+    padding: 14px 20px;
     border-bottom: 1px solid #e2e8f0;
+    color: #334155;
 }
 
 tbody tr {
     background: #fff;
-    transition: background 0.2s;
 }
 
 tbody tr:nth-child(even) {
-    background: #f7fafc;
+    background: #f1f5f9;
 }
 
-tbody tr:hover {
-    background: #edf2f7;
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* FLUXO HORIZONTAL - Funil de vendas */
+.flow-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.flow-step {
+    padding: 18px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85em;
+    text-align: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    min-width: 120px;
+}
+
+.step-1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.step-2 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.step-3 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.step-4 { background: linear-gradient(135deg, #10b981, #059669); }
+.step-5 { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+.flow-arrow {
+    font-size: 2em;
+    color: #94a3b8;
+    font-weight: bold;
+}
+
+/* FLUXO VERTICAL */
+.flow-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 30px auto;
+}
+
+.flow-box {
+    padding: 20px 40px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95em;
+    text-align: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    min-width: 200px;
+}
+
+.flow-box small {
+    display: block;
+    font-weight: 400;
+    font-size: 0.8em;
+    margin-top: 5px;
+    opacity: 0.9;
+}
+
+.box-lead { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.box-opp { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.box-installed { background: linear-gradient(135deg, #10b981, #059669); }
+.box-nutrition { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.box-lost { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+.flow-arrow-down {
+    font-size: 2em;
+    color: #64748b;
+}
+
+.flow-side {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 20px 0;
 }
 
 /* Listas */
@@ -102,22 +189,22 @@ ul, ol {
 }
 
 li {
-    margin: 8px 0;
-    color: #4a5568;
+    margin: 10px 0;
+    color: #475569;
 }
 
 li strong {
-    color: #1a365d;
+    color: #0f172a;
 }
 
 /* Destaques */
 strong {
-    color: #1a365d;
+    color: #0f172a;
     font-weight: 600;
 }
 
 em {
-    color: #718096;
+    color: #64748b;
     font-style: italic;
 }
 
@@ -125,49 +212,40 @@ em {
 hr {
     border: none;
     height: 2px;
-    background: linear-gradient(90deg, #3182ce, #63b3ed, #3182ce);
-    margin: 40px 0;
+    background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #0ea5e9);
+    margin: 45px 0;
     border-radius: 2px;
 }
 
 /* Parágrafos */
 p {
     margin: 14px 0;
-    color: #4a5568;
+    color: #475569;
 }
 
 /* Código */
 code {
-    background: #edf2f7;
+    background: #f1f5f9;
     padding: 3px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
-    color: #c53030;
+    color: #0369a1;
 }
 
 pre {
-    background: #1a365d;
+    background: #0f172a;
     color: #e2e8f0;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow-x: auto;
     font-family: 'Consolas', monospace;
     font-size: 0.9em;
-}
-
-/* Blocos de destaque */
-blockquote {
-    border-left: 4px solid #3182ce;
-    margin: 20px 0;
-    padding: 15px 20px;
-    background: #ebf8ff;
-    border-radius: 0 8px 8px 0;
-    color: #2c5282;
 }
 
 @media print {
     body { padding: 20px; }
     table { page-break-inside: avoid; }
     h1, h2 { page-break-after: avoid; }
+    .flow-container, .flow-vertical, .flow-side { page-break-inside: avoid; }
 }

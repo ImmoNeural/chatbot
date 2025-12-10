@@ -2,7 +2,7 @@
 
 **CRM Solar - Documentação Técnica**
 
-*Neureka AI - 2025*
+*My Clever Bot - 2025*
 
 ---
 
@@ -12,43 +12,43 @@ O lead score é calculado automaticamente de **0 a 100 pontos**, baseado em 5 fa
 
 ## Consumo Mensal (até 30 pontos)
 
-| Consumo | Pontos |
-|---------|--------|
-| >= 500 kWh | 30 |
-| >= 300 kWh | 20 |
-| >= 150 kWh | 10 |
-| < 150 kWh | 0 |
+| Consumo Mensal | Pontuação |
+|----------------|-----------|
+| >= 500 kWh | 30 pontos |
+| >= 300 kWh | 20 pontos |
+| >= 150 kWh | 10 pontos |
+| < 150 kWh | 0 pontos |
 
 ## Tipo de Cliente (até 10 pontos)
 
-| Tipo | Pontos |
-|------|--------|
-| Comercial | 10 |
-| Residencial | 5 |
+| Tipo de Cliente | Pontuação |
+|-----------------|-----------|
+| Comercial | 10 pontos |
+| Residencial | 5 pontos |
 
 ## Prontidão de Compra (até 40 pontos)
 
-| Prontidão | Pontos |
-|-----------|--------|
-| Imediata | 40 |
-| 1-3 meses | 30 |
-| 3-6 meses | 20 |
-| 6-12 meses | 10 |
-| Apenas pesquisando | 5 |
+| Prontidão de Compra | Pontuação |
+|---------------------|-----------|
+| Imediata | 40 pontos |
+| 1-3 meses | 30 pontos |
+| 3-6 meses | 20 pontos |
+| 6-12 meses | 10 pontos |
+| Apenas pesquisando | 5 pontos |
 
 ## É Decisor? (até 20 pontos)
 
-| Resposta | Pontos |
-|----------|--------|
-| Sim | 20 |
-| Não | 0 |
+| É Decisor? | Pontuação |
+|------------|-----------|
+| Sim | 20 pontos |
+| Não | 0 pontos |
 
 ## Viabilidade Técnica (até 10 pontos)
 
-| Situação | Pontos |
-|----------|--------|
-| Telhado OK, pouco sombreamento | 10 |
-| Problemas técnicos | 0 |
+| Viabilidade Técnica | Pontuação |
+|---------------------|-----------|
+| Telhado OK, pouco sombreamento | 10 pontos |
+| Problemas técnicos | 0 pontos |
 
 **Pontuação Máxima:** 100 pontos
 
@@ -56,8 +56,8 @@ O lead score é calculado automaticamente de **0 a 100 pontos**, baseado em 5 fa
 
 # Status do Lead
 
-| Status | Descrição | Cor |
-|--------|-----------|-----|
+| Status | Descrição | Indicador |
+|--------|-----------|-----------|
 | novo | Lead recém chegado | Cinza |
 | qualificado | Score >= 50 pontos | Verde |
 | em_nutricao | Aguardando momento certo | Laranja |
@@ -96,12 +96,24 @@ O sistema move leads automaticamente baseado em inatividade.
 
 # Kanban de Oportunidades
 
-**Fluxo:** LEVANTAMENTO → SIMULAÇÃO → PROPOSTA → NEGOCIAÇÃO → FECHAMENTO
+## Fluxo do Funil de Vendas
+
+<div class="flow-container">
+<div class="flow-step step-1">LEVANTAMENTO</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step step-2">SIMULAÇÃO</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step step-3">PROPOSTA</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step step-4">NEGOCIAÇÃO</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step step-5">FECHAMENTO</div>
+</div>
 
 ## Requisitos por Etapa
 
-| Etapa | O que fazer | Requisito para avançar |
-|-------|-------------|------------------------|
+| Etapa | Ação Necessária | Requisito para Avançar |
+|-------|-----------------|------------------------|
 | Levantamento | Coletar docs e fotos | Qualificação preenchida |
 | Simulação | Gerar proposta | Proposta gerada |
 | Proposta | Apresentar ao cliente | Proposta enviada |
@@ -116,19 +128,20 @@ O sistema move leads automaticamente baseado em inatividade.
 
 ---
 
-# Fluxo Completo
+# Fluxo Completo do Lead
 
-## Quando um lead vira oportunidade?
+<div class="flow-vertical">
+<div class="flow-box box-lead">LEAD<br><small>Score >= 50</small></div>
+<div class="flow-arrow-down">⬇</div>
+<div class="flow-box box-opp">OPORTUNIDADE<br><small>5 etapas no Kanban</small></div>
+<div class="flow-arrow-down">⬇</div>
+<div class="flow-box box-installed">CLIENTE INSTALADO<br><small>Instalação concluída</small></div>
+</div>
 
-Manualmente, quando o usuário cria uma oportunidade no Kanban.
-
-## Quando vira cliente instalado?
-
-Ao clicar "Marcar como Instalado" na etapa Fechamento, após:
-
-1. ART preenchida
-2. Homologação protocolada
-3. Instalação realizada
+<div class="flow-side">
+<div class="flow-box box-nutrition">EM NUTRIÇÃO<br><small>7-14 dias + motivo</small></div>
+<div class="flow-box box-lost">PERDIDO<br><small>30 dias + 3 tentativas</small></div>
+</div>
 
 ---
 
