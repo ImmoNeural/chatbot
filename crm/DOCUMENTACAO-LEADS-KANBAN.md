@@ -2,53 +2,43 @@
 title: "Sistema de Leads e Kanban"
 subtitle: "CRM Solar - Documentação Técnica"
 author: "Neureka AI"
-date: "2024"
+date: "2025"
 toc: true
 ---
 
 # Sistema de Pontuação (Lead Score)
 
-O lead score é calculado automaticamente de 0 a 100 pontos, baseado em 5 fatores.
+O lead score é calculado automaticamente de **0 a 100 pontos**, baseado em 5 fatores.
 
 ## Consumo Mensal (até 30 pontos)
 
-| Consumo | Pontos |
-|---------|--------|
-| >= 500 kWh | 30 pts |
-| >= 300 kWh | 20 pts |
-| >= 150 kWh | 10 pts |
-| < 150 kWh | 0 pts |
+- **>= 500 kWh:** 30 pontos
+- **>= 300 kWh:** 20 pontos
+- **>= 150 kWh:** 10 pontos
+- **< 150 kWh:** 0 pontos
 
 ## Tipo de Cliente (até 10 pontos)
 
-| Tipo | Pontos |
-|------|--------|
-| Comercial | 10 pts |
-| Residencial | 5 pts |
+- **Comercial:** 10 pontos
+- **Residencial:** 5 pontos
 
 ## Prontidão de Compra (até 40 pontos)
 
-| Prontidão | Pontos |
-|-----------|--------|
-| Imediata | 40 pts |
-| 1-3 meses | 30 pts |
-| 3-6 meses | 20 pts |
-| 6-12 meses | 10 pts |
-| Apenas pesquisando | 5 pts |
+- **Imediata:** 40 pontos
+- **1-3 meses:** 30 pontos
+- **3-6 meses:** 20 pontos
+- **6-12 meses:** 10 pontos
+- **Apenas pesquisando:** 5 pontos
 
 ## É Decisor? (até 20 pontos)
 
-| Resposta | Pontos |
-|----------|--------|
-| Sim | 20 pts |
-| Não | 0 pts |
+- **Sim:** 20 pontos
+- **Não:** 0 pontos
 
 ## Viabilidade Técnica (até 10 pontos)
 
-| Situação | Pontos |
-|----------|--------|
-| Telhado OK e pouco sombreamento | 10 pts |
-| Problemas técnicos | 0 pts |
+- **Telhado OK e pouco sombreamento:** 10 pontos
+- **Problemas técnicos:** 0 pontos
 
 **Pontuação Máxima:** 100 pontos
 
@@ -63,15 +53,13 @@ O score é recalculado automaticamente sempre que:
 
 # Status do Lead
 
-| Status | Descrição | Cor |
-|--------|-----------|-----|
-| novo | Lead recém chegado | Cinza |
-| qualificado | Score >= 50 pontos | Verde |
-| em nutricao | Não está pronto, precisa ser nutrido | Laranja |
-| nao qualificado | Não atende critérios mínimos | Vermelho |
-| convertido | Virou oportunidade no Kanban | Azul |
-| perdido | Desistiu ou foi perdido | Vermelho |
-| instalado | Instalação concluída | Verde |
+- **novo:** Lead recém chegado (Cinza)
+- **qualificado:** Score >= 50 pontos (Verde)
+- **em_nutricao:** Não está pronto, precisa ser nutrido (Laranja)
+- **nao_qualificado:** Não atende critérios mínimos (Vermelho)
+- **convertido:** Virou oportunidade no Kanban (Azul)
+- **perdido:** Desistiu ou foi perdido (Vermelho)
+- **instalado:** Instalação concluída (Verde)
 
 ## Qualificação Automática
 
@@ -85,13 +73,11 @@ O sistema executa automações diárias para mover leads automaticamente baseado
 
 ## Lead para Em Nutrição (Automático)
 
-Um lead é movido automaticamente para em nutricao quando:
+Um lead é movido automaticamente para **em_nutricao** quando:
 
-| Critério | Condição |
-|----------|----------|
-| Status atual | qualificado |
-| Dias sem interação | Entre 7 e 14 dias |
-| Motivo de espera | Preenchido |
+- **Status atual:** qualificado
+- **Dias sem interação:** Entre 7 e 14 dias
+- **Motivo de espera:** Preenchido
 
 **Motivos de espera comuns:**
 
@@ -102,22 +88,18 @@ Um lead é movido automaticamente para em nutricao quando:
 
 ## Lead para Perdido (Automático)
 
-Um lead é marcado automaticamente como perdido quando:
+Um lead é marcado automaticamente como **perdido** quando:
 
-| Critério | Condição |
-|----------|----------|
-| Status atual | NÃO é perdido nem convertido |
-| Dias sem resposta | 30 dias ou mais |
-| Tentativas de contato | 3 ou mais tentativas |
+- **Status atual:** NÃO é perdido nem convertido
+- **Dias sem resposta:** 30 dias ou mais
+- **Tentativas de contato:** 3 ou mais tentativas
 
 ## Oportunidade para Perdida (Automático)
 
-Uma oportunidade no Kanban é marcada como perdido quando:
+Uma oportunidade no Kanban é marcada como **perdido** quando:
 
-| Critério | Condição |
-|----------|----------|
-| Etapa atual | NÃO é perdido nem concluida |
-| Dias sem atualização | 60 dias ou mais |
+- **Etapa atual:** NÃO é perdido nem concluida
+- **Dias sem atualização:** 60 dias ou mais
 
 ## Notificações e Reversão
 
@@ -133,7 +115,7 @@ Quando uma mudança automática acontece:
 
 O Kanban representa o funil de vendas com 5 etapas:
 
-**LEVANTAMENTO -> SIMULAÇÃO -> PROPOSTA -> NEGOCIAÇÃO -> FECHAMENTO**
+**LEVANTAMENTO → SIMULAÇÃO → PROPOSTA → NEGOCIAÇÃO → FECHAMENTO**
 
 ## Etapa 1: Levantamento
 
@@ -163,12 +145,12 @@ O Kanban representa o funil de vendas com 5 etapas:
 
 **O que fazer:** Acompanhar aceite da proposta
 
-**Requisito para avançar:** A proposta precisa ter status aceita
+**Requisito para avançar:** A proposta precisa ter status **aceita**
 
 Isso é atualizado em dois lugares:
 
-- Tabela propostas campo status = aceita
-- Tabela status negociacao campo proposta aceita = true
+- Tabela propostas: campo status = aceita
+- Tabela status_negociacao: campo proposta_aceita = true
 
 ## Etapa 5: Fechamento
 
@@ -210,37 +192,31 @@ Quando o usuário clica em "Marcar como Instalado" na etapa de Fechamento, após
 
 # Resumo das Automações
 
-| Situação | Condições | Resultado |
-|----------|-----------|-----------|
-| Lead qualificado sem interação | 7-14 dias + motivo espera | em nutricao |
-| Lead sem resposta | 30+ dias + 3+ tentativas | perdido |
-| Oportunidade parada | 60+ dias sem atualização | perdido |
-| Lead com score alto | score >= 50 | qualificado |
+- **Lead qualificado sem interação (7-14 dias + motivo espera):** vai para em_nutricao
+- **Lead sem resposta (30+ dias + 3+ tentativas):** vai para perdido
+- **Oportunidade parada (60+ dias sem atualização):** vai para perdido
+- **Lead com score >= 50:** vai para qualificado
 
 ---
 
 # Campos Importantes para Automação
 
-| Campo | Tabela | Descrição |
-|-------|--------|-----------|
-| motivo espera | leads | Por que o lead está esperando |
-| data prevista retorno | leads | Quando o cliente estará pronto |
-| tentativas contato | leads | Quantas vezes tentou contato |
-| data ultima tentativa | leads | Data da última tentativa |
+- **motivo_espera** (leads): Por que o lead está esperando
+- **data_prevista_retorno** (leads): Quando o cliente estará pronto
+- **tentativas_contato** (leads): Quantas vezes tentou contato
+- **data_ultima_tentativa** (leads): Data da última tentativa
 
 ---
 
 # Tabelas do Sistema
 
-| Tabela | Descrição |
-|--------|-----------|
-| leads | Dados básicos do lead |
-| qualificacao | Dados de qualificação técnica |
-| oportunidades | Registro no Kanban |
-| propostas | Propostas comerciais geradas |
-| status negociacao | Status da negociação |
-| instalacao | Dados de agendamento |
-| clientes instalados | Clientes com instalação concluída |
-| notificacoes | Notificações de automação |
-| historico mudancas | Histórico de mudanças automáticas |
-| interacoes | Timeline de interações |
+- **leads:** Dados básicos do lead
+- **qualificacao:** Dados de qualificação técnica
+- **oportunidades:** Registro no Kanban
+- **propostas:** Propostas comerciais geradas
+- **status_negociacao:** Status da negociação
+- **instalacao:** Dados de agendamento
+- **clientes_instalados:** Clientes com instalação concluída
+- **notificacoes:** Notificações de automação
+- **historico_mudancas_automaticas:** Histórico de mudanças automáticas
+- **interacoes:** Timeline de interações com o lead
