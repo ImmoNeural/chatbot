@@ -4,159 +4,186 @@ body {
     max-width: 900px;
     margin: 0 auto;
     padding: 40px;
-    color: #2d3748;
+    color: #1e293b;
     background: #fff;
 }
 
-/* Título principal - estilo capa */
+/* CAPA */
 h1:first-of-type {
     font-size: 2.4em;
     color: #0f172a;
     text-align: center;
-    padding: 50px 0 20px;
+    padding: 60px 0 15px;
     margin-bottom: 0;
     font-weight: 700;
-    letter-spacing: -0.5px;
 }
 
 h1:first-of-type + p {
     text-align: center;
-    font-size: 1.2em;
-    color: #475569;
-    margin-top: 5px;
-    font-weight: 500;
+    font-size: 1.3em;
+    color: #334155;
+    margin: 5px 0;
+    font-weight: 600;
 }
 
 h1:first-of-type + p + p {
     text-align: center;
-    font-size: 1em;
+    font-size: 1.1em;
     color: #64748b;
+    font-style: italic;
 }
 
+/* TÍTULOS NUMERADOS */
 h1 {
-    font-size: 1.7em;
+    font-size: 1.6em;
     color: #0f172a;
     margin-top: 50px;
-    padding-bottom: 12px;
-    border-bottom: 3px solid #0ea5e9;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #0284c7;
     font-weight: 700;
 }
 
 h2 {
-    font-size: 1.25em;
+    font-size: 1.2em;
     color: #1e293b;
-    margin-top: 35px;
-    padding-left: 15px;
-    border-left: 4px solid #0ea5e9;
+    margin-top: 30px;
     font-weight: 600;
 }
 
 h3 {
-    font-size: 1.1em;
+    font-size: 1.05em;
     color: #334155;
-    margin-top: 25px;
+    margin-top: 20px;
     font-weight: 600;
 }
 
-/* TABELAS MODERNAS */
+/* ÍNDICE */
+h2:first-of-type {
+    text-align: center;
+    border: none;
+    padding: 0;
+    margin-top: 40px;
+    font-size: 1.4em;
+}
+
+/* TABELAS PROFISSIONAIS */
 table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    margin: 25px 0;
-    font-size: 0.95em;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-    border-radius: 12px;
+    margin: 20px 0 5px 0;
+    font-size: 0.92em;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    border-radius: 8px;
     overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
 thead {
-    background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0ea5e9 100%);
+    background: #0c4a6e;
 }
 
 th {
-    padding: 16px 20px;
+    padding: 14px 16px;
     text-align: left;
     font-weight: 700;
-    color: white;
+    color: #ffffff;
     text-transform: uppercase;
-    font-size: 0.8em;
-    letter-spacing: 1px;
+    font-size: 0.75em;
+    letter-spacing: 0.8px;
     border: none;
 }
 
 td {
-    padding: 14px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid #e2e8f0;
     color: #334155;
 }
 
 tbody tr {
-    background: #fff;
+    background: #ffffff;
 }
 
 tbody tr:nth-child(even) {
-    background: #f1f5f9;
+    background: #f8fafc;
 }
 
 tbody tr:last-child td {
     border-bottom: none;
 }
 
-/* FLUXO HORIZONTAL - Funil de vendas */
-.flow-container {
+/* LEGENDA DAS TABELAS */
+.table-caption {
+    text-align: center;
+    font-size: 0.85em;
+    color: #64748b;
+    font-style: italic;
+    margin: 8px 0 30px 0;
+    padding: 0;
+}
+
+/* FLUXO HORIZONTAL */
+.flow-horizontal {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin: 30px 0;
+    gap: 10px;
+    margin: 30px 0 10px 0;
     flex-wrap: wrap;
 }
 
-.flow-step {
-    padding: 18px 22px;
-    border-radius: 12px;
+.flow-block {
+    padding: 16px 20px;
+    border-radius: 10px;
     font-weight: 700;
-    font-size: 0.85em;
+    font-size: 0.8em;
     text-align: center;
-    color: white;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    min-width: 120px;
+    color: #ffffff !important;
+    min-width: 110px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
 }
 
-.step-1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-.step-2 { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-.step-3 { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.step-4 { background: linear-gradient(135deg, #10b981, #059669); }
-.step-5 { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+.flow-block.blue { background: #1d4ed8; }
+.flow-block.purple { background: #7c3aed; }
+.flow-block.orange { background: #ea580c; }
+.flow-block.green { background: #059669; }
+.flow-block.cyan { background: #0891b2; }
+.flow-block.red { background: #dc2626; }
 
-.flow-arrow {
-    font-size: 2em;
+.flow-arrow-right {
+    font-size: 1.8em;
     color: #94a3b8;
     font-weight: bold;
+    margin: 0 5px;
 }
 
 /* FLUXO VERTICAL */
-.flow-vertical {
+.flow-vertical-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
-    margin: 30px auto;
+    gap: 8px;
+    margin: 30px auto 10px auto;
 }
 
-.flow-box {
-    padding: 20px 40px;
+.flow-block-lg {
+    padding: 20px 50px;
     border-radius: 12px;
     font-weight: 700;
     font-size: 0.95em;
     text-align: center;
-    color: white;
+    color: #ffffff !important;
+    min-width: 220px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    min-width: 200px;
 }
 
-.flow-box small {
+.flow-block-lg.blue { background: #1d4ed8; }
+.flow-block-lg.purple { background: #7c3aed; }
+.flow-block-lg.orange { background: #ea580c; }
+.flow-block-lg.green { background: #059669; }
+.flow-block-lg.red { background: #dc2626; }
+
+.flow-subtitle {
     display: block;
     font-weight: 400;
     font-size: 0.8em;
@@ -164,32 +191,45 @@ tbody tr:last-child td {
     opacity: 0.9;
 }
 
-.box-lead { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-.box-opp { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-.box-installed { background: linear-gradient(135deg, #10b981, #059669); }
-.box-nutrition { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.box-lost { background: linear-gradient(135deg, #ef4444, #dc2626); }
-
-.flow-arrow-down {
+.flow-arrow-down-big {
     font-size: 2em;
     color: #64748b;
+    line-height: 1;
 }
 
-.flow-side {
+.flow-side-container {
     display: flex;
     justify-content: center;
-    gap: 30px;
-    margin: 20px 0;
+    gap: 40px;
+    margin: 30px 0 10px 0;
+    flex-wrap: wrap;
 }
 
-/* Listas */
+/* LEGENDA DAS FIGURAS */
+.flow-caption {
+    text-align: center;
+    font-size: 0.85em;
+    color: #64748b;
+    font-style: italic;
+    margin: 8px 0 30px 0;
+}
+
+/* SEPARADORES */
+hr {
+    border: none;
+    height: 1px;
+    background: #cbd5e1;
+    margin: 40px 0;
+}
+
+/* LISTAS */
 ul, ol {
     margin: 15px 0;
     padding-left: 25px;
 }
 
 li {
-    margin: 10px 0;
+    margin: 8px 0;
     color: #475569;
 }
 
@@ -197,7 +237,7 @@ li strong {
     color: #0f172a;
 }
 
-/* Destaques */
+/* DESTAQUES */
 strong {
     color: #0f172a;
     font-weight: 600;
@@ -205,47 +245,27 @@ strong {
 
 em {
     color: #64748b;
-    font-style: italic;
 }
 
-/* Separadores */
-hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #0ea5e9);
-    margin: 45px 0;
-    border-radius: 2px;
-}
-
-/* Parágrafos */
+/* PARÁGRAFOS */
 p {
-    margin: 14px 0;
+    margin: 12px 0;
     color: #475569;
 }
 
-/* Código */
+/* CÓDIGO */
 code {
     background: #f1f5f9;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 0.9em;
-    color: #0369a1;
-}
-
-pre {
-    background: #0f172a;
-    color: #e2e8f0;
-    padding: 20px;
-    border-radius: 12px;
-    overflow-x: auto;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-family: 'Consolas', monospace;
     font-size: 0.9em;
+    color: #0369a1;
 }
 
 @media print {
     body { padding: 20px; }
     table { page-break-inside: avoid; }
     h1, h2 { page-break-after: avoid; }
-    .flow-container, .flow-vertical, .flow-side { page-break-inside: avoid; }
+    .flow-horizontal, .flow-vertical-container, .flow-side-container { page-break-inside: avoid; }
 }
