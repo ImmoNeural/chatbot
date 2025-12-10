@@ -1,44 +1,98 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.7;
-    max-width: 750px;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    max-width: 850px;
     margin: 0 auto;
-    padding: 50px 40px;
-    color: #333;
+    padding: 40px;
+    color: #2d3748;
     background: #fff;
 }
 
-/* Título principal */
+/* Título principal - estilo capa */
 h1:first-of-type {
-    font-size: 2.2em;
-    color: #111;
-    border-bottom: 2px solid #333;
-    padding-bottom: 15px;
-    margin-bottom: 5px;
-    font-weight: 600;
+    font-size: 2.4em;
+    color: #1a365d;
+    text-align: center;
+    padding: 40px 0 20px;
+    margin-bottom: 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* Subtítulo */
+h1:first-of-type + p {
+    text-align: center;
+    font-size: 1.1em;
+    color: #4a5568;
+    margin-top: 5px;
 }
 
 h1 {
-    font-size: 1.6em;
-    color: #111;
-    margin-top: 45px;
-    padding-top: 25px;
-    border-top: 1px solid #ddd;
-    font-weight: 600;
+    font-size: 1.7em;
+    color: #1a365d;
+    margin-top: 50px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #3182ce;
+    font-weight: 700;
 }
 
 h2 {
-    font-size: 1.2em;
-    color: #222;
-    margin-top: 30px;
+    font-size: 1.25em;
+    color: #2c5282;
+    margin-top: 35px;
+    padding-left: 12px;
+    border-left: 4px solid #3182ce;
     font-weight: 600;
 }
 
 h3 {
-    font-size: 1.05em;
-    color: #333;
-    margin-top: 20px;
+    font-size: 1.1em;
+    color: #2d3748;
+    margin-top: 25px;
     font-weight: 600;
+}
+
+/* Tabelas modernas */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 0.95em;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+thead {
+    background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+    color: white;
+}
+
+th {
+    padding: 15px 18px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+tbody tr {
+    background: #fff;
+    transition: background 0.2s;
+}
+
+tbody tr:nth-child(even) {
+    background: #f7fafc;
+}
+
+tbody tr:hover {
+    background: #edf2f7;
 }
 
 /* Listas */
@@ -48,70 +102,72 @@ ul, ol {
 }
 
 li {
-    margin: 6px 0;
-    color: #444;
+    margin: 8px 0;
+    color: #4a5568;
 }
 
 li strong {
-    color: #111;
+    color: #1a365d;
 }
 
-/* Negrito */
+/* Destaques */
 strong {
-    color: #111;
+    color: #1a365d;
     font-weight: 600;
 }
 
-/* Itálico */
 em {
-    color: #666;
+    color: #718096;
+    font-style: italic;
 }
 
 /* Separadores */
 hr {
     border: none;
-    height: 1px;
-    background: #ccc;
-    margin: 35px 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3182ce, #63b3ed, #3182ce);
+    margin: 40px 0;
+    border-radius: 2px;
 }
 
 /* Parágrafos */
 p {
-    margin: 12px 0;
+    margin: 14px 0;
+    color: #4a5568;
 }
 
-/* Código inline */
+/* Código */
 code {
-    background: #f5f5f5;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Consolas', monospace;
+    background: #edf2f7;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
-    color: #c00;
+    color: #c53030;
 }
 
-/* Blocos de código */
 pre {
-    background: #f5f5f5;
-    color: #333;
-    padding: 15px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+    background: #1a365d;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 8px;
     overflow-x: auto;
     font-family: 'Consolas', monospace;
-    font-size: 0.85em;
+    font-size: 0.9em;
+}
+
+/* Blocos de destaque */
+blockquote {
+    border-left: 4px solid #3182ce;
+    margin: 20px 0;
+    padding: 15px 20px;
+    background: #ebf8ff;
+    border-radius: 0 8px 8px 0;
+    color: #2c5282;
 }
 
 @media print {
-    body {
-        padding: 30px;
-    }
-
-    h1, h2 {
-        page-break-after: avoid;
-    }
-
-    ul, ol {
-        page-break-inside: avoid;
-    }
+    body { padding: 20px; }
+    table { page-break-inside: avoid; }
+    h1, h2 { page-break-after: avoid; }
 }
