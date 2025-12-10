@@ -3,12 +3,7 @@ title: "Sistema de Leads e Kanban"
 subtitle: "CRM Solar - Documentação Técnica"
 author: "Neureka AI"
 date: "2024"
-titlepage: true
-titlepage-color: "1e40af"
-titlepage-text-color: "FFFFFF"
-titlepage-rule-color: "FFFFFF"
 toc: true
-toc-own-page: true
 ---
 
 # Sistema de Pontuação (Lead Score)
