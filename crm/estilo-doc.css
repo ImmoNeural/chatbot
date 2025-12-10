@@ -1,0 +1,153 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    color: #1f2937;
+    background: #fff;
+}
+
+/* Capa */
+h1:first-of-type {
+    font-size: 2.5em;
+    color: #1e40af;
+    border-bottom: 4px solid #3b82f6;
+    padding-bottom: 20px;
+    margin-bottom: 10px;
+}
+
+h1 {
+    font-size: 1.8em;
+    color: #1e40af;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+}
+
+h2 {
+    font-size: 1.4em;
+    color: #1e3a8a;
+    margin-top: 30px;
+    border-left: 4px solid #3b82f6;
+    padding-left: 15px;
+    background: linear-gradient(90deg, #eff6ff 0%, transparent 100%);
+    padding: 10px 15px;
+    border-radius: 0 8px 8px 0;
+}
+
+h3 {
+    font-size: 1.1em;
+    color: #374151;
+    margin-top: 25px;
+}
+
+/* Listas */
+ul {
+    background: #f8fafc;
+    padding: 20px 20px 20px 40px;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+    margin: 15px 0;
+}
+
+li {
+    margin: 8px 0;
+    color: #374151;
+}
+
+li strong {
+    color: #1e40af;
+}
+
+/* Listas ordenadas */
+ol {
+    background: #fefce8;
+    padding: 20px 20px 20px 40px;
+    border-radius: 8px;
+    border-left: 4px solid #eab308;
+    margin: 15px 0;
+}
+
+/* Negrito e destaque */
+strong {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+/* Separadores */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+    margin: 40px 0;
+    border-radius: 2px;
+}
+
+/* Parágrafos */
+p {
+    margin: 15px 0;
+    text-align: justify;
+}
+
+/* Código inline */
+code {
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    color: #dc2626;
+}
+
+/* Blocos de código */
+pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+}
+
+/* Links */
+a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Blockquote */
+blockquote {
+    border-left: 4px solid #8b5cf6;
+    margin: 20px 0;
+    padding: 15px 20px;
+    background: #f5f3ff;
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    color: #4c1d95;
+}
+
+/* Header e footer para impressão */
+@media print {
+    body {
+        padding: 20px;
+    }
+
+    h1:first-of-type {
+        page-break-after: avoid;
+    }
+
+    h1, h2 {
+        page-break-after: avoid;
+    }
+
+    ul, ol {
+        page-break-inside: avoid;
+    }
+}
