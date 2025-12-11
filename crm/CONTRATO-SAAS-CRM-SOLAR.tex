@@ -1,8 +1,8 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[brazil]{babel}
-\usepackage[margin=2.5cm]{geometry}
+\usepackage[brazilian]{babel}
+\usepackage[margin=2cm]{geometry}
 \usepackage{hyperref}
 \usepackage{array}
 \usepackage{booktabs}
@@ -10,6 +10,7 @@
 \usepackage{xcolor}
 \usepackage{titlesec}
 \usepackage{enumitem}
+\usepackage{setspace}
 
 % Configuração do hyperref para formulários
 \hypersetup{
@@ -26,64 +27,66 @@
 \definecolor{cinzaescuro}{HTML}{1e293b}
 
 % Formatação de títulos
-\titleformat{\section}{\Large\bfseries\color{azulescuro}}{\thesection.}{0.5em}{}[\titlerule]
-\titleformat{\subsection}{\large\bfseries\color{cinzaescuro}}{\thesubsection}{0.5em}{}
+\titleformat{\section}{\large\bfseries\color{azulescuro}}{\thesection.}{0.5em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{cinzaescuro}}{\thesubsection}{0.5em}{}
 
-% Campo de formulário com linha
+% Campo de formulário inline (uma linha)
 \newcommand{\campo}[2]{%
-    \TextField[name=#1, width=#2, bordercolor=blue, backgroundcolor=yellow!10]{}%
+    \TextField[name=#1, width=#2, bordercolor=blue, backgroundcolor=yellow!10, charsize=10pt]{}%
 }
 
 % Campo de formulário multilinha
-\newcommand{\campogrande}[2]{%
-    \TextField[name=#1, width=#2, height=1.5cm, multiline=true, bordercolor=blue, backgroundcolor=yellow!10]{}%
+\newcommand{\campomulti}[3]{%
+    \TextField[name=#1, width=#2, height=#3, multiline=true, bordercolor=blue, backgroundcolor=yellow!10, charsize=10pt]{}%
 }
 
 \begin{document}
 
-% Cabeçalho
+% Cabeçalho com espaçamento adequado
 \begin{center}
-    {\LARGE\bfseries CONTRATO DE COMPRA E VENDA DE SOFTWARE,}\\[0.3em]
-    {\LARGE\bfseries TRANSFERÊNCIA DE PROPRIEDADE INTELECTUAL}\\[0.3em]
-    {\LARGE\bfseries E PRESTAÇÃO DE SERVIÇOS CORRELATOS}\\[1.5em]
+    {\Large\bfseries CONTRATO DE COMPRA E VENDA DE SOFTWARE,}\\[0.5em]
+    {\Large\bfseries TRANSFERÊNCIA DE PROPRIEDADE INTELECTUAL}\\[0.5em]
+    {\Large\bfseries E PRESTAÇÃO DE SERVIÇOS CORRELATOS}\\[1em]
     \hrule
 \end{center}
 
-\vspace{1em}
+\vspace{0.8em}
 
-\noindent\textbf{CONTRATO Nº:} \campo{contrato_numero}{4cm}
+\noindent\textbf{CONTRATO Nº:} \campo{contrato_numero}{3cm} \hfill \textbf{DATA:} \campo{dia}{0.8cm} de \campo{mes}{2.5cm} de \campo{ano}{1.2cm}
 
-\noindent\textbf{DATA:} \campo{dia}{1cm} de \campo{mes}{3cm} de \campo{ano}{1.5cm}
-
-\vspace{1em}
+\vspace{0.5em}
 \hrule
-\vspace{1em}
+\vspace{0.8em}
 
 \section*{PARTES}
 
 \textbf{VENDEDORA:}
 
-\textbf{MY CLEVER BOT TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA.}, pessoa jurídica de direito privado, inscrita no CNPJ/ME sob o nº 62.050.286/0001-77, com sede social na Rua Plutarco nº 30, Bloco 6, apto 62, CEP 09185-710, Santo André, Estado de São Paulo, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente \textbf{``VENDEDORA''}.
+\noindent\textbf{MY CLEVER BOT TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA.}, pessoa jurídica de direito privado, inscrita no CNPJ/ME sob o nº 62.050.286/0001-77, com sede social na Rua Plutarco nº 30, Bloco 6, apto 62, CEP 09185-710, Santo André, Estado de São Paulo, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente \textbf{``VENDEDORA''}.
 
-\vspace{1em}
+\vspace{0.8em}
 
 \textbf{COMPRADORA:}
 
-\campo{razao_social}{10cm}, pessoa jurídica de direito privado, inscrita no CNPJ sob nº \campo{cnpj_compradora}{5cm}, com sede na \campo{endereco_compradora}{12cm}, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente \textbf{``COMPRADORA''}.
+\noindent\campomulti{razao_social}{\linewidth}{1cm}, pessoa jurídica de direito privado, inscrita no CNPJ sob nº \campo{cnpj_compradora}{4.5cm}, com sede na:
 
-\vspace{1em}
+\noindent\campomulti{endereco_compradora}{\linewidth}{1.2cm}
 
-Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individualmente, \textbf{``Parte''}.
+\noindent neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente \textbf{``COMPRADORA''}.
 
-\vspace{1em}
+\vspace{0.5em}
+
+\noindent Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individualmente, \textbf{``Parte''}.
+
+\vspace{0.5em}
 \hrule
-\vspace{1em}
+\vspace{0.5em}
 
 \section*{CONSIDERAÇÕES PRELIMINARES}
 
 \textbf{CONSIDERANDO QUE:}
 
-\begin{enumerate}[label=(\Alph*)]
+\begin{enumerate}[label=(\Alph*), itemsep=0.2em]
     \item A Vendedora é titular dos direitos de propriedade intelectual sobre a plataforma de software denominada \textbf{``CRM Solar''}, sistema de gestão de relacionamento com clientes e automação de vendas desenvolvido para o setor de energia solar; e
 
     \item A Compradora tem interesse em adquirir a totalidade dos direitos de propriedade intelectual sobre o referido software, incluindo código-fonte, documentação, arquitetura e direito de comercialização, para fins de exploração comercial própria no modelo SaaS; e
@@ -91,14 +94,14 @@ Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individu
     \item As Partes desejam estabelecer níveis de serviço (SLA) para o período de suporte inicial e definir responsabilidades claras quanto à proteção de dados pessoais em conformidade com a LGPD.
 \end{enumerate}
 
-\textbf{RESOLVEM AS PARTES}, de mútuo e comum acordo, celebrar este Contrato com as seguintes cláusulas e condições:
+\noindent\textbf{RESOLVEM AS PARTES}, de mútuo e comum acordo, celebrar este Contrato com as seguintes cláusulas e condições:
 
 \section{DEFINIÇÕES}
 
 \textbf{1.1.} Para os fins deste Contrato:
 
-\begin{itemize}
-    \item \textbf{Software:} Plataforma CRM Solar, incluindo módulos, código-fonte, documentação e ativos relacionados
+\begin{itemize}[itemsep=0.1em]
+    \item \textbf{Software:} Plataforma CRM Solar, incluindo módulos, código-fonte, documentação e ativos
     \item \textbf{Código-Fonte:} Arquivos de programação em formato editável e legível
     \item \textbf{Propriedade Intelectual:} Direitos autorais, de software, marcas, segredos industriais e know-how
     \item \textbf{SLA:} Acordo de Nível de Serviço com prazos de resposta para suporte técnico
@@ -109,7 +112,7 @@ Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individu
 
 \textbf{2.1.} O presente Contrato tem por objeto a \textbf{venda e transferência definitiva} à Compradora de todos os direitos de propriedade intelectual sobre o Software ``CRM Solar'', incluindo:
 
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item Código-fonte completo (frontend e backend);
     \item Banco de dados estruturado e migrations;
     \item Documentação técnica e de usuário;
@@ -120,7 +123,7 @@ Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individu
 
 \textbf{2.2.} Estão incluídos neste Contrato:
 
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item Suporte técnico durante os primeiros 3 (três) meses após a Entrega;
     \item Manutenção e correção de bugs durante os primeiros 3 (três) meses;
     \item Treinamento de 8 (oito) horas para operação do Software.
@@ -128,7 +131,7 @@ Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individu
 
 \textbf{2.3.} \textbf{NÃO} estão incluídos (responsabilidade da Compradora):
 
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item Custos de infraestrutura (hospedagem, Supabase, Vercel);
     \item Custos de APIs de terceiros (WhatsApp Business, Evolution API);
     \item Desenvolvimento de novas funcionalidades após a Entrega;
@@ -142,12 +145,12 @@ Vendedora e Compradora denominadas, em conjunto, \textbf{``Partes''} e, individu
 \textbf{3.2.} O pagamento será realizado da seguinte forma:
 
 \begin{center}
+\small
 \begin{tabular}{|l|r|r|l|}
 \hline
 \textbf{Parcela} & \textbf{Valor} & \textbf{\%} & \textbf{Vencimento} \\
 \hline
 Sinal & R\$ 4.500,00 & 15\% & Na assinatura \\
-\hline
 Saldo & R\$ 25.500,00 & 85\% & 15 de Janeiro de 2026 \\
 \hline
 \textbf{Total} & \textbf{R\$ 30.000,00} & \textbf{100\%} & -- \\
@@ -157,14 +160,14 @@ Saldo & R\$ 25.500,00 & 85\% & 15 de Janeiro de 2026 \\
 
 \textbf{3.3.} O pagamento será mediante emissão de Nota Fiscal pela Vendedora, via PIX ou transferência:
 
-\begin{itemize}
-    \item \textbf{Banco:} \campo{banco}{4cm}
-    \item \textbf{Agência:} \campo{agencia}{3cm}
-    \item \textbf{Conta:} \campo{conta}{4cm}
-    \item \textbf{CNPJ:} 62.050.286/0001-77
-    \item \textbf{Chave PIX:} \campo{pix}{6cm}
-\end{itemize}
+\vspace{0.3em}
+\noindent\begin{tabular}{@{}ll@{}}
+\textbf{Banco:} \campo{banco}{3.5cm} & \textbf{Agência:} \campo{agencia}{2.5cm} \\[0.3em]
+\textbf{Conta:} \campo{conta}{3.5cm} & \textbf{CNPJ:} 62.050.286/0001-77 \\[0.3em]
+\multicolumn{2}{@{}l}{\textbf{Chave PIX:} \campo{pix}{8cm}}
+\end{tabular}
 
+\vspace{0.3em}
 \textbf{3.4.} O atraso acarretará multa de 2\% e juros de 1\% ao mês.
 
 \section{ENTREGA E ACEITE}
@@ -180,7 +183,7 @@ Saldo & R\$ 25.500,00 & 85\% & 15 de Janeiro de 2026 \\
 \textbf{5.1.} A Compradora poderá se arrepender em até \textbf{14 dias corridos após a Entrega}.
 
 \textbf{5.2.} Em caso de arrependimento:
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item A Compradora deve devolver todo material e excluir cópias;
     \item A Vendedora devolverá valores pagos, \textbf{descontados 15\%};
     \item A propriedade intelectual reverte para a Vendedora.
@@ -199,7 +202,7 @@ Saldo & R\$ 25.500,00 & 85\% & 15 de Janeiro de 2026 \\
 \textbf{7.1.} Após a transferência, a Compradora assumirá a posição de \textbf{Controladora} dos dados pessoais.
 
 \textbf{7.2.} Durante o suporte (3 meses), a Vendedora atuará como \textbf{Operadora}, obrigando-se a:
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item Tratar dados apenas conforme instruções da Compradora;
     \item Manter sigilo absoluto;
     \item Adotar medidas de segurança adequadas.
@@ -212,14 +215,13 @@ Saldo & R\$ 25.500,00 & 85\% & 15 de Janeiro de 2026 \\
 \textbf{8.1.} Durante 3 meses, o suporte seguirá os SLAs abaixo:
 
 \begin{center}
+\small
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Prioridade} & \textbf{Definição} & \textbf{1ª Resposta} & \textbf{Solução} \\
 \hline
 Crítica & Sistema inoperante & 4h úteis & 24h úteis \\
-\hline
 Média & Funcionalidade com erro & 12h úteis & 72h úteis \\
-\hline
 Baixa & Dúvidas operacionais & 24h úteis & Conforme disp. \\
 \hline
 \end{tabular}
@@ -240,7 +242,7 @@ Baixa & Dúvidas operacionais & 24h úteis & Conforme disp. \\
 \section{GARANTIAS DA VENDEDORA}
 
 \textbf{10.1.} A Vendedora garante que na Entrega:
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item O Software estará funcional conforme documentação;
     \item O código-fonte estará organizado e documentado;
     \item Não contém vírus, malware ou ``bombas lógicas''.
@@ -257,7 +259,7 @@ Baixa & Dúvidas operacionais & 24h úteis & Conforme disp. \\
 \section{RESCISÃO}
 
 \textbf{12.1.} O Contrato poderá ser rescindido por:
-\begin{enumerate}[label=\alph*)]
+\begin{enumerate}[label=\alph*), itemsep=0.1em]
     \item Mútuo acordo;
     \item Inadimplemento não sanado em 15 dias;
     \item Falência ou recuperação judicial.
@@ -277,44 +279,40 @@ Baixa & Dúvidas operacionais & 24h úteis & Conforme disp. \\
 
 \section{FORO}
 
-\textbf{14.1.} Foro da Comarca de \campo{cidade_foro}{5cm}, Estado de \campo{estado_foro}{4cm}.
+\textbf{14.1.} Foro da Comarca de \campo{cidade_foro}{4cm}, Estado de \campo{estado_foro}{3.5cm}.
 
-\vspace{2em}
+\vspace{1em}
 \hrule
-\vspace{1em}
+\vspace{0.8em}
 
-E, por estarem justas e contratadas, as Partes assinam o presente instrumento em 2 vias.
+\noindent E, por estarem justas e contratadas, as Partes assinam o presente instrumento em 2 vias.
 
-\vspace{1em}
+\vspace{0.5em}
 
-\noindent\textbf{Local:} \campo{cidade_assinatura}{5cm}, \campo{dia_assinatura}{1cm} de \campo{mes_assinatura}{3cm} de \campo{ano_assinatura}{1.5cm}.
+\noindent\textbf{Local:} \campo{cidade_assinatura}{4cm}, \campo{dia_assinatura}{0.8cm} de \campo{mes_assinatura}{2.5cm} de \campo{ano_assinatura}{1.2cm}.
 
-\vspace{2em}
+\vspace{1.5em}
 
-\begin{center}
-\begin{tabular}{p{7cm}p{7cm}}
-\textbf{VENDEDORA:} & \textbf{COMPRADORA:} \\[3em]
-\hrulefill & \hrulefill \\
-\textbf{MY CLEVER BOT TECNOLOGIA} & \campo{razao_social_assinatura}{6cm} \\
-\textbf{EM INTELIGÊNCIA ARTIFICIAL LTDA.} & \\[1em]
-Nome: \campo{nome_vendedor}{4cm} & Nome: \campo{nome_comprador}{4cm} \\[0.5em]
-Cargo: \campo{cargo_vendedor}{4cm} & Cargo: \campo{cargo_comprador}{4cm} \\[0.5em]
-CPF: \campo{cpf_vendedor}{4cm} & CPF: \campo{cpf_comprador}{4cm} \\
+\noindent\begin{tabular}{@{}p{0.48\linewidth}p{0.48\linewidth}@{}}
+\textbf{VENDEDORA:} & \textbf{COMPRADORA:} \\[2em]
+\hrulefill & \hrulefill \\[0.3em]
+\textbf{MY CLEVER BOT TECNOLOGIA EM} & \\
+\textbf{INTELIGÊNCIA ARTIFICIAL LTDA.} & \campomulti{razao_social_assinatura}{0.95\linewidth}{0.8cm} \\[0.8em]
+Nome: \campo{nome_vendedor}{3.2cm} & Nome: \campo{nome_comprador}{3.2cm} \\[0.4em]
+Cargo: \campo{cargo_vendedor}{3.2cm} & Cargo: \campo{cargo_comprador}{3.2cm} \\[0.4em]
+CPF: \campo{cpf_vendedor}{3.2cm} & CPF: \campo{cpf_comprador}{3.2cm} \\
 \end{tabular}
-\end{center}
 
-\vspace{2em}
+\vspace{1.5em}
 
-\textbf{TESTEMUNHAS:}
+\noindent\textbf{TESTEMUNHAS:}
 
-\vspace{1em}
+\vspace{0.8em}
 
-\begin{center}
-\begin{tabular}{p{7cm}p{7cm}}
-1. \hrulefill & 2. \hrulefill \\[0.5em]
-Nome: \campo{nome_test1}{4cm} & Nome: \campo{nome_test2}{4cm} \\[0.5em]
-CPF: \campo{cpf_test1}{4cm} & CPF: \campo{cpf_test2}{4cm} \\
+\noindent\begin{tabular}{@{}p{0.48\linewidth}p{0.48\linewidth}@{}}
+1. \hrulefill & 2. \hrulefill \\[0.4em]
+Nome: \campo{nome_test1}{3.2cm} & Nome: \campo{nome_test2}{3.2cm} \\[0.4em]
+CPF: \campo{cpf_test1}{3.2cm} & CPF: \campo{cpf_test2}{3.2cm} \\
 \end{tabular}
-\end{center}
 
 \end{document}
