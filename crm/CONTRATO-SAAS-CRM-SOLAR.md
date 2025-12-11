@@ -1,4 +1,4 @@
-# CONTRATO DE LICENÇA DE SOFTWARE AS A SERVICE (SaaS) E PRESTAÇÃO DE SERVIÇOS CORRELATOS
+# CONTRATO DE COMPRA E VENDA DE SOFTWARE E TRANSFERÊNCIA DE PROPRIEDADE INTELECTUAL
 
 ---
 
@@ -10,15 +10,15 @@
 
 ## PARTES
 
-**CONTRATADA:**
+**VENDEDORA:**
 
-**MY CLEVER BOT TECNOLOGIA LTDA**, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ___.___._____/____-__, com sede na _________________________________________________, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente **"CONTRATADA"**.
+**MY CLEVER BOT TECNOLOGIA LTDA**, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ___.___._____/____-__, com sede na _________________________________________________, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente **"VENDEDORA"**.
 
-**CONTRATANTE:**
+**COMPRADORA:**
 
-**[RAZÃO SOCIAL]**, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ___.___._____/____-__, com sede na _________________________________________________, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente **"CONTRATANTE"**.
+**[RAZÃO SOCIAL]**, pessoa jurídica de direito privado, inscrita no CNPJ sob nº ___.___._____/____-__, com sede na _________________________________________________, neste ato representada na forma de seu Contrato Social, doravante denominada simplesmente **"COMPRADORA"**.
 
-Contratante e Contratada denominadas, em conjunto, **"Partes"** e, individualmente, **"Parte"**.
+Vendedora e Compradora denominadas, em conjunto, **"Partes"** e, individualmente, **"Parte"**.
 
 ---
 
@@ -26,13 +26,13 @@ Contratante e Contratada denominadas, em conjunto, **"Partes"** e, individualmen
 
 **CONSIDERANDO QUE:**
 
-(A) A Contratada presta serviços de tecnologia relacionados à gestão de relacionamento com clientes (CRM) e automação de vendas para o setor de energia solar, por meio de Plataforma composta por: (i) **Módulo CRM Solar**, sistema web que permite a gestão de leads, qualificação automática, acompanhamento de oportunidades em formato Kanban e geração de propostas comerciais; (ii) **Módulo Chatbot WhatsApp**, assistente virtual com inteligência artificial para atendimento automatizado 24 horas, captura e qualificação de leads via WhatsApp; e (iii) **Painel Administrativo Multi-tenant**, interface configurável que permite à Contratante gerenciar vendedores, visualizar métricas de desempenho e personalizar fluxos de atendimento; e presta serviços correlatos à utilização da Plataforma; e
+(A) A Vendedora é titular dos direitos de propriedade intelectual sobre a plataforma de software denominada **"CRM Solar"**, sistema de gestão de relacionamento com clientes e automação de vendas desenvolvido para o setor de energia solar, composto por: (i) **Módulo CRM Solar**, sistema web para gestão de leads, qualificação automática, acompanhamento de oportunidades em formato Kanban e geração de propostas comerciais; (ii) **Módulo Chatbot WhatsApp**, assistente para atendimento via WhatsApp com funcionalidade de resumo de conversas por inteligência artificial; e (iii) **Painel Administrativo Multi-tenant**, interface para gestão de múltiplas empresas clientes; e
 
-(B) A Contratante atua no segmento de energia solar fotovoltaica e tem interesse em contratar determinados serviços prestados pela Contratada, conforme detalhado no presente documento, pretendendo utilizar as soluções da Contratada para otimização de seu processo comercial e gestão de clientes; e
+(B) A Compradora tem interesse em adquirir a totalidade dos direitos de propriedade intelectual sobre o referido software, incluindo código-fonte, documentação, arquitetura e direito de comercialização, para fins de exploração comercial própria no modelo SaaS (Software as a Service); e
 
-(C) A Contratante declara possuir estrutura comercial própria e equipe de vendas para utilização da Plataforma, responsabilizando-se pelo relacionamento direto com seus clientes finais.
+(C) A Vendedora concorda em vender e transferir à Compradora todos os direitos sobre o software, nos termos e condições estabelecidos neste instrumento.
 
-**RESOLVEM AS PARTES**, de mútuo e comum acordo, celebrar este Contrato de Licença de Software as a Service (SaaS) e Prestação de Serviços Correlatos ("Contrato"), com as seguintes cláusulas e condições:
+**RESOLVEM AS PARTES**, de mútuo e comum acordo, celebrar este **Contrato de Compra e Venda de Software e Transferência de Propriedade Intelectual** ("Contrato"), com as seguintes cláusulas e condições:
 
 ---
 
@@ -42,257 +42,255 @@ Contratante e Contratada denominadas, em conjunto, **"Partes"** e, individualmen
 
 | Termo | Definição |
 |-------|-----------|
-| **Plataforma** | Conjunto de sistemas e módulos disponibilizados pela Contratada, incluindo CRM Solar, Chatbot WhatsApp e Painel Administrativo |
-| **SaaS** | Software as a Service, modelo de distribuição de software onde a aplicação é hospedada em nuvem e acessada via internet |
-| **Usuário** | Pessoa física autorizada pela Contratante a acessar e utilizar a Plataforma, incluindo vendedores e administradores |
-| **Lead** | Potencial cliente capturado e gerenciado através da Plataforma |
-| **Dados do Contratante** | Todas as informações inseridas, processadas ou armazenadas na Plataforma pela Contratante ou seus Usuários |
-| **Ambiente de Produção** | Infraestrutura de servidores e banco de dados onde a Plataforma opera em condições reais de uso |
-| **SLA** | Service Level Agreement, acordo de nível de serviço que define métricas de disponibilidade e desempenho |
-| **Incidente** | Qualquer evento que cause interrupção ou degradação do serviço |
-| **Atualização** | Novas versões, correções de bugs ou melhorias implementadas na Plataforma |
+| **Software** | Plataforma CRM Solar, incluindo todos os módulos, código-fonte, documentação e ativos relacionados |
+| **Código-Fonte** | Conjunto completo de arquivos de programação que compõem o Software, em formato editável |
+| **Propriedade Intelectual** | Todos os direitos autorais, direitos de software, segredos industriais e know-how relacionados ao Software |
+| **Documentação** | Manuais técnicos, guias de usuário, diagramas de arquitetura e demais documentos relacionados ao Software |
+| **Entrega** | Disponibilização do Software completo à Compradora, incluindo código-fonte e documentação |
+| **Multi-tenant** | Arquitetura que permite que múltiplas empresas utilizem a mesma instância do Software com isolamento de dados |
 
 ---
 
 # CLÁUSULA SEGUNDA – OBJETO
 
-**2.1.** O presente Contrato tem por objeto a concessão, pela Contratada à Contratante, de licença de uso não exclusiva, intransferível e por prazo determinado da Plataforma CRM Solar, bem como a prestação de serviços correlatos de suporte técnico e manutenção.
+**2.1.** O presente Contrato tem por objeto a **venda e transferência definitiva** à Compradora de todos os direitos de propriedade intelectual sobre o Software denominado "CRM Solar", incluindo:
 
-**2.2.** A Plataforma será disponibilizada no modelo SaaS (Software as a Service), sendo acessada pela Contratante exclusivamente via internet, sem necessidade de instalação local.
+a) Código-fonte completo (frontend e backend);
 
-**2.3.** Os serviços objeto deste Contrato compreendem:
+b) Banco de dados estruturado e migrations;
 
-a) Licença de uso da Plataforma CRM Solar;
+c) Documentação técnica e de usuário;
 
-b) Módulo de Chatbot WhatsApp com inteligência artificial;
+d) Direito de uso, modificação, reprodução e comercialização;
 
-c) Hospedagem em ambiente de nuvem seguro;
+e) Direito de sublicenciamento a terceiros;
 
-d) Backup automático diário dos dados;
+f) Arquitetura multi-tenant para operação no modelo SaaS.
 
-e) Suporte técnico conforme plano contratado;
+**2.2.** O Software é composto pelos seguintes módulos:
 
-f) Atualizações e melhorias da Plataforma;
+| Módulo | Descrição |
+|--------|-----------|
+| CRM Solar | Gestão de leads, qualificação automática (score 0-100), funil Kanban, histórico de interações, geração de propostas |
+| Chatbot WhatsApp | Atendimento via WhatsApp, captura de leads, resumo de conversas por IA, transferência para atendente humano |
+| Dashboard | KPIs em tempo real, métricas por vendedor, taxa de conversão, relatórios gerenciais |
+| Painel Administrativo | Gestão de empresas clientes, usuários, permissões e configurações |
 
-g) Treinamento inicial para uso da Plataforma.
+**2.3.** Estão incluídos neste Contrato:
 
-**2.4.** Não estão incluídos no objeto deste Contrato:
+a) Suporte técnico durante os primeiros 3 (três) meses após a Entrega;
 
-a) Desenvolvimento de funcionalidades customizadas não previstas na Plataforma padrão;
+b) Treinamento de 4 (quatro) horas para operação e administração do Software;
 
-b) Integrações com sistemas de terceiros não suportados nativamente;
+c) Documentação técnica para manutenção e evolução do sistema.
 
-c) Serviços de consultoria em vendas ou marketing;
+**2.4.** **NÃO** estão incluídos neste Contrato, sendo de responsabilidade exclusiva da Compradora:
 
-d) Custos de API do WhatsApp Business ou outros serviços de terceiros.
+a) Custos de hospedagem (Supabase, Vercel, ou similares);
+
+b) Custos de API do WhatsApp Business (Evolution API ou similar);
+
+c) Custos de domínio e certificados SSL;
+
+d) Desenvolvimento de novas funcionalidades após a Entrega;
+
+e) Suporte técnico após os 3 (três) primeiros meses;
+
+f) Manutenção, correção de bugs e atualizações após a Entrega.
 
 ---
 
-# CLÁUSULA TERCEIRA – PLANOS E VALORES
+# CLÁUSULA TERCEIRA – PREÇO E CONDIÇÕES DE PAGAMENTO
 
-**3.1.** A Contratante opta pelo plano abaixo assinalado:
+**3.1.** O preço total pela aquisição do Software e transferência de propriedade intelectual é de **R$ 30.000,00 (trinta mil reais)**.
 
-| Plano | Usuários | Valor Mensal |
-|-------|----------|--------------|
-| ( ) Microempresa | 1 a 2 vendedores | R$ 80,00 |
-| ( ) Pequeno Porte | 3 a 5 vendedores | R$ 250,00 |
-| ( ) Pequeno Porte Plus | 6 a 10 vendedores | R$ 400,00 |
-| ( ) Pequeno Porte Plus Estendido | Acima de 10 vendedores | R$ 400,00 + R$ 25,00 por vendedor adicional |
+**3.2.** O pagamento será realizado da seguinte forma:
 
-**3.2.** Os valores serão reajustados anualmente pelo IGPM/FGV ou, na sua falta, pelo IPCA/IBGE, ou por outro índice que venha a substituí-los, considerando a variação acumulada nos últimos 12 (doze) meses.
+| Parcela | Valor | Percentual | Vencimento |
+|---------|-------|------------|------------|
+| Sinal | R$ 3.000,00 | 10% | Na assinatura deste Contrato |
+| Saldo | R$ 27.000,00 | 90% | 15 de Janeiro de 2026 |
+| **Total** | **R$ 30.000,00** | **100%** | - |
 
-**3.3.** O pagamento deverá ser efetuado até o dia 10 (dez) de cada mês, mediante boleto bancário, PIX ou transferência bancária para conta indicada pela Contratada.
+**3.3.** O pagamento deverá ser efetuado mediante PIX ou transferência bancária para a conta indicada pela Vendedora:
 
-**3.4.** O atraso no pagamento acarretará:
+- **Banco:** _______________
+- **Agência:** _______________
+- **Conta:** _______________
+- **CNPJ:** _______________
+- **Chave PIX:** _______________
+
+**3.4.** A Entrega do Software será realizada somente após a confirmação do pagamento integral (sinal + saldo).
+
+**3.5.** O atraso no pagamento do saldo acarretará:
 
 a) Multa de 2% (dois por cento) sobre o valor devido;
 
 b) Juros de mora de 1% (um por cento) ao mês, calculados pro rata die;
 
-c) Suspensão do acesso à Plataforma após 15 (quinze) dias de inadimplência;
-
-d) Rescisão do Contrato após 30 (trinta) dias de inadimplência.
-
-**3.5.** A suspensão por inadimplência não exime a Contratante do pagamento dos valores devidos, nem configura rescisão contratual por parte da Contratada.
+c) Suspensão da obrigação de Entrega até a regularização.
 
 ---
 
-# CLÁUSULA QUARTA – PRAZO E RENOVAÇÃO
+# CLÁUSULA QUARTA – ENTREGA
 
-**4.1.** O presente Contrato vigorará pelo prazo inicial de 12 (doze) meses, contados a partir da data de sua assinatura.
+**4.1.** A Entrega do Software será realizada em até 5 (cinco) dias úteis após a confirmação do pagamento integral, mediante:
 
-**4.2.** Findo o prazo inicial, o Contrato será automaticamente renovado por períodos sucessivos de 12 (doze) meses, salvo manifestação em contrário de qualquer das Partes, mediante notificação escrita com antecedência mínima de 30 (trinta) dias do término do período vigente.
+a) Disponibilização do código-fonte em repositório Git privado;
 
-**4.3.** Durante os primeiros 30 (trinta) dias de uso ("Período de Adaptação"), a Contratante poderá rescindir este Contrato sem qualquer ônus, mediante comunicação formal à Contratada.
+b) Envio da documentação técnica em formato digital;
 
----
+c) Fornecimento das credenciais de acesso aos ambientes de desenvolvimento;
 
-# CLÁUSULA QUINTA – OBRIGAÇÕES DA CONTRATADA
+d) Transferência dos arquivos de configuração e variáveis de ambiente.
 
-**5.1.** São obrigações da Contratada:
+**4.2.** A Compradora terá prazo de 10 (dez) dias úteis após a Entrega para verificar o funcionamento do Software e apontar eventuais não conformidades.
 
-a) Disponibilizar a Plataforma em ambiente seguro e com disponibilidade mínima conforme SLA estabelecido na Cláusula Sétima;
-
-b) Realizar backup automático diário dos Dados do Contratante;
-
-c) Manter a Plataforma atualizada com correções de segurança e melhorias;
-
-d) Prestar suporte técnico nos canais e horários definidos no plano contratado;
-
-e) Fornecer treinamento inicial para até 5 (cinco) Usuários da Contratante;
-
-f) Comunicar com antecedência mínima de 48 (quarenta e oito) horas sobre manutenções programadas que afetem a disponibilidade;
-
-g) Manter sigilo sobre os Dados do Contratante, conforme Cláusula Décima;
-
-h) Cumprir a legislação de proteção de dados aplicável, especialmente a LGPD;
-
-i) Fornecer documentação técnica e manuais de uso da Plataforma;
-
-j) Notificar a Contratante em caso de incidentes de segurança que afetem seus dados.
+**4.3.** Decorrido o prazo do item 4.2 sem manifestação da Compradora, considerar-se-á a Entrega aceita em definitivo.
 
 ---
 
-# CLÁUSULA SEXTA – OBRIGAÇÕES DA CONTRATANTE
+# CLÁUSULA QUINTA – DIREITO DE ARREPENDIMENTO
 
-**6.1.** São obrigações da Contratante:
+**5.1.** A Compradora poderá exercer o direito de arrependimento em até **14 (quatorze) dias corridos** após a assinatura deste Contrato.
 
-a) Efetuar o pagamento dos valores devidos nas datas de vencimento;
+**5.2.** Em caso de arrependimento dentro do prazo:
 
-b) Utilizar a Plataforma de acordo com sua finalidade e em conformidade com a legislação vigente;
+a) A Vendedora devolverá integralmente o valor do sinal pago (R$ 3.000,00);
 
-c) Manter atualizados os dados cadastrais junto à Contratada;
+b) A devolução será realizada em até 10 (dez) dias úteis após a comunicação formal do arrependimento;
 
-d) Não compartilhar credenciais de acesso com terceiros não autorizados;
+c) O Contrato será considerado rescindido sem ônus para qualquer das Partes.
 
-e) Responsabilizar-se pela veracidade e legalidade dos dados inseridos na Plataforma;
+**5.3.** Após o prazo de 14 (quatorze) dias corridos, o arrependimento não será mais possível, e o sinal será considerado como princípio de pagamento, não sendo passível de devolução.
 
-f) Não realizar engenharia reversa, descompilar ou tentar obter o código-fonte da Plataforma;
-
-g) Não utilizar a Plataforma para envio de spam, mensagens não solicitadas ou práticas abusivas;
-
-h) Comunicar imediatamente à Contratada sobre qualquer uso não autorizado ou suspeita de violação de segurança;
-
-i) Obter consentimento dos titulares dos dados pessoais tratados através da Plataforma;
-
-j) Manter backup próprio de dados críticos para seu negócio;
-
-k) Não exceder o número de Usuários contratados no plano.
-
-**6.2.** A Contratante é exclusivamente responsável pelo conteúdo das mensagens enviadas através do Chatbot e pela conformidade de suas práticas comerciais com a legislação aplicável.
+**5.4.** A comunicação de arrependimento deverá ser feita por escrito, preferencialmente por e-mail com confirmação de recebimento.
 
 ---
 
-# CLÁUSULA SÉTIMA – NÍVEL DE SERVIÇO (SLA)
+# CLÁUSULA SEXTA – TRANSFERÊNCIA DE PROPRIEDADE INTELECTUAL
 
-**7.1.** A Contratada compromete-se a manter disponibilidade mínima da Plataforma de 99,5% (noventa e nove vírgula cinco por cento) ao mês, calculada conforme a fórmula:
+**6.1.** Com o pagamento integral do preço e a Entrega do Software, a Vendedora **transfere definitivamente** à Compradora:
 
-**Disponibilidade (%) = [(Total de minutos no mês - Minutos de indisponibilidade) / Total de minutos no mês] x 100**
+a) Todos os direitos patrimoniais de autor sobre o Software;
 
-**7.2.** Não serão considerados para fins de cálculo de disponibilidade:
+b) O direito de usar, copiar, modificar, adaptar e criar obras derivadas;
 
-a) Manutenções programadas comunicadas com antecedência mínima de 48 horas;
+c) O direito de distribuir, comercializar, licenciar e sublicenciar o Software;
 
-b) Indisponibilidade causada por fatores externos à Contratada (provedores de internet, ataques DDoS, etc.);
+d) O direito de explorar comercialmente o Software no modelo SaaS ou qualquer outro;
 
-c) Indisponibilidade decorrente de caso fortuito ou força maior;
+e) O direito de registrar o Software em seu nome junto aos órgãos competentes.
 
-d) Interrupções solicitadas ou causadas pela Contratante.
+**6.2.** A transferência é **irrevogável, irretratável e por prazo indeterminado**, não cabendo à Vendedora qualquer direito residual sobre o Software após a conclusão da venda.
 
-**7.3.** Em caso de descumprimento do SLA, a Contratante terá direito a crédito proporcional conforme tabela:
+**6.3.** A Vendedora declara e garante que:
 
-| Disponibilidade | Crédito |
-|-----------------|---------|
-| 99,0% a 99,4% | 10% do valor mensal |
-| 98,0% a 98,9% | 25% do valor mensal |
-| 95,0% a 97,9% | 50% do valor mensal |
-| Abaixo de 95% | 100% do valor mensal |
+a) É a única e legítima titular dos direitos de propriedade intelectual sobre o Software;
 
-**7.4.** O crédito será aplicado na fatura do mês subsequente, mediante solicitação da Contratante em até 30 (trinta) dias após o mês de referência.
+b) O Software não viola direitos de propriedade intelectual de terceiros;
 
-**7.5.** Suporte Técnico:
+c) Não existem ônus, gravames ou restrições sobre o Software;
 
-| Canal | Horário | Tempo de Resposta |
-|-------|---------|-------------------|
-| WhatsApp | Seg-Sex 9h às 18h | Até 4 horas úteis |
-| E-mail | 24 horas | Até 24 horas úteis |
-| Emergências (sistema fora do ar) | 24 horas | Até 2 horas |
+d) Não licenciou nem transferiu os mesmos direitos a terceiros.
 
----
+**6.4.** A Compradora poderá, a seu exclusivo critério:
 
-# CLÁUSULA OITAVA – PROPRIEDADE INTELECTUAL
+a) Alterar o nome do Software;
 
-**8.1.** A Plataforma, incluindo seu código-fonte, arquitetura, design, documentação, marcas e demais elementos, é de propriedade exclusiva da Contratada, protegida pelas leis de propriedade intelectual vigentes no Brasil.
+b) Modificar a identidade visual e marcas;
 
-**8.2.** Este Contrato não transfere à Contratante qualquer direito de propriedade sobre a Plataforma, conferindo-lhe apenas o direito de uso nos termos aqui estabelecidos.
+c) Adicionar ou remover funcionalidades;
 
-**8.3.** Os Dados do Contratante permanecem de propriedade exclusiva da Contratante, cabendo à Contratada apenas seu processamento e armazenamento para fins de prestação dos serviços contratados.
-
-**8.4.** A Contratante autoriza a Contratada a utilizar sua razão social e logomarca em portfólio e materiais de divulgação, salvo manifestação em contrário por escrito.
+d) Comercializar sob marca própria.
 
 ---
 
-# CLÁUSULA NONA – PROTEÇÃO DE DADOS E LGPD
+# CLÁUSULA SÉTIMA – OBRIGAÇÕES DA VENDEDORA
 
-**9.1.** As Partes comprometem-se a cumprir a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados Pessoais – LGPD) e demais normas aplicáveis à proteção de dados.
+**7.1.** São obrigações da Vendedora:
 
-**9.2.** Para fins da LGPD, as Partes acordam que:
+a) Entregar o Software completo, funcional e conforme descrito neste Contrato;
 
-a) A **Contratante** atua como **Controladora** dos dados pessoais de seus clientes e leads inseridos na Plataforma;
+b) Fornecer documentação técnica adequada para operação e manutenção;
 
-b) A **Contratada** atua como **Operadora**, tratando os dados pessoais exclusivamente conforme instruções da Contratante e para fins de execução dos serviços contratados.
+c) Realizar treinamento de 4 (quatro) horas para a equipe da Compradora;
 
-**9.3.** A Contratada compromete-se a:
+d) Prestar suporte técnico durante os 3 (três) primeiros meses após a Entrega;
 
-a) Tratar os dados pessoais apenas para as finalidades previstas neste Contrato;
+e) Esclarecer dúvidas sobre a arquitetura e funcionamento do sistema;
 
-b) Implementar medidas técnicas e organizacionais adequadas para proteção dos dados;
+f) Transferir todos os direitos de propriedade intelectual conforme Cláusula Sexta;
 
-c) Não compartilhar os dados com terceiros, exceto quando necessário para prestação dos serviços ou por determinação legal;
+g) Não comercializar, licenciar ou transferir o mesmo Software a terceiros após a conclusão desta venda;
 
-d) Auxiliar a Contratante no atendimento de solicitações de titulares de dados;
+h) Manter sigilo sobre informações da Compradora.
 
-e) Notificar a Contratante em até 48 (quarenta e oito) horas sobre incidentes de segurança envolvendo dados pessoais;
+**7.2.** O suporte técnico dos 3 (três) primeiros meses compreende:
 
-f) Ao término do Contrato, devolver ou eliminar os dados pessoais, conforme instrução da Contratante.
+a) Esclarecimento de dúvidas sobre o funcionamento do Software;
 
-**9.4.** A Contratante compromete-se a:
+b) Orientação para configuração de ambientes;
 
-a) Obter base legal adequada (consentimento ou outra) para o tratamento de dados pessoais;
+c) Auxílio na resolução de problemas técnicos relacionados ao código original;
 
-b) Informar aos titulares sobre o tratamento de seus dados;
+d) Atendimento via WhatsApp em horário comercial (seg-sex, 9h às 18h).
 
-c) Não inserir na Plataforma dados pessoais sensíveis sem necessidade comprovada;
+**7.3.** O suporte técnico **NÃO** compreende:
 
-d) Responder perante os titulares e autoridades por obrigações que lhe competem como Controladora.
+a) Desenvolvimento de novas funcionalidades;
 
-**9.5.** Suboperadores: A Contratante autoriza a Contratada a utilizar os seguintes suboperadores para hospedagem e processamento:
+b) Correção de bugs introduzidos por modificações da Compradora;
 
-| Suboperador | Finalidade | Localização |
-|-------------|------------|-------------|
-| Supabase Inc. | Banco de dados e autenticação | Estados Unidos/UE |
-| Evolution API | Integração WhatsApp | Brasil |
-| Vercel Inc. | Hospedagem frontend | Estados Unidos |
+c) Suporte a tecnologias ou integrações não contempladas no Software original;
 
-**9.6.** A Contratada manterá registro das atividades de tratamento de dados realizadas em nome da Contratante.
+d) Atendimento fora do horário comercial.
 
 ---
 
-# CLÁUSULA DÉCIMA – CONFIDENCIALIDADE
+# CLÁUSULA OITAVA – OBRIGAÇÕES DA COMPRADORA
 
-**10.1.** As Partes comprometem-se a manter em sigilo todas as informações confidenciais a que tiverem acesso em razão deste Contrato, incluindo, mas não se limitando a:
+**8.1.** São obrigações da Compradora:
 
-a) Dados de clientes e leads da Contratante;
+a) Efetuar o pagamento do preço nas condições pactuadas;
 
-b) Informações comerciais e estratégicas de ambas as Partes;
+b) Fornecer informações e acessos necessários para a Entrega e treinamento;
 
-c) Código-fonte, arquitetura e documentação técnica da Plataforma;
+c) Disponibilizar equipe técnica para receber o treinamento;
 
-d) Termos comerciais deste Contrato.
+d) Verificar o Software após a Entrega e comunicar não conformidades no prazo estabelecido;
 
-**10.2.** A obrigação de confidencialidade permanecerá vigente por 5 (cinco) anos após o término deste Contrato.
+e) Providenciar infraestrutura de hospedagem e serviços de terceiros necessários;
 
-**10.3.** Não serão consideradas confidenciais as informações que:
+f) Assumir integral responsabilidade pelo Software após a Entrega.
+
+**8.2.** Após a Entrega e o período de suporte de 3 (três) meses, a Compradora será exclusivamente responsável por:
+
+a) Manutenção e atualização do Software;
+
+b) Correção de bugs e falhas de segurança;
+
+c) Hospedagem e custos operacionais;
+
+d) Atendimento aos seus próprios clientes;
+
+e) Conformidade com a legislação aplicável, incluindo LGPD.
+
+---
+
+# CLÁUSULA NONA – CONFIDENCIALIDADE
+
+**9.1.** As Partes comprometem-se a manter em sigilo todas as informações confidenciais a que tiverem acesso em razão deste Contrato, incluindo:
+
+a) Termos comerciais e valores deste Contrato;
+
+b) Informações técnicas e estratégicas de ambas as Partes;
+
+c) Dados de clientes e parceiros.
+
+**9.2.** A obrigação de confidencialidade permanecerá vigente por 5 (cinco) anos após o término deste Contrato.
+
+**9.3.** Não serão consideradas confidenciais as informações que:
 
 a) Já eram de domínio público antes da divulgação;
 
@@ -302,73 +300,87 @@ c) Devam ser divulgadas por força de lei ou determinação judicial.
 
 ---
 
-# CLÁUSULA DÉCIMA PRIMEIRA – LIMITAÇÃO DE RESPONSABILIDADE
+# CLÁUSULA DÉCIMA – GARANTIAS E LIMITAÇÕES
 
-**11.1.** A Contratada não será responsável por:
+**10.1.** A Vendedora garante que, na data da Entrega:
 
-a) Danos indiretos, incidentais, consequenciais, lucros cessantes ou perda de dados decorrentes do uso ou impossibilidade de uso da Plataforma;
+a) O Software estará funcional e operacional conforme documentação;
 
-b) Ações ou omissões da Contratante ou de seus Usuários;
+b) O código-fonte estará organizado e comentado adequadamente;
 
-c) Conteúdo das mensagens enviadas pela Contratante através do Chatbot;
+c) A documentação técnica corresponderá ao Software entregue.
 
-d) Indisponibilidade causada por terceiros, incluindo provedores de internet e serviços de nuvem;
+**10.2.** A garantia de funcionamento é válida por 30 (trinta) dias após a Entrega, limitada a:
 
-e) Resultados comerciais ou de vendas da Contratante.
+a) Correção de bugs existentes no código original;
 
-**11.2.** Em qualquer hipótese, a responsabilidade total da Contratada estará limitada ao valor pago pela Contratante nos últimos 12 (doze) meses anteriores ao evento danoso.
+b) Problemas de funcionamento não causados por modificações da Compradora;
 
-**11.3.** A Contratante reconhece que a Plataforma é uma ferramenta de apoio à gestão comercial, não garantindo a Contratada qualquer resultado específico de vendas ou conversão de leads.
+c) Falhas documentadas e reproduzíveis.
 
----
+**10.3.** A Vendedora **NÃO** garante:
 
-# CLÁUSULA DÉCIMA SEGUNDA – RESCISÃO
+a) Resultados comerciais ou financeiros da Compradora;
 
-**12.1.** Este Contrato poderá ser rescindido:
+b) Compatibilidade com sistemas ou tecnologias de terceiros não especificados;
 
-a) Por qualquer das Partes, sem justa causa, mediante notificação escrita com antecedência mínima de 30 (trinta) dias;
+c) Funcionamento após modificações realizadas pela Compradora;
 
-b) Imediatamente, por qualquer das Partes, em caso de descumprimento de obrigação essencial pela outra Parte, não sanado em 15 (quinze) dias após notificação;
+d) Disponibilidade ou continuidade de serviços de terceiros (Supabase, WhatsApp API, etc.).
 
-c) Imediatamente, pela Contratada, em caso de inadimplência superior a 30 (trinta) dias;
-
-d) Imediatamente, por qualquer das Partes, em caso de decretação de falência, recuperação judicial ou extrajudicial da outra Parte.
-
-**12.2.** Em caso de rescisão por qualquer motivo:
-
-a) A Contratante terá acesso à Plataforma por até 30 (trinta) dias para exportação de seus dados;
-
-b) Após o prazo de 30 (trinta) dias, os Dados do Contratante serão definitivamente excluídos;
-
-c) Não haverá devolução de valores já pagos, exceto em caso de rescisão por culpa exclusiva da Contratada;
-
-d) As obrigações de confidencialidade permanecerão vigentes conforme Cláusula Décima.
-
-**12.3.** Em caso de rescisão antecipada pela Contratante antes de completados 12 (doze) meses de contrato, será devida multa compensatória equivalente a 3 (três) mensalidades do plano contratado.
+**10.4.** Em qualquer hipótese, a responsabilidade total da Vendedora estará limitada ao valor efetivamente pago pela Compradora.
 
 ---
 
-# CLÁUSULA DÉCIMA TERCEIRA – DISPOSIÇÕES GERAIS
+# CLÁUSULA DÉCIMA PRIMEIRA – RESCISÃO
 
-**13.1.** Cessão: A Contratante não poderá ceder ou transferir este Contrato ou qualquer de seus direitos sem o consentimento prévio e por escrito da Contratada.
+**11.1.** Este Contrato poderá ser rescindido:
 
-**13.2.** Alterações: Este Contrato somente poderá ser alterado mediante termo aditivo assinado por ambas as Partes.
+a) Por mútuo acordo entre as Partes;
 
-**13.3.** Notificações: Todas as notificações deverão ser realizadas por escrito, preferencialmente por e-mail com confirmação de recebimento, para os endereços cadastrados pelas Partes.
+b) Por inadimplemento de qualquer obrigação essencial, não sanado em 15 (quinze) dias após notificação;
 
-**13.4.** Independência das Partes: Este Contrato não estabelece qualquer vínculo empregatício, societário ou de representação entre as Partes, que permanecerão como entidades independentes.
+c) Por decretação de falência ou recuperação judicial de qualquer das Partes.
 
-**13.5.** Tolerância: A tolerância de qualquer das Partes quanto ao descumprimento de obrigação pela outra não constituirá renúncia ou novação.
+**11.2.** Em caso de rescisão por inadimplemento da Compradora antes da Entrega:
 
-**13.6.** Invalidade Parcial: Se qualquer cláusula deste Contrato for considerada inválida ou inexequível, as demais permanecerão em pleno vigor e efeito.
+a) O sinal pago (10%) será retido pela Vendedora a título de perdas e danos;
 
-**13.7.** Acordo Integral: Este Contrato representa o acordo integral entre as Partes sobre seu objeto, substituindo quaisquer negociações, propostas ou contratos anteriores.
+b) A Vendedora ficará livre para comercializar o Software a terceiros.
+
+**11.3.** Em caso de rescisão por inadimplemento da Vendedora:
+
+a) Os valores pagos serão integralmente devolvidos à Compradora;
+
+b) A devolução será realizada em até 30 (trinta) dias;
+
+c) Sem prejuízo de eventuais perdas e danos.
 
 ---
 
-# CLÁUSULA DÉCIMA QUARTA – FORO
+# CLÁUSULA DÉCIMA SEGUNDA – DISPOSIÇÕES GERAIS
 
-**14.1.** As Partes elegem o foro da Comarca de _________________________, Estado de _________________________, para dirimir quaisquer controvérsias decorrentes deste Contrato, renunciando a qualquer outro, por mais privilegiado que seja.
+**12.1.** Cessão: A Compradora poderá livremente ceder ou transferir os direitos adquiridos por este Contrato, uma vez concluída a compra.
+
+**12.2.** Alterações: Este Contrato somente poderá ser alterado mediante termo aditivo assinado por ambas as Partes.
+
+**12.3.** Notificações: Todas as notificações deverão ser realizadas por escrito, preferencialmente por e-mail com confirmação de recebimento.
+
+**12.4.** Independência das Partes: Este Contrato não estabelece qualquer vínculo empregatício, societário ou de representação entre as Partes.
+
+**12.5.** Tolerância: A tolerância de qualquer das Partes quanto ao descumprimento de obrigação pela outra não constituirá renúncia ou novação.
+
+**12.6.** Invalidade Parcial: Se qualquer cláusula deste Contrato for considerada inválida ou inexequível, as demais permanecerão em pleno vigor e efeito.
+
+**12.7.** Acordo Integral: Este Contrato representa o acordo integral entre as Partes sobre seu objeto, substituindo quaisquer negociações, propostas ou contratos anteriores.
+
+**12.8.** Tributos: Cada Parte será responsável pelos tributos incidentes sobre suas respectivas atividades e obrigações.
+
+---
+
+# CLÁUSULA DÉCIMA TERCEIRA – FORO
+
+**13.1.** As Partes elegem o foro da Comarca de _________________________, Estado de _________________________, para dirimir quaisquer controvérsias decorrentes deste Contrato, renunciando a qualquer outro, por mais privilegiado que seja.
 
 ---
 
@@ -378,7 +390,7 @@ E, por estarem justas e contratadas, as Partes assinam o presente instrumento em
 
 ---
 
-**CONTRATADA:**
+**VENDEDORA:**
 
 _____________________________________________
 **MY CLEVER BOT TECNOLOGIA LTDA**
@@ -388,10 +400,10 @@ CPF:
 
 ---
 
-**CONTRATANTE:**
+**COMPRADORA:**
 
 _____________________________________________
-**[RAZÃO SOCIAL DA CONTRATANTE]**
+**[RAZÃO SOCIAL DA COMPRADORA]**
 Nome:
 Cargo:
 CPF:
@@ -410,28 +422,49 @@ CPF:
 
 ---
 
-## ANEXO I – ESPECIFICAÇÕES TÉCNICAS DA PLATAFORMA
+## ANEXO I – ESPECIFICAÇÕES TÉCNICAS DO SOFTWARE
+
+| Componente | Tecnologia |
+|------------|------------|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Supabase (PostgreSQL + Auth + Storage) |
+| Chatbot | Integração WhatsApp via Evolution API |
+| IA | Resumo de conversas via API de IA |
+| Arquitetura | Multi-tenant com RLS (Row Level Security) |
 
 | Módulo | Funcionalidades |
 |--------|-----------------|
-| CRM Solar | Gestão de leads, qualificação automática (score 0-100), funil Kanban, histórico de interações, geração de propostas |
-| Chatbot WhatsApp | Atendimento 24/7, captura de leads, qualificação por IA, respostas automáticas, transferência para humano |
+| CRM Solar | Gestão de leads, qualificação automática (score 0-100), funil Kanban em 5 etapas, histórico de interações, geração de propostas |
+| Chatbot WhatsApp | Atendimento via WhatsApp, captura de leads, resumo de conversas por IA, transferência para atendente humano |
 | Dashboard | KPIs em tempo real, métricas por vendedor, taxa de conversão, tempo médio de atendimento |
-| Gestão de Usuários | Perfis de acesso, vendedores ilimitados conforme plano, logs de atividade |
-| Integrações | WhatsApp Business API, webhooks para sistemas externos |
+| Gestão Multi-tenant | Cadastro de empresas, usuários por empresa, isolamento de dados, configurações por empresa |
 
 ---
 
-## ANEXO II – PLANO CONTRATADO
+## ANEXO II – CRONOGRAMA
 
-| Item | Especificação |
-|------|---------------|
-| Plano | ( ) Microempresa ( ) Pequeno Porte ( ) Pequeno Porte Plus |
-| Nº de Vendedores | _______ |
-| Valor Mensal | R$ _______ |
-| Data de Início | ___/___/______ |
-| Vencimento | Todo dia ___ de cada mês |
-| Forma de Pagamento | ( ) Boleto ( ) PIX ( ) Transferência |
+| Evento | Data |
+|--------|------|
+| Assinatura do Contrato | ___/___/______ |
+| Pagamento do Sinal (10%) | Na assinatura |
+| Limite para Arrependimento | 14 dias corridos após assinatura |
+| Pagamento do Saldo (90%) | 15/01/2026 |
+| Entrega do Software | Até 5 dias úteis após pagamento integral |
+| Treinamento (4h) | A combinar após Entrega |
+| Fim do Suporte Técnico | 3 meses após Entrega |
+
+---
+
+## ANEXO III – ENTREGÁVEIS
+
+| Item | Formato |
+|------|---------|
+| Código-fonte completo | Repositório Git |
+| Banco de dados estruturado | Scripts SQL / Migrations |
+| Documentação técnica | Markdown / PDF |
+| Manual de implantação | PDF |
+| Variáveis de ambiente | Arquivo .env modelo |
+| Credenciais de acesso | Documento seguro |
 
 ---
 
