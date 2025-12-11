@@ -23,101 +23,95 @@ O lead score é calculado automaticamente de **0 a 100 pontos**, baseado em 5 fa
 
 ## 1.1 Consumo Mensal (até 30 pontos)
 
-| Faixa de Consumo | Pontuação Atribuída |
-|------------------|---------------------|
-| >= 500 kWh | 30 pontos |
-| >= 300 kWh | 20 pontos |
-| >= 150 kWh | 10 pontos |
-| < 150 kWh | 0 pontos |
+| Faixa de Consumo | Pontuação |
+|------------------|-----------|
+| >= 500 kWh | 30 pts |
+| >= 300 kWh | 20 pts |
+| >= 150 kWh | 10 pts |
+| < 150 kWh | 0 pts |
 
-<p class="table-caption">Tabela 1 - Pontuação por faixa de consumo mensal de energia</p>
+<p class="table-caption">Tabela 1 - Pontuação por consumo mensal</p>
 
 ## 1.2 Tipo de Cliente (até 10 pontos)
 
-| Categoria do Cliente | Pontuação Atribuída |
-|----------------------|---------------------|
-| Comercial | 10 pontos |
-| Residencial | 5 pontos |
+| Categoria | Pontuação |
+|-----------|-----------|
+| Comercial | 10 pts |
+| Residencial | 5 pts |
 
 <p class="table-caption">Tabela 2 - Pontuação por tipo de cliente</p>
 
 ## 1.3 Prontidão de Compra (até 40 pontos)
 
-| Prazo para Decisão | Pontuação Atribuída |
-|--------------------|---------------------|
-| Imediata | 40 pontos |
-| 1-3 meses | 30 pontos |
-| 3-6 meses | 20 pontos |
-| 6-12 meses | 10 pontos |
-| Apenas pesquisando | 5 pontos |
+| Prazo | Pontuação |
+|-------|-----------|
+| Imediata | 40 pts |
+| 1-3 meses | 30 pts |
+| 3-6 meses | 20 pts |
+| 6-12 meses | 10 pts |
+| Apenas pesquisando | 5 pts |
 
-<p class="table-caption">Tabela 3 - Pontuação por prontidão de compra</p>
+<p class="table-caption">Tabela 3 - Pontuação por prontidão</p>
 
 ## 1.4 É Decisor? (até 20 pontos)
 
-| Perfil do Contato | Pontuação Atribuída |
-|-------------------|---------------------|
-| Sim, é decisor | 20 pontos |
-| Não é decisor | 0 pontos |
+| Perfil | Pontuação |
+|--------|-----------|
+| Sim | 20 pts |
+| Não | 0 pts |
 
 <p class="table-caption">Tabela 4 - Pontuação por perfil decisor</p>
 
 ## 1.5 Viabilidade Técnica (até 10 pontos)
 
-| Condição do Imóvel | Pontuação Atribuída |
-|--------------------|---------------------|
-| Telhado OK, pouco sombreamento | 10 pontos |
-| Problemas técnicos identificados | 0 pontos |
+| Condição | Pontuação |
+|----------|-----------|
+| Telhado OK, pouco sombreamento | 10 pts |
+| Problemas técnicos | 0 pts |
 
-<p class="table-caption">Tabela 5 - Pontuação por viabilidade técnica</p>
-
-**Pontuação Máxima Possível:** 100 pontos
+<p class="table-caption">Tabela 5 - Pontuação por viabilidade</p>
 
 ---
 
 # 2. Status do Lead
 
-| Tipo de Status | Descrição do Status | Indicador Visual |
-|----------------|---------------------|------------------|
-| novo | Lead recém chegado no sistema | Cinza |
-| qualificado | Lead com score >= 50 pontos | Verde |
-| em_nutricao | Aguardando momento certo para compra | Laranja |
-| nao_qualificado | Não atende aos critérios mínimos | Vermelho |
-| convertido | Lead convertido em oportunidade | Azul |
-| perdido | Lead desistiu ou foi perdido | Vermelho |
-| instalado | Instalação concluída com sucesso | Verde |
+| Status | Descrição | Indicador |
+|--------|-----------|-----------|
+| novo | Lead recém chegado | Cinza |
+| qualificado | Score >= 50 pts | Verde |
+| em_nutricao | Aguardando momento | Laranja |
+| nao_qualificado | Não atende critérios | Vermelho |
+| convertido | Virou oportunidade | Azul |
+| perdido | Desistiu/perdido | Vermelho |
+| instalado | Instalação OK | Verde |
 
-<p class="table-caption">Tabela 6 - Status disponíveis para classificação de leads</p>
-
-**Qualificação Automática:** Quando o lead atinge score >= 50, o sistema automaticamente altera o status para qualificado.
+<p class="table-caption">Tabela 6 - Status do lead</p>
 
 ---
 
 # 3. Sistema de Automação
 
-O sistema executa automações diárias para mover leads automaticamente baseado em inatividade.
-
 ## 3.1 Regras de Automação
 
-| Situação Identificada | Condições Necessárias | Ação Automática |
-|-----------------------|-----------------------|-----------------|
-| Lead sem interação | 7-14 dias + motivo espera preenchido | Mover para em_nutricao |
-| Lead sem resposta | 30+ dias + 3+ tentativas de contato | Marcar como perdido |
-| Oportunidade parada | 60+ dias sem atualização | Marcar como perdido |
-| Score alto atingido | >= 50 pontos | Marcar como qualificado |
+| Situação | Condições | Resultado |
+|----------|-----------|-----------|
+| Sem interação | 7-14 dias + motivo | em_nutricao |
+| Sem resposta | 30+ dias + 3+ tent. | perdido |
+| Opp. parada | 60+ dias | perdido |
+| Score alto | >= 50 pts | qualificado |
 
-<p class="table-caption">Tabela 7 - Regras de automação do sistema</p>
+<p class="table-caption">Tabela 7 - Regras de automação</p>
 
-## 3.2 Campos para Automação
+## 3.2 Campos de Automação
 
-| Nome do Campo | Tabela Relacionada | Finalidade do Campo |
-|---------------|--------------------|--------------------|
-| motivo_espera | leads | Registrar motivo da espera |
-| data_prevista_retorno | leads | Data prevista para retorno |
-| tentativas_contato | leads | Contador de tentativas |
-| data_ultima_tentativa | leads | Data da última tentativa |
+| Campo | Tabela | Finalidade |
+|-------|--------|------------|
+| motivo_espera | leads | Motivo da espera |
+| data_prevista_retorno | leads | Data retorno |
+| tentativas_contato | leads | Contador |
+| data_ultima_tentativa | leads | Última tentativa |
 
-<p class="table-caption">Tabela 8 - Campos utilizados pelo sistema de automação</p>
+<p class="table-caption">Tabela 8 - Campos de automação</p>
 
 ---
 
@@ -125,73 +119,70 @@ O sistema executa automações diárias para mover leads automaticamente baseado
 
 ## 4.1 Fluxo do Funil de Vendas
 
-<div class="flow-horizontal">
-<div class="flow-block blue">LEVANTAMENTO</div>
-<div class="flow-arrow-right">➔</div>
-<div class="flow-block purple">SIMULAÇÃO</div>
-<div class="flow-arrow-right">➔</div>
-<div class="flow-block orange">PROPOSTA</div>
-<div class="flow-arrow-right">➔</div>
-<div class="flow-block green">NEGOCIAÇÃO</div>
-<div class="flow-arrow-right">➔</div>
-<div class="flow-block cyan">FECHAMENTO</div>
+<div class="flow-snake">
+<div class="flow-row">
+<div class="flow-sm blue">LEVANTAMENTO</div>
+<div class="arr">→</div>
+<div class="flow-sm purple">SIMULAÇÃO</div>
+<div class="arr">→</div>
+<div class="flow-sm orange">PROPOSTA</div>
+<div class="arr">→</div>
+<div class="flow-sm green">NEGOCIAÇÃO</div>
+<div class="arr">→</div>
+<div class="flow-sm cyan">FECHAMENTO</div>
+</div>
 </div>
 
-<p class="flow-caption">Figura 1 - Fluxo horizontal do funil de vendas</p>
+<p class="flow-caption">Figura 1 - Funil de vendas</p>
 
 ## 4.2 Requisitos por Etapa
 
-| Etapa do Funil | Ação Necessária | Critério para Avançar |
-|----------------|-----------------|----------------------|
-| Levantamento | Coletar documentos e fotos | Qualificação técnica preenchida |
-| Simulação | Gerar proposta comercial | Proposta gerada no sistema |
-| Proposta | Apresentar proposta ao cliente | Proposta enviada ao cliente |
-| Negociação | Acompanhar aceite do cliente | Proposta aceita pelo cliente |
-| Fechamento | Providenciar ART e homologação | Todos os dados completos |
+| Etapa | Ação | Requisito |
+|-------|------|-----------|
+| Levantamento | Coletar docs/fotos | Qualificação OK |
+| Simulação | Gerar proposta | Proposta gerada |
+| Proposta | Apresentar | Proposta enviada |
+| Negociação | Acompanhar | Proposta aceita |
+| Fechamento | ART/Homologação | Dados completos |
 
-<p class="table-caption">Tabela 9 - Requisitos para progressão no funil de vendas</p>
-
-## 4.3 Regras de Movimentação
-
-- Só é permitido avançar **uma etapa por vez**
-- É permitido retornar para etapas anteriores
-- O sistema valida automaticamente os requisitos antes de permitir avanço
+<p class="table-caption">Tabela 9 - Requisitos do funil</p>
 
 ---
 
 # 5. Fluxo Completo do Lead
 
-<div class="flow-vertical-container">
-<div class="flow-block-lg blue">LEAD<br><span class="flow-subtitle">Score >= 50 pontos</span></div>
-<div class="flow-arrow-down-big">▼</div>
-<div class="flow-block-lg purple">OPORTUNIDADE<br><span class="flow-subtitle">5 etapas no Kanban</span></div>
-<div class="flow-arrow-down-big">▼</div>
-<div class="flow-block-lg green">CLIENTE INSTALADO<br><span class="flow-subtitle">Instalação concluída</span></div>
+<div class="flow-snake">
+<div class="flow-row">
+<div class="flow-sm blue">LEAD</div>
+<div class="arr">→</div>
+<div class="flow-sm purple">OPORTUNIDADE</div>
+<div class="arr">→</div>
+<div class="flow-sm green">INSTALADO</div>
+</div>
+<div class="flow-turn">↓</div>
+<div class="flow-row-rev">
+<div class="flow-sm red">PERDIDO</div>
+<div class="arr">←</div>
+<div class="flow-sm orange">EM NUTRIÇÃO</div>
+</div>
 </div>
 
-<p class="flow-caption">Figura 2 - Fluxo principal de conversão do lead</p>
-
-<div class="flow-side-container">
-<div class="flow-block-lg orange">EM NUTRIÇÃO<br><span class="flow-subtitle">7-14 dias sem interação</span></div>
-<div class="flow-block-lg red">PERDIDO<br><span class="flow-subtitle">30 dias + 3 tentativas</span></div>
-</div>
-
-<p class="flow-caption">Figura 3 - Status alternativos do lead</p>
+<p class="flow-caption">Figura 2 - Fluxo completo do lead</p>
 
 ---
 
 # 6. Tabelas do Sistema
 
-| Nome da Tabela | Descrição da Finalidade |
-|----------------|-------------------------|
-| leads | Armazena dados básicos do lead |
-| qualificacao | Armazena dados de qualificação técnica |
-| oportunidades | Registra oportunidades no Kanban |
-| propostas | Armazena propostas comerciais |
-| status_negociacao | Controla status da negociação |
-| instalacao | Armazena dados de agendamento |
-| clientes_instalados | Registra clientes com instalação concluída |
-| notificacoes | Armazena notificações automáticas |
-| interacoes | Registra timeline de interações |
+| Tabela | Descrição |
+|--------|-----------|
+| leads | Dados do lead |
+| qualificacao | Qualificação técnica |
+| oportunidades | Kanban |
+| propostas | Propostas comerciais |
+| status_negociacao | Status negociação |
+| instalacao | Agendamento |
+| clientes_instalados | Clientes instalados |
+| notificacoes | Notificações |
+| interacoes | Timeline |
 
-<p class="table-caption">Tabela 10 - Estrutura de tabelas do banco de dados</p>
+<p class="table-caption">Tabela 10 - Estrutura do banco</p>
