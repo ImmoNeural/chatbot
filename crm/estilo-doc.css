@@ -71,7 +71,6 @@ table {
     box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     border-radius: 8px;
     overflow: hidden;
-    page-break-inside: avoid !important;
 }
 
 thead {
@@ -113,7 +112,6 @@ tbody tr:last-child td { border-bottom: none; }
 .flow-container {
     text-align: center;
     margin: 20px 0 8px 0;
-    page-break-inside: avoid !important;
 }
 
 .flow-line {
@@ -216,16 +214,34 @@ code {
 /* ============================================
    QUEBRA DE PÁGINA
    ============================================ */
-@media print {
-    table { page-break-inside: avoid !important; }
-    .flow-container { page-break-inside: avoid !important; }
-    h1, h2 { page-break-after: avoid; }
-    .no-break { page-break-inside: avoid !important; }
+
+/* Repetir cabeçalho da tabela em cada página */
+thead {
+    display: table-header-group;
 }
 
-/* Força evitar quebra no wkhtmltopdf */
-table, .flow-container, .no-break {
-    -webkit-column-break-inside: avoid;
+/* Evitar corte no meio de uma linha - cortar apenas entre linhas */
+tr {
     page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* Cada linha do fluxo não pode ser cortada */
+.flow-line {
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* Títulos não ficam sozinhos no fim da página */
+h1, h2 {
+    page-break-after: avoid;
+}
+
+/* Classe para forçar não quebrar (uso opcional) */
+.no-break {
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid;
     break-inside: avoid;
 }
