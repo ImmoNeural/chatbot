@@ -80,9 +80,11 @@ f) Arquitetura multi-tenant para operação no modelo SaaS.
 
 a) Suporte técnico durante os primeiros 3 (três) meses após a Entrega;
 
-b) Treinamento de 4 (quatro) horas para operação e administração do Software;
+b) Manutenção e correção de bugs durante os primeiros 3 (três) meses após a Entrega;
 
-c) Documentação técnica para manutenção e evolução do sistema.
+c) Treinamento de 8 (oito) horas para operação e administração do Software;
+
+d) Documentação técnica para manutenção e evolução do sistema.
 
 **2.4.** **NÃO** estão incluídos neste Contrato, sendo de responsabilidade exclusiva da Compradora:
 
@@ -94,9 +96,9 @@ c) Custos de domínio e certificados SSL;
 
 d) Desenvolvimento de novas funcionalidades após a Entrega;
 
-e) Suporte técnico após os 3 (três) primeiros meses;
+e) Suporte técnico, manutenção e correção de bugs após os 3 (três) primeiros meses;
 
-f) Manutenção, correção de bugs e atualizações após a Entrega.
+f) Atualizações e evoluções do Software após a Entrega.
 
 ---
 
@@ -108,11 +110,11 @@ f) Manutenção, correção de bugs e atualizações após a Entrega.
 
 | Parcela | Valor | Percentual | Vencimento |
 |---------|-------|------------|------------|
-| Sinal | R$ 3.000,00 | 10% | Na assinatura deste Contrato |
-| Saldo | R$ 27.000,00 | 90% | 15 de Janeiro de 2026 |
+| Sinal | R$ 4.500,00 | 15% | Na assinatura deste Contrato |
+| Saldo | R$ 25.500,00 | 85% | 15 de Janeiro de 2026 |
 | **Total** | **R$ 30.000,00** | **100%** | - |
 
-**3.3.** O pagamento deverá ser efetuado mediante PIX ou transferência bancária para a conta indicada pela Vendedora:
+**3.3.** O pagamento deverá ser efetuado mediante emissão de Nota Fiscal pela Vendedora, via PIX ou transferência bancária para a conta indicada:
 
 - **Banco:** _______________
 - **Agência:** _______________
@@ -134,7 +136,7 @@ c) Suspensão da obrigação de Entrega até a regularização.
 
 # CLÁUSULA QUARTA – ENTREGA
 
-**4.1.** A Entrega do Software será realizada em até 5 (cinco) dias úteis após a confirmação do pagamento integral, mediante:
+**4.1.** A Entrega do Software será realizada em até 48 (quarenta e oito) horas após a confirmação do pagamento integral, mediante:
 
 a) Disponibilização do código-fonte em repositório Git privado;
 
@@ -152,17 +154,21 @@ d) Transferência dos arquivos de configuração e variáveis de ambiente.
 
 # CLÁUSULA QUINTA – DIREITO DE ARREPENDIMENTO
 
-**5.1.** A Compradora poderá exercer o direito de arrependimento em até **14 (quatorze) dias corridos** após a assinatura deste Contrato.
+**5.1.** A Compradora poderá exercer o direito de arrependimento em até **14 (quatorze) dias corridos** após a Entrega do Software.
 
 **5.2.** Em caso de arrependimento dentro do prazo:
 
-a) A Vendedora devolverá integralmente o valor do sinal pago (R$ 3.000,00);
+a) A Compradora deverá devolver todo o material recebido (código-fonte, documentação, credenciais);
 
-b) A devolução será realizada em até 10 (dez) dias úteis após a comunicação formal do arrependimento;
+b) A Compradora deverá excluir permanentemente quaisquer cópias do Software em sua posse;
 
-c) O Contrato será considerado rescindido sem ônus para qualquer das Partes.
+c) A Vendedora devolverá os valores pagos, descontados 15% (quinze por cento) a título de custos administrativos;
 
-**5.3.** Após o prazo de 14 (quatorze) dias corridos, o arrependimento não será mais possível, e o sinal será considerado como princípio de pagamento, não sendo passível de devolução.
+d) A devolução será realizada em até 10 (dez) dias úteis após a confirmação da devolução dos materiais;
+
+e) O Contrato será considerado rescindido.
+
+**5.3.** Após o prazo de 14 (quatorze) dias corridos da Entrega, o arrependimento não será mais possível, e os valores pagos não serão passíveis de devolução.
 
 **5.4.** A comunicação de arrependimento deverá ser feita por escrito, preferencialmente por e-mail com confirmação de recebimento.
 
@@ -214,27 +220,31 @@ a) Entregar o Software completo, funcional e conforme descrito neste Contrato;
 
 b) Fornecer documentação técnica adequada para operação e manutenção;
 
-c) Realizar treinamento de 4 (quatro) horas para a equipe da Compradora;
+c) Realizar treinamento de 8 (oito) horas para a equipe da Compradora;
 
 d) Prestar suporte técnico durante os 3 (três) primeiros meses após a Entrega;
 
-e) Esclarecer dúvidas sobre a arquitetura e funcionamento do sistema;
+e) Realizar manutenção e correção de bugs durante os 3 (três) primeiros meses após a Entrega;
 
-f) Transferir todos os direitos de propriedade intelectual conforme Cláusula Sexta;
+f) Esclarecer dúvidas sobre a arquitetura e funcionamento do sistema;
 
-g) Não comercializar, licenciar ou transferir o mesmo Software a terceiros após a conclusão desta venda;
+g) Transferir todos os direitos de propriedade intelectual conforme Cláusula Sexta;
 
-h) Manter sigilo sobre informações da Compradora.
+h) Não comercializar, licenciar ou transferir o mesmo Software a terceiros após a conclusão desta venda;
 
-**7.2.** O suporte técnico dos 3 (três) primeiros meses compreende:
+i) Manter sigilo sobre informações da Compradora.
+
+**7.2.** O suporte técnico e manutenção dos 3 (três) primeiros meses compreende:
 
 a) Esclarecimento de dúvidas sobre o funcionamento do Software;
 
 b) Orientação para configuração de ambientes;
 
-c) Auxílio na resolução de problemas técnicos relacionados ao código original;
+c) Correção de bugs existentes no código original identificados pela Compradora;
 
-d) Atendimento via WhatsApp em horário comercial (seg-sex, 9h às 18h).
+d) Auxílio na resolução de problemas técnicos relacionados ao código original;
+
+e) Atendimento via WhatsApp em horário comercial (seg-sex, 9h às 18h).
 
 **7.3.** O suporte técnico **NÃO** compreende:
 
@@ -245,6 +255,8 @@ b) Correção de bugs introduzidos por modificações da Compradora;
 c) Suporte a tecnologias ou integrações não contempladas no Software original;
 
 d) Atendimento fora do horário comercial.
+
+**7.4.** Após os 3 (três) primeiros meses, caso a Compradora necessite de suporte técnico, manutenção ou correção de bugs, deverá contratar separadamente os serviços da Vendedora ou de terceiros, mediante orçamento específico.
 
 ---
 
@@ -344,7 +356,7 @@ c) Por decretação de falência ou recuperação judicial de qualquer das Parte
 
 **11.2.** Em caso de rescisão por inadimplemento da Compradora antes da Entrega:
 
-a) O sinal pago (10%) será retido pela Vendedora a título de perdas e danos;
+a) O sinal pago (15%) será retido pela Vendedora a título de perdas e danos;
 
 b) A Vendedora ficará livre para comercializar o Software a terceiros.
 
@@ -446,12 +458,12 @@ CPF:
 | Evento | Data |
 |--------|------|
 | Assinatura do Contrato | ___/___/______ |
-| Pagamento do Sinal (10%) | Na assinatura |
-| Limite para Arrependimento | 14 dias corridos após assinatura |
-| Pagamento do Saldo (90%) | 15/01/2026 |
-| Entrega do Software | Até 5 dias úteis após pagamento integral |
-| Treinamento (4h) | A combinar após Entrega |
-| Fim do Suporte Técnico | 3 meses após Entrega |
+| Pagamento do Sinal (15%) | Na assinatura |
+| Pagamento do Saldo (85%) | 15/01/2026 |
+| Entrega do Software | Até 48h após pagamento integral |
+| Limite para Arrependimento | 14 dias corridos após Entrega |
+| Treinamento (8h) | A combinar após Entrega |
+| Fim do Suporte Técnico e Manutenção | 3 meses após Entrega |
 
 ---
 
