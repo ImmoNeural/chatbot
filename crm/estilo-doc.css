@@ -1,3 +1,9 @@
+/* ============================================
+   TEMPLATE CSS PARA DOCUMENTAÇÃO PDF
+   My Clever Bot - 2025
+   Compatível com wkhtmltopdf
+   ============================================ */
+
 body {
     font-family: 'Segoe UI', -apple-system, sans-serif;
     line-height: 1.6;
@@ -8,7 +14,9 @@ body {
     background: #fff;
 }
 
-/* CAPA */
+/* ============================================
+   CAPA
+   ============================================ */
 h1:first-of-type {
     font-size: 2.2em;
     color: #0f172a;
@@ -32,7 +40,9 @@ h1:first-of-type + p + p {
     font-style: italic;
 }
 
-/* TÍTULOS */
+/* ============================================
+   TÍTULOS
+   ============================================ */
 h1 {
     font-size: 1.5em;
     color: #0f172a;
@@ -49,7 +59,9 @@ h2 {
     font-weight: 600;
 }
 
-/* TABELAS */
+/* ============================================
+   TABELAS
+   ============================================ */
 table {
     width: 100%;
     border-collapse: separate;
@@ -59,6 +71,7 @@ table {
     box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     border-radius: 8px;
     overflow: hidden;
+    page-break-inside: avoid !important;
 }
 
 thead {
@@ -85,7 +98,7 @@ tbody tr { background: #fff; }
 tbody tr:nth-child(even) { background: #f8fafc; }
 tbody tr:last-child td { border-bottom: none; }
 
-.table-caption {
+.table-caption, figcaption {
     text-align: center;
     font-size: 0.8em;
     color: #64748b;
@@ -93,59 +106,65 @@ tbody tr:last-child td { border-bottom: none; }
     margin: 5px 0 25px 0;
 }
 
-/* FLUXO SNAKE */
-.flow-snake {
-    margin: 25px 0 8px 0;
+/* ============================================
+   FLUXO HORIZONTAL (SNAKE PATTERN)
+   Usando inline-block para wkhtmltopdf
+   ============================================ */
+.flow-container {
+    text-align: center;
+    margin: 20px 0 8px 0;
+    page-break-inside: avoid !important;
 }
 
-.flow-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    flex-wrap: wrap;
+.flow-line {
+    display: block;
+    white-space: nowrap;
+    margin: 4px 0;
 }
 
-.flow-row-rev {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    flex-direction: row-reverse;
-}
-
-.flow-turn {
-    text-align: right;
-    font-size: 1.5em;
-    color: #64748b;
-    padding-right: 50px;
-    line-height: 1.2;
-}
-
-.flow-sm {
-    padding: 10px 14px;
-    border-radius: 8px;
+.flow-box {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-weight: 700;
-    font-size: 0.7em;
+    font-size: 0.65em;
     text-align: center;
     color: #fff !important;
-    min-width: 80px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    min-width: 70px;
+    margin: 2px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    vertical-align: middle;
 }
 
-.flow-sm.blue { background: #1d4ed8; }
-.flow-sm.purple { background: #7c3aed; }
-.flow-sm.orange { background: #ea580c; }
-.flow-sm.green { background: #059669; }
-.flow-sm.cyan { background: #0891b2; }
-.flow-sm.red { background: #dc2626; }
-
-.arr {
-    font-size: 1.4em;
+.flow-arrow {
+    display: inline-block;
+    font-size: 1.2em;
     color: #64748b;
     font-weight: bold;
+    margin: 0 3px;
+    vertical-align: middle;
 }
+
+.flow-down {
+    display: block;
+    text-align: right;
+    font-size: 1.3em;
+    color: #64748b;
+    padding-right: 60px;
+    line-height: 1;
+}
+
+/* Cores dos blocos */
+.bg-blue { background: #1d4ed8 !important; }
+.bg-purple { background: #7c3aed !important; }
+.bg-orange { background: #ea580c !important; }
+.bg-green { background: #059669 !important; }
+.bg-cyan { background: #0891b2 !important; }
+.bg-red { background: #dc2626 !important; }
+.bg-gray { background: #64748b !important; }
+.bg-teal { background: #0d9488 !important; }
+.bg-indigo { background: #4f46e5 !important; }
+.bg-pink { background: #db2777 !important; }
 
 .flow-caption {
     text-align: center;
@@ -155,7 +174,9 @@ tbody tr:last-child td { border-bottom: none; }
     margin: 5px 0 25px 0;
 }
 
-/* SEPARADORES */
+/* ============================================
+   SEPARADORES
+   ============================================ */
 hr {
     border: none;
     height: 1px;
@@ -163,7 +184,9 @@ hr {
     margin: 35px 0;
 }
 
-/* LISTAS */
+/* ============================================
+   LISTAS
+   ============================================ */
 ul, ol {
     margin: 12px 0;
     padding-left: 22px;
@@ -174,6 +197,9 @@ li {
     color: #475569;
 }
 
+/* ============================================
+   TEXTOS
+   ============================================ */
 strong { color: #0f172a; font-weight: 600; }
 em { color: #64748b; }
 p { margin: 10px 0; color: #475569; }
@@ -187,7 +213,19 @@ code {
     color: #0369a1;
 }
 
+/* ============================================
+   QUEBRA DE PÁGINA
+   ============================================ */
 @media print {
-    table, .flow-snake { page-break-inside: avoid; }
+    table { page-break-inside: avoid !important; }
+    .flow-container { page-break-inside: avoid !important; }
     h1, h2 { page-break-after: avoid; }
+    .no-break { page-break-inside: avoid !important; }
+}
+
+/* Força evitar quebra no wkhtmltopdf */
+table, .flow-container, .no-break {
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
 }

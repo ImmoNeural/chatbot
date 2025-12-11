@@ -119,18 +119,8 @@ O lead score é calculado automaticamente de **0 a 100 pontos**, baseado em 5 fa
 
 ## 4.1 Fluxo do Funil de Vendas
 
-<div class="flow-snake">
-<div class="flow-row">
-<div class="flow-sm blue">LEVANTAMENTO</div>
-<div class="arr">→</div>
-<div class="flow-sm purple">SIMULAÇÃO</div>
-<div class="arr">→</div>
-<div class="flow-sm orange">PROPOSTA</div>
-<div class="arr">→</div>
-<div class="flow-sm green">NEGOCIAÇÃO</div>
-<div class="arr">→</div>
-<div class="flow-sm cyan">FECHAMENTO</div>
-</div>
+<div class="flow-container">
+<div class="flow-line"><span class="flow-box bg-blue">LEVANTAMENTO</span><span class="flow-arrow">→</span><span class="flow-box bg-purple">SIMULAÇÃO</span><span class="flow-arrow">→</span><span class="flow-box bg-orange">PROPOSTA</span><span class="flow-arrow">→</span><span class="flow-box bg-green">NEGOCIAÇÃO</span><span class="flow-arrow">→</span><span class="flow-box bg-cyan">FECHAMENTO</span></div>
 </div>
 
 <p class="flow-caption">Figura 1 - Funil de vendas</p>
@@ -151,20 +141,10 @@ O lead score é calculado automaticamente de **0 a 100 pontos**, baseado em 5 fa
 
 # 5. Fluxo Completo do Lead
 
-<div class="flow-snake">
-<div class="flow-row">
-<div class="flow-sm blue">LEAD</div>
-<div class="arr">→</div>
-<div class="flow-sm purple">OPORTUNIDADE</div>
-<div class="arr">→</div>
-<div class="flow-sm green">INSTALADO</div>
-</div>
-<div class="flow-turn">↓</div>
-<div class="flow-row-rev">
-<div class="flow-sm red">PERDIDO</div>
-<div class="arr">←</div>
-<div class="flow-sm orange">EM NUTRIÇÃO</div>
-</div>
+<div class="flow-container">
+<div class="flow-line"><span class="flow-box bg-gray">NOVO</span><span class="flow-arrow">→</span><span class="flow-box bg-blue">QUALIFICADO</span><span class="flow-arrow">→</span><span class="flow-box bg-purple">CONVERTIDO</span><span class="flow-arrow">→</span><span class="flow-box bg-green">INSTALADO</span></div>
+<div class="flow-down">↓</div>
+<div class="flow-line"><span class="flow-box bg-red">PERDIDO</span><span class="flow-arrow">←</span><span class="flow-box bg-orange">EM NUTRIÇÃO</span><span class="flow-arrow">←</span><span class="flow-box bg-cyan">NÃO QUALIFICADO</span></div>
 </div>
 
 <p class="flow-caption">Figura 2 - Fluxo completo do lead</p>
