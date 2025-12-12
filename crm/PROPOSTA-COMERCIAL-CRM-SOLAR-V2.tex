@@ -13,6 +13,7 @@
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{float}
+\usepackage{insdljs}
 
 % Cores
 \definecolor{primary}{RGB}{6,162,136}
@@ -32,7 +33,7 @@
 \fancyhf{}
 \fancyhead[L]{\small\textcolor{gray}{Proposta Comercial - CRM Solar}}
 \fancyhead[R]{\small\textcolor{gray}{Página \thepage}}
-\fancyfoot[C]{\small\textcolor{gray}{My Clever Bot Tecnologia em Inteligência Artificial LTDA}}
+\fancyfoot[C]{\small\textcolor{gray}{My Clever Bot Tecnologia em Inteligência Artificial LTDA | CNPJ: 62.050.286/0001-77}}
 \renewcommand{\headrulewidth}{0.4pt}
 
 % Estilo de títulos
@@ -48,6 +49,49 @@
 }
 
 \begin{document}
+
+% JavaScript para cálculo automático
+\begin{insDLJS}{calcular}{Calculo de Totais}
+function formatarMoeda(valor) {
+    var str = valor.toString();
+    var partes = [];
+    while (str.length > 3) {
+        partes.unshift(str.slice(-3));
+        str = str.slice(0, -3);
+    }
+    if (str.length > 0) partes.unshift(str);
+    return partes.join(".");
+}
+
+function calcularTotal() {
+    var base = 30000;
+    var adicional = 0;
+    var espanhol = this.getField("opt_espanhol");
+    var eletro = this.getField("opt_eletromobilidade");
+    var combo = this.getField("opt_combo");
+
+    // Se combo marcado, desmarca os outros e usa valor combo
+    if (combo.isBoxChecked(0)) {
+        espanhol.checkThisBox(0, false);
+        eletro.checkThisBox(0, false);
+        adicional = 18000;
+    } else {
+        if (espanhol.isBoxChecked(0)) adicional += 5000;
+        if (eletro.isBoxChecked(0)) adicional += 15000;
+    }
+
+    var total = base + adicional;
+    var sinal = total * 0.15;
+    var final_val = total * 0.85;
+
+    this.getField("total_geral").value = "R$ " + formatarMoeda(total) + ",00";
+    this.getField("valor_sinal").value = "R$ " + formatarMoeda(sinal) + ",00";
+    this.getField("valor_final").value = "R$ " + formatarMoeda(final_val) + ",00";
+    this.getField("total_adicional").value = "R$ " + formatarMoeda(adicional) + ",00";
+    this.getField("total_adicional2").value = "R$ " + formatarMoeda(adicional) + ",00";
+}
+\end{insDLJS}
+
 \begin{Form}
 
 % ===========================================
@@ -86,7 +130,8 @@
 
 \begin{center}
 \textbf{\large MY CLEVER BOT}\\[0.3em]
-\textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}
+\textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}\\[0.3em]
+\textcolor{gray}{CNPJ: 62.050.286/0001-77}
 \end{center}
 
 \clearpage
@@ -370,12 +415,14 @@ Suporte 90 dias + 8h treinamento & Incluído \\
 \rowcolor{primary!20}
 \textbf{Selecionar} & \textbf{Módulo} & \textbf{Investimento} \\
 \hline
-\CheckBox[name=opt_espanhol, width=0.5cm]{} & Tradução Espanhol & R\$ 5.000,00 \\
+\CheckBox[name=opt_espanhol, width=0.5cm, onclick={calcularTotal();}]{} & Tradução Espanhol & R\$ 5.000,00 \\
 \hline
-\CheckBox[name=opt_eletromobilidade, width=0.5cm]{} & Eletromobilidade & R\$ 15.000,00 \\
+\CheckBox[name=opt_eletromobilidade, width=0.5cm, onclick={calcularTotal();}]{} & Eletromobilidade & R\$ 15.000,00 \\
 \hline
 \rowcolor{yellow!20}
-\CheckBox[name=opt_combo, width=0.5cm]{} & Combo (ambos com 10\% desc.) & R\$ 18.000,00 \\
+\CheckBox[name=opt_combo, width=0.5cm, onclick={calcularTotal();}]{} & Combo (ambos com 10\% desc.) & R\$ 18.000,00 \\
+\hline
+\multicolumn{2}{|r|}{\textbf{Subtotal Módulos Adicionais:}} & \TextField[name=total_adicional, width=3cm, readonly=true, backgroundcolor=yellow!20, charsize=10pt, value={R\$ 0,00}]{} \\
 \hline
 \end{tabular}
 \end{center}
@@ -395,6 +442,24 @@ APIs + Infraestrutura & < US\$ 60/mês (R\$ 360) \\
 \end{tabular}
 \end{center}
 
+\subsection{TOTAL GERAL DO INVESTIMENTO}
+
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Descrição} & \textbf{Valor} \\
+\hline
+Sistema Base & R\$ 30.000,00 \\
+\hline
+Módulos Adicionais Selecionados & \TextField[name=total_adicional2, width=3cm, readonly=true, backgroundcolor=white, charsize=10pt, value={R\$ 0,00}]{} \\
+\hline
+\rowcolor{green!20}
+\textbf{TOTAL GERAL} & \TextField[name=total_geral, width=3.5cm, readonly=true, backgroundcolor=green!20, charsize=12pt, value={R\$ 30.000,00}]{} \\
+\hline
+\end{tabular}
+\end{center}
+
 % ===========================================
 \section{CONDIÇÕES COMERCIAIS}
 % ===========================================
@@ -407,10 +472,10 @@ APIs + Infraestrutura & < US\$ 60/mês (R\$ 360) \\
 \rowcolor{primary!20}
 \textbf{Parcela} & \textbf{Percentual} & \textbf{Valor} & \textbf{Vencimento} \\
 \hline
-Sinal & 15\% & R\$ 4.500,00 & No ato da assinatura \\
+Sinal & 15\% & \TextField[name=valor_sinal, width=3cm, readonly=true, backgroundcolor=white, charsize=10pt, value={R\$ 4.500,00}]{} & No ato da assinatura \\
 \hline
 \rowcolor{yellow!20}
-Parcela Final & 85\% & R\$ 25.500,00 & 31 de Janeiro de 2026 \\
+Parcela Final & 85\% & \TextField[name=valor_final, width=3cm, readonly=true, backgroundcolor=yellow!20, charsize=10pt, value={R\$ 25.500,00}]{} & 31 de Janeiro de 2026 \\
 \hline
 \end{tabular}
 \end{center}
@@ -461,7 +526,8 @@ Combo & + 40 dias úteis \\
 
 \begin{center}
 \textbf{\large MY CLEVER BOT}\\[0.3em]
-\textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}
+\textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}\\[0.3em]
+CNPJ: 62.050.286/0001-77
 \end{center}
 
 \vspace{1em}
