@@ -1,0 +1,347 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage[margin=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+% Cores
+\definecolor{primary}{RGB}{6,162,136}
+\definecolor{secondary}{RGB}{7,95,110}
+
+% Configuração do hyperref para campos editáveis
+\hypersetup{
+    pdftitle={Contrato de Venda CRM Solar V2},
+    pdfauthor={Neureka AI},
+    colorlinks=true,
+    linkcolor=secondary,
+    urlcolor=primary
+}
+
+% Cabeçalho e rodapé
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{gray}{Contrato de Venda - CRM Solar V2}}
+\fancyhead[R]{\small\textcolor{gray}{Página \thepage}}
+\fancyfoot[C]{\small\textcolor{gray}{Documento com campos editáveis}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Estilo de títulos
+\titleformat{\section}{\Large\bfseries\color{primary}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{secondary}}{\thesubsection}{0.5em}{}
+
+% Comandos para campos editáveis
+\newcommand{\campo}[2]{%
+    \TextField[name=#1, width=#2, bordercolor=primary, backgroundcolor=yellow!10, charsize=10pt]{}%
+}
+\newcommand{\campomulti}[3]{%
+    \TextField[name=#1, width=#2, height=#3, multiline=true, bordercolor=primary, backgroundcolor=yellow!10, charsize=10pt]{}%
+}
+\newcommand{\campodata}[1]{%
+    \TextField[name=#1, width=3cm, bordercolor=primary, backgroundcolor=yellow!10, charsize=10pt, value={\_\_/\_\_/\_\_\_\_}]{}%
+}
+\newcommand{\campovalor}[1]{%
+    \TextField[name=#1, width=4cm, bordercolor=primary, backgroundcolor=yellow!10, charsize=10pt, value={R\$ }]{}%
+}
+
+\begin{document}
+\begin{Form}
+
+% Título
+\begin{center}
+{\LARGE\bfseries\textcolor{primary}{CONTRATO DE COMPRA E VENDA DE SOFTWARE}}\\[0.5em]
+{\large\textcolor{secondary}{Com Transferência de Propriedade Intelectual}}\\[1em]
+\rule{\textwidth}{1pt}\\[0.5em]
+\textbf{Contrato nº:} \campo{numero_contrato}{4cm} \hfill \textbf{Data:} \campodata{data_contrato}
+\end{center}
+
+\vspace{1em}
+
+% ===========================================
+\section{PARTES CONTRATANTES}
+% ===========================================
+
+\subsection{VENDEDORA}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\textbf{Razão Social:} & \campomulti{razao_social_vendedora}{\linewidth}{0.8cm} \\[0.3em]
+\textbf{CNPJ:} & \campo{cnpj_vendedora}{5cm} \\[0.3em]
+\textbf{Endereço:} & \campomulti{endereco_vendedora}{\linewidth}{0.8cm} \\[0.3em]
+\textbf{Representante:} & \campo{representante_vendedora}{8cm} \\[0.3em]
+\textbf{E-mail:} & \campo{email_vendedora}{8cm} \\
+\end{tabularx}
+
+\subsection{COMPRADORA}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\textbf{Razão Social:} & \campomulti{razao_social_compradora}{\linewidth}{0.8cm} \\[0.3em]
+\textbf{CNPJ:} & \campo{cnpj_compradora}{5cm} \\[0.3em]
+\textbf{Endereço:} & \campomulti{endereco_compradora}{\linewidth}{0.8cm} \\[0.3em]
+\textbf{Representante:} & \campo{representante_compradora}{8cm} \\[0.3em]
+\textbf{E-mail:} & \campo{email_compradora}{8cm} \\
+\end{tabularx}
+
+\vspace{1em}
+
+% ===========================================
+\section{DO OBJETO}
+% ===========================================
+
+2.1. O presente contrato tem por objeto a \textbf{venda e transferência total de propriedade intelectual} do software denominado \textbf{``CRM Solar - Sistema de Gestão para Empresas de Energia Solar''}, incluindo:
+
+\begin{enumerate}[label=\alph*)]
+    \item Código-fonte completo (frontend e backend);
+    \item Banco de dados e estrutura (PostgreSQL/Supabase);
+    \item Documentação técnica e de usuário;
+    \item Direitos autorais e de exploração comercial;
+    \item Chatbot de qualificação de leads;
+    \item Integrações com WhatsApp (Twilio) e demais APIs.
+\end{enumerate}
+
+2.2. \textbf{Funcionalidades incluídas no sistema base:}
+
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{|l|X|}
+\hline
+\rowcolor{primary!20}
+\textbf{Módulo} & \textbf{Funcionalidades} \\
+\hline
+Gestão de Leads & Captação via chatbot, lead scoring, qualificação automática \\
+\hline
+Kanban & Visualização com movimentação semi-automática (progressiva/retrógrada) \\
+\hline
+Propostas & Geração automática de PDF, memorial técnico, ROI \\
+\hline
+Comunicação & WhatsApp Business API, histórico de conversas \\
+\hline
+Download Dados & Exportação de dados e documentos do cliente \\
+\hline
+Multi-tenant & Isolamento por empresa (SaaS), planos configuráveis \\
+\hline
+\end{tabularx}
+\end{center}
+
+\vspace{1em}
+
+% ===========================================
+\section{DOS MÓDULOS ADICIONAIS (OPCIONAIS)}
+% ===========================================
+
+3.1. A COMPRADORA poderá adquirir os seguintes módulos adicionais:
+
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{|l|X|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Módulo} & \textbf{Descrição} & \textbf{Valor} \\
+\hline
+Tradução Espanhol & Interface, chatbot, propostas em espanhol (15 dias) & R\$ 5.000,00 \\
+\hline
+Eletromobilidade & Módulo completo para carregadores EV (30 dias) & R\$ 15.000,00 \\
+\hline
+\rowcolor{yellow!20}
+Combo (ambos) & Tradução + Eletromobilidade com 10\% desconto & R\$ 18.000,00 \\
+\hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.5em}
+
+3.2. \textbf{Módulos contratados neste instrumento:}
+
+\begin{tabularx}{\textwidth}{@{}lXr@{}}
+$\square$ Tradução Espanhol & & R\$ 5.000,00 \\
+$\square$ Eletromobilidade & & R\$ 15.000,00 \\
+$\square$ Combo (ambos) & & R\$ 18.000,00 \\
+\end{tabularx}
+
+\vspace{1em}
+
+% ===========================================
+\section{DO PREÇO E FORMA DE PAGAMENTO}
+% ===========================================
+
+4.1. O valor total acordado para a aquisição do software é:
+
+\begin{center}
+\begin{tabularx}{0.8\textwidth}{|X|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Item} & \textbf{Valor} \\
+\hline
+Sistema Base CRM Solar & \campovalor{valor_base} \\
+\hline
+Módulos Adicionais & \campovalor{valor_adicionais} \\
+\hline
+\rowcolor{yellow!20}
+\textbf{VALOR TOTAL} & \campovalor{valor_total} \\
+\hline
+\end{tabularx}
+\end{center}
+
+\vspace{0.5em}
+
+4.2. \textbf{Forma de pagamento:}
+
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{|l|c|c|c|}
+\hline
+\rowcolor{primary!20}
+\textbf{Parcela} & \textbf{Percentual} & \textbf{Valor} & \textbf{Vencimento} \\
+\hline
+Sinal & 15\% & \campovalor{valor_sinal} & No ato da assinatura \\
+\hline
+\rowcolor{yellow!20}
+Parcela Final & 85\% & \campovalor{valor_final} & 31 de Janeiro de 2026 \\
+\hline
+\end{tabularx}
+\end{center}
+
+4.3. O pagamento será realizado mediante emissão de \textbf{Nota Fiscal} pela VENDEDORA.
+
+\vspace{1em}
+
+% ===========================================
+\section{DOS CUSTOS OPERACIONAIS}
+% ===========================================
+
+5.1. A COMPRADORA será responsável pelos custos operacionais, estimados em \textbf{menos de US\$ 60,00/mês}:
+
+\begin{center}
+\begin{tabularx}{0.9\textwidth}{|l|l|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Serviço} & \textbf{Provedor} & \textbf{Custo Est.} \\
+\hline
+Banco de Dados + Auth & Supabase & $\sim$US\$ 25/mês \\
+\hline
+WhatsApp API & Twilio & $\sim$US\$ 20/mês \\
+\hline
+Domínio & Registro.br & $\sim$US\$ 3/mês \\
+\hline
+Hospedagem & Vercel/Netlify & US\$ 0-10/mês \\
+\hline
+\rowcolor{yellow!20}
+\textbf{Total} & & \textbf{< US\$ 60/mês} \\
+\hline
+\end{tabularx}
+\end{center}
+
+\vspace{1em}
+
+% ===========================================
+\section{DA ENTREGA E TREINAMENTO}
+% ===========================================
+
+6.1. A entrega do software será realizada no prazo de \textbf{48 (quarenta e oito) horas} após confirmação do pagamento do sinal.
+
+6.2. A VENDEDORA fornecerá \textbf{8 (oito) horas de treinamento} remoto.
+
+6.3. A transferência incluirá: código-fonte, credenciais, documentação e sessão de transferência de conhecimento.
+
+\vspace{1em}
+
+% ===========================================
+\section{DA GARANTIA E SUPORTE (SLA)}
+% ===========================================
+
+7.1. Garantia de \textbf{90 (noventa) dias} para correção de bugs.
+
+7.2. \textbf{Níveis de Atendimento:}
+
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{|l|X|c|c|}
+\hline
+\rowcolor{primary!20}
+\textbf{Prioridade} & \textbf{Descrição} & \textbf{Resposta} & \textbf{Solução} \\
+\hline
+Crítica & Sistema inoperante & 4 horas & 24 horas \\
+\hline
+Média & Funcionalidade comprometida & 12 horas & 48 horas \\
+\hline
+Baixa & Dúvidas e ajustes menores & 24 horas & 72 horas \\
+\hline
+\end{tabularx}
+\end{center}
+
+\vspace{1em}
+
+% ===========================================
+\section{DA PROPRIEDADE INTELECTUAL}
+% ===========================================
+
+8.1. Com o pagamento integral, a \textbf{propriedade intelectual total} do software será transferida à COMPRADORA.
+
+8.2. A VENDEDORA \textbf{não poderá} comercializar ou distribuir cópias do software após a transferência.
+
+\vspace{1em}
+
+% ===========================================
+\section{DA LGPD E CONFIDENCIALIDADE}
+% ===========================================
+
+9.1. Após a transferência, a COMPRADORA assume o papel de \textbf{Controlador} dos dados pessoais.
+
+9.2. A obrigação de confidencialidade sobre segredos comerciais é \textbf{perpétua}.
+
+\vspace{1em}
+
+% ===========================================
+\section{DO DIREITO DE ARREPENDIMENTO}
+% ===========================================
+
+10.1. Prazo de \textbf{14 dias corridos} após a \textbf{entrega} para exercer arrependimento.
+
+10.2. O sinal (15\%) será retido como taxa administrativa; demais valores serão devolvidos.
+
+\vspace{1em}
+
+% ===========================================
+\section{DO FORO}
+% ===========================================
+
+11.1. Fica eleito o foro da comarca de \campo{cidade_foro}{5cm} / \campo{estado_foro}{2cm} para dirimir questões.
+
+\vspace{2em}
+
+% ===========================================
+\section{ASSINATURAS}
+% ===========================================
+
+Local: \campo{local_assinatura}{6cm}, \campo{data_extenso}{8cm}
+
+\vspace{2em}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{X X}
+
+\textbf{VENDEDORA:} & \textbf{COMPRADORA:} \\[3em]
+
+\rule{7cm}{0.4pt} & \rule{7cm}{0.4pt} \\
+Nome: \campo{nome_vendedora}{5cm} & Nome: \campo{nome_compradora}{5cm} \\[0.5em]
+CPF: \campo{cpf_vendedora}{4cm} & CPF: \campo{cpf_compradora}{4cm} \\
+
+\end{tabularx}
+\end{center}
+
+\vspace{2em}
+
+\textbf{TESTEMUNHAS:}
+
+\vspace{1.5em}
+
+\begin{tabularx}{\textwidth}{X X}
+1. \rule{6cm}{0.4pt} & 2. \rule{6cm}{0.4pt} \\
+Nome: \campo{testemunha1}{5cm} & Nome: \campo{testemunha2}{5cm} \\
+CPF: \campo{cpf_test1}{4cm} & CPF: \campo{cpf_test2}{4cm} \\
+\end{tabularx}
+
+\end{Form}
+\end{document}
