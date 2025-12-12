@@ -619,6 +619,7 @@
 
     // Default configuration - Sunbotic Theme
     const defaultSettings = {
+        empresa_id: null, // OBRIGATÓRIO: ID da empresa no SaaS multi-tenant
         webhook: { url: '', route: '' },
         branding: {
             logo: 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png',
@@ -647,12 +648,18 @@
 
     // Merge user settings with defaults
     const settings = window.ChatWidgetConfig ? {
+        empresa_id: window.ChatWidgetConfig.empresa_id || defaultSettings.empresa_id,
         webhook: { ...defaultSettings.webhook, ...window.ChatWidgetConfig.webhook },
         branding: { ...defaultSettings.branding, ...window.ChatWidgetConfig.branding },
         style: { ...defaultSettings.style, ...window.ChatWidgetConfig.style },
         customStyles: { ...defaultSettings.customStyles, ...window.ChatWidgetConfig.customStyles },
         suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions
     } : defaultSettings;
+
+    // Validação: empresa_id é obrigatório para SaaS multi-tenant
+    if (!settings.empresa_id) {
+        console.warn('⚠️ ChatWidget: empresa_id não configurado! Leads não serão vinculados a nenhuma empresa.');
+    }
 
     // Session tracking
     let conversationId = '';
@@ -689,7 +696,7 @@
                     family_size: data.familySize,
                     kwh_consumption: data.kwhConsumption,
                     roof_type: data.roofType,
-                    empresa_id: 'a0000000-0000-0000-0000-000000000001',
+                    empresa_id: settings.empresa_id,
                     origem: 'chatbot',
                     status: 'novo',
                     lead_score: 0,
