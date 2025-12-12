@@ -656,9 +656,12 @@
         suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions
     } : defaultSettings;
 
-    // Validação: empresa_id é obrigatório para SaaS multi-tenant
-    if (!settings.empresa_id) {
-        console.warn('⚠️ ChatWidget: empresa_id não configurado! Leads não serão vinculados a nenhuma empresa.');
+    // Validação: empresa_id - usa do usuário logado ou do config
+    // Prioridade: window.currentEmpresa?.id > settings.empresa_id
+    if (!window.currentEmpresa?.id && !settings.empresa_id) {
+        console.warn('⚠️ ChatWidget: empresa_id não disponível! Aguardando usuário logar ou configure empresa_id.');
+    } else {
+        console.log('✅ ChatWidget: empresa_id =', window.currentEmpresa?.id || settings.empresa_id);
     }
 
     // Session tracking
@@ -698,7 +701,7 @@
                     family_size: data.familySize,
                     kwh_consumption: data.kwhConsumption,
                     roof_type: data.roofType,
-                    empresa_id: settings.empresa_id,
+                    empresa_id: window.currentEmpresa?.id || settings.empresa_id,
                     origem: 'chatbot',
                     status: 'novo',
                     lead_score: 0,
