@@ -51,7 +51,7 @@
             bottom: 90px;
             z-index: 10000;
             width: 416px !important;
-            height: 520px !important;
+            height: 650px !important;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
             box-shadow: var(--chat-shadow-lg);
@@ -668,6 +668,7 @@
 
     // Qualification funnel data
     let qualificationData = {
+        nome: null,
         email: null,
         phone: null,
         familySize: null,
@@ -691,6 +692,7 @@
                     'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
+                    nome: data.nome,
                     email: data.email,
                     phone: data.phone,
                     family_size: data.familySize,
@@ -943,17 +945,33 @@
     // Qualification funnel functions
     const startQualificationFunnel = () => {
         qualificationStep = 1;
-        askEmail();
+        askName();
     };
 
-    // Step 1: Ask for email
-    const askEmail = () => {
-        const emailImage = 'https://images.unsplash.com/photo-1560264280-88b68371db39?w=500';
+    // Step 1: Ask for name
+    const askName = () => {
+        const nameImage = 'https://images.unsplash.com/photo-1560264280-88b68371db39?w=500';
 
         setTimeout(() => {
             addBotMessage(`
                 <p>Ótimo! Vou fazer algumas perguntas rápidas para entender melhor sua necessidade. ☀️</p>
-                <p><strong>Primeiro, qual é o seu e-mail?</strong></p>
+                <p><strong>Primeiro, qual é o seu nome?</strong></p>
+                <p style="font-size: 12px; color: #6b7280;">Digite seu nome no campo abaixo 👇</p>
+            `, true, nameImage);
+
+            messageTextarea.placeholder = "Seu nome completo";
+            messageTextarea.focus();
+        }, 500);
+    };
+
+    // Step 2: Ask for email
+    const askEmail = () => {
+        const emailImage = 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500';
+
+        setTimeout(() => {
+            addBotMessage(`
+                <p>Prazer em conhecê-lo(a), <strong>${qualificationData.nome}</strong>! 😊</p>
+                <p><strong>Agora, qual é o seu e-mail?</strong></p>
                 <p style="font-size: 12px; color: #6b7280;">Digite seu e-mail no campo abaixo 👇</p>
             `, true, emailImage);
 
@@ -982,6 +1000,10 @@
     const askFamilySize = () => {
         const familyImage = 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=500';
 
+        // Bloquear entrada de texto quando houver botões
+        messageTextarea.disabled = true;
+        messageTextarea.placeholder = "Clique em uma opção acima ☝️";
+
         setTimeout(() => {
             const messageContainer = addBotMessage(`
                 <p><strong>Quantas pessoas moram na sua casa?</strong></p>
@@ -997,7 +1019,6 @@
                 btn.addEventListener('click', () => {
                     qualificationData.familySize = btn.dataset.family;
                     addUserMessage(btn.dataset.family);
-                    messageTextarea.placeholder = "Digite aqui...";
                     askKwhConsumption();
                 });
             });
@@ -1007,6 +1028,10 @@
     // Step 4: Ask for kWh consumption based on family size
     const askKwhConsumption = () => {
         const energyBillImage = 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=500';
+
+        // Bloquear entrada de texto quando houver botões
+        messageTextarea.disabled = true;
+        messageTextarea.placeholder = "Clique em uma opção acima ☝️";
 
         // Determine kWh ranges based on family size
         let kwhOptions = [];
@@ -1067,6 +1092,10 @@
     const askRoofType = () => {
         const roofTypesImage = 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=500';
 
+        // Bloquear entrada de texto quando houver botões
+        messageTextarea.disabled = true;
+        messageTextarea.placeholder = "Clique em uma opção acima ☝️";
+
         setTimeout(() => {
             const messageContainer = addBotMessage(`
                 <p><strong>Que tipo de telhado você tem?</strong></p>
@@ -1094,6 +1123,10 @@
     const showQualificationResult = async () => {
         const savingsImage = 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=500';
 
+        // Reabilitar entrada de texto
+        messageTextarea.disabled = false;
+        messageTextarea.placeholder = "Digite aqui...";
+
         // Save to Supabase
         const saved = await saveLeadToSupabase(qualificationData);
 
@@ -1105,8 +1138,9 @@
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
                         <img src="${savingsImage}" style="width: 100%; border-radius: 10px; margin-bottom: 10px;" alt="Economia">
-                        <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
-                        <p>📧 E-mail: ${qualificationData.email}<br>
+                        <p>🎉 <strong>Excelente, ${qualificationData.nome}! Com base nas informações fornecidas:</strong></p>
+                        <p>👤 Nome: ${qualificationData.nome}<br>
+                        📧 E-mail: ${qualificationData.email}<br>
                         📱 Telefone: ${qualificationData.phone}<br>
                         👥 Pessoas na casa: ${qualificationData.familySize}<br>
                         ⚡ Consumo mensal: ${qualificationData.kwhConsumption}<br>
@@ -1202,7 +1236,28 @@
         if (!trimmedMessage) return;
 
         // Handle qualification funnel input
-        if (qualificationStep === 1 && !qualificationData.email) {
+        // Step 1: Nome
+        if (qualificationStep === 1 && !qualificationData.nome) {
+            // Validating name (at least 2 characters)
+            if (trimmedMessage.length < 2) {
+                addUserMessage(trimmedMessage);
+                setTimeout(() => {
+                    addBotMessage(`
+                        <p>❌ Nome muito curto! Por favor, digite seu nome completo.</p>
+                    `);
+                }, 300);
+                messageTextarea.value = '';
+                return;
+            }
+            qualificationData.nome = trimmedMessage;
+            addUserMessage(trimmedMessage);
+            messageTextarea.value = '';
+            askEmail();
+            return;
+        }
+
+        // Step 2: Email
+        if (qualificationStep === 1 && qualificationData.nome && !qualificationData.email) {
             // Validating email
             if (!validateEmail(trimmedMessage)) {
                 addUserMessage(trimmedMessage);

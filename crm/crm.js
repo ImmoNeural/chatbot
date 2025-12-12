@@ -1720,7 +1720,23 @@ async function renderLeadInfo(lead) {
         </div>
         <div>
             <p class="text-sm text-gray-600">Consumo Mensal</p>
-            <p class="font-semibold">${lead.consumo_mensal || 0} kWh</p>
+            <p class="font-semibold" id="consumo-display">
+                <span id="consumo-value">${lead.consumo_mensal || 0}</span> kWh
+                <button onclick="showEditConsumo()" class="ml-2 text-blue-500 hover:text-blue-700" title="Editar consumo">
+                    <i class="fas fa-edit text-sm"></i>
+                </button>
+            </p>
+            <div id="consumo-edit-container" class="hidden mt-2">
+                <div class="flex items-center gap-2">
+                    <input type="number" id="consumo-edit-input" class="border rounded px-2 py-1 w-24" placeholder="kWh">
+                    <button onclick="saveConsumo()" class="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button onclick="cancelEditConsumo()" class="bg-gray-300 text-gray-700 px-2 py-1 rounded hover:bg-gray-400">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
         </div>
         <div>
             <p class="text-sm text-gray-600">Status</p>
@@ -1739,6 +1755,55 @@ async function renderLeadInfo(lead) {
             <p class="font-semibold">${formatDate(lead.created_at)}</p>
         </div>
     `;
+}
+
+// Funções para edição rápida do consumo
+function showEditConsumo() {
+    const container = document.getElementById('consumo-edit-container');
+    const input = document.getElementById('consumo-edit-input');
+    const currentValue = document.getElementById('consumo-value').textContent;
+
+    container.classList.remove('hidden');
+    input.value = currentValue || '';
+    input.focus();
+}
+
+function cancelEditConsumo() {
+    document.getElementById('consumo-edit-container').classList.add('hidden');
+}
+
+async function saveConsumo() {
+    const input = document.getElementById('consumo-edit-input');
+    const newValue = parseFloat(input.value) || 0;
+
+    if (!currentLead || !currentLead.id) {
+        showNotification('Erro: Lead não encontrado', 'danger');
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('leads')
+            .update({ consumo_mensal: newValue })
+            .eq('id', currentLead.id);
+
+        if (error) throw error;
+
+        // Atualizar o valor exibido
+        document.getElementById('consumo-value').textContent = newValue;
+        cancelEditConsumo();
+
+        // Atualizar currentLead
+        currentLead.consumo_mensal = newValue;
+
+        showNotification('Consumo atualizado com sucesso!', 'success');
+
+        // Recarregar lista de leads
+        await loadLeads();
+    } catch (error) {
+        console.error('Erro ao atualizar consumo:', error);
+        showNotification('Erro ao atualizar consumo', 'danger');
+    }
 }
 
 let editModeActive = false;
