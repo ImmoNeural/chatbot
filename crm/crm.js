@@ -1789,17 +1789,23 @@ async function saveConsumo() {
 
         if (error) throw error;
 
-        // Atualizar o valor exibido
+        // Atualizar o valor exibido no modal
         document.getElementById('consumo-value').textContent = newValue;
         cancelEditConsumo();
 
         // Atualizar currentLead
         currentLead.consumo_mensal = newValue;
 
-        showNotification('Consumo atualizado com sucesso!', 'success');
+        // Atualizar o array local de leads
+        const leadIndex = leads.findIndex(l => l.id === currentLead.id);
+        if (leadIndex !== -1) {
+            leads[leadIndex].consumo_mensal = newValue;
+        }
 
-        // Recarregar lista de leads
-        await loadLeads();
+        // Re-renderizar a tabela de leads
+        renderLeadsTable();
+
+        showNotification('Consumo atualizado com sucesso!', 'success');
     } catch (error) {
         console.error('Erro ao atualizar consumo:', error);
         showNotification('Erro ao atualizar consumo', 'danger');
