@@ -1,8 +1,8 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[12pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[brazilian]{babel}
-\usepackage[margin=1.5cm]{geometry}
+\usepackage[margin=1cm]{geometry}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{tabularx}
@@ -50,8 +50,10 @@
 \begin{Form}
 
 % ===========================================
-% CAPA
+% CAPA (Página 1 - sem cabeçalho)
 % ===========================================
+\thispagestyle{empty}
+
 \begin{center}
 {\LARGE\bfseries\textcolor{primary}{PROPOSTA COMERCIAL}}\\[0.5em]
 {\large\textcolor{secondary}{CRM Solar - Sistema de Gestão Completo}}\\[0.3em]
@@ -86,8 +88,10 @@
 \textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}
 \end{center}
 
-\newpage
+\clearpage
 
+% ===========================================
+% PÁGINA 2 em diante
 % ===========================================
 \section{APRESENTAÇÃO DO SISTEMA}
 % ===========================================
