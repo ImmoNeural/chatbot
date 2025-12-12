@@ -689,6 +689,10 @@
                     family_size: data.familySize,
                     kwh_consumption: data.kwhConsumption,
                     roof_type: data.roofType,
+                    empresa_id: 'a0000000-0000-0000-0000-000000000001',
+                    origem: 'chatbot',
+                    status: 'novo',
+                    lead_score: 0,
                     created_at: new Date().toISOString()
                 })
             });
