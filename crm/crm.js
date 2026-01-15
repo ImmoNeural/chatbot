@@ -8,6 +8,109 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// =========================================
+// AUTENTICAÇÃO
+// =========================================
+let currentUser = null;
+
+// Fazer login
+async function handleLogin(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const loginButton = document.getElementById('loginButton');
+    const loginError = document.getElementById('loginError');
+
+    // Desabilitar botão durante login
+    loginButton.disabled = true;
+    loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Entrando...';
+    loginError.classList.add('hidden');
+
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        console.log('✅ Login bem-sucedido!', data);
+        currentUser = data.user;
+
+        // Esconder tela de login e mostrar CRM
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('crmApp').classList.remove('hidden');
+
+        // Carregar dados do CRM
+        await loadAllData();
+        showModule('dashboard');
+
+    } catch (error) {
+        console.error('❌ Erro no login:', error);
+        loginError.classList.remove('hidden');
+        document.getElementById('loginErrorMessage').textContent =
+            error.message === 'Invalid login credentials'
+                ? 'Email ou senha incorretos'
+                : error.message;
+    } finally {
+        loginButton.disabled = false;
+        loginButton.innerHTML = 'Entrar';
+    }
+}
+
+// Verificar sessão ao carregar página
+async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+        console.log('✅ Sessão ativa encontrada');
+        currentUser = session.user;
+
+        // Mostrar CRM direto
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('crmApp').classList.remove('hidden');
+
+        return true;
+    } else {
+        console.log('⚠️ Nenhuma sessão ativa');
+        return false;
+    }
+}
+
+// Logout
+async function handleLogout() {
+    await supabase.auth.signOut();
+    currentUser = null;
+
+    // Mostrar tela de login
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('crmApp').classList.add('hidden');
+
+    showNotification('Logout realizado com sucesso', 'info');
+}
+
+// Recuperar senha
+async function handleForgotPassword(event) {
+    event.preventDefault();
+
+    const email = prompt('Digite seu email para recuperar a senha:');
+
+    if (!email) return;
+
+    try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/reset-password.html'
+        });
+
+        if (error) throw error;
+
+        alert('Email de recuperação enviado! Verifique sua caixa de entrada.');
+    } catch (error) {
+        alert('Erro ao enviar email: ' + error.message);
+    }
+}
+
 // Estado Global
 let currentModule = 'dashboard';
 let currentLead = null;
@@ -31,33 +134,20 @@ let conversionChart = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando CRM Solar...');
 
-    // Verificar conexão Supabase
-    try {
-        const { data, error } = await supabase.from('leads').select('count');
-        if (error) {
-            console.error('Erro ao conectar Supabase:', error);
-            showNotification('Erro ao conectar com o banco de dados', 'danger');
-        } else {
-            console.log('✅ Supabase conectado!');
-        }
-    } catch (err) {
-        console.error('Erro crítico:', err);
+    // Verificar se há sessão ativa
+    const hasSession = await checkSession();
+
+    if (hasSession) {
+        // Carregar dados se já estiver logado
+        await loadAllData();
+        await loadCurrentUser();
+        initializeKanban();
+        setupEventListeners();
+        setInterval(refreshData, 30000);
+    } else {
+        // Mostrar tela de login
+        console.log('📋 Exibindo tela de login...');
     }
-
-    // Carregar dados iniciais
-    await loadAllData();
-
-    // Carregar informações do usuário
-    await loadCurrentUser();
-
-    // Inicializar Kanban Drag & Drop
-    initializeKanban();
-
-    // Configurar event listeners
-    setupEventListeners();
-
-    // Atualizar automaticamente a cada 30 segundos
-    setInterval(refreshData, 30000);
 });
 
 // =========================================
