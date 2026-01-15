@@ -134,20 +134,23 @@ let conversionChart = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando CRM Solar...');
 
-    // Verificar se há sessão ativa
-    const hasSession = await checkSession();
+    // TEMPORÁRIO: Pular autenticação e entrar direto
+    currentUser = {
+        email: 'neurekaai@gmail.com',
+        id: '43e3509e-1d15-400f-a81e-09e2917ba30b',
+        user_metadata: { nome: 'Neureka' }
+    };
 
-    if (hasSession) {
-        // Carregar dados se já estiver logado
-        await loadAllData();
-        await loadCurrentUser();
-        initializeKanban();
-        setupEventListeners();
-        setInterval(refreshData, 30000);
-    } else {
-        // Mostrar tela de login
-        console.log('📋 Exibindo tela de login...');
-    }
+    // Esconder login e mostrar CRM
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('crmApp').classList.remove('hidden');
+
+    // Carregar dados
+    await loadAllData();
+    await loadCurrentUser();
+    initializeKanban();
+    setupEventListeners();
+    setInterval(refreshData, 30000);
 });
 
 // =========================================
