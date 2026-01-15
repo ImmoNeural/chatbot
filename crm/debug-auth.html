@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Auth</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Debug Supabase Auth</h1>
+    <button onclick="testarLogin()">Testar Login</button>
+    <div id="resultado"></div>
+
+    <script>
+        // Configuração inline (sem const separado)
+        const clienteSupabase = window.supabase.createClient(
+            'https://zralzmgsdmwispfvgqvy.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8'
+        );
+
+        console.log('Cliente criado:', clienteSupabase);
+
+        async function testarLogin() {
+            console.log('Iniciando teste...');
+
+            const resultado = await clienteSupabase.auth.signInWithPassword({
+                email: 'neurekaai@gmail.com',
+                password: '123456'
+            });
+
+            document.getElementById('resultado').innerHTML = JSON.stringify(resultado, null, 2);
+            console.log('Resultado:', resultado);
+        }
+    </script>
+</body>
+</html>
