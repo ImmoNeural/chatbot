@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CRM Solar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .login-logo svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .form-error {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .form-error.visible {
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 24px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider-text {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password a {
+            font-size: 13px;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .register-link a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Formulário de Registro */
+        .register-form {
+            display: none;
+        }
+
+        .register-form.visible {
+            display: block;
+        }
+
+        .login-form.hidden {
+            display: none;
+        }
+
+        /* Formulário de Recuperação */
+        .forgot-form {
+            display: none;
+        }
+
+        .forgot-form.visible {
+            display: block;
+        }
+
+        /* Loading */
+        .btn-loading {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.visible {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Back link */
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Row for two inputs */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Login Form -->
+            <div class="login-form" id="loginForm">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1zM4.22 4.22a1 1 0 0 1 1.42 0l.7.7a1 1 0 0 1-1.41 1.42l-.71-.7a1 1 0 0 1 0-1.42zm14.14 14.14a1 1 0 0 1 1.42 0l.7.7a1 1 0 0 1-1.41 1.42l-.71-.7a1 1 0 0 1 0-1.42zM2 12a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2H3a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2h-1a1 1 0 0 1-1-1zM4.22 19.78a1 1 0 0 1 0-1.42l.7-.7a1 1 0 0 1 1.42 1.41l-.7.71a1 1 0 0 1-1.42 0zm14.14-14.14a1 1 0 0 1 0-1.42l.7-.7a1 1 0 0 1 1.42 1.41l-.7.71a1 1 0 0 1-1.42 0z"/>
+                        </svg>
+                    </div>
+                    <h1 class="login-title">CRM Solar</h1>
+                    <p class="login-subtitle">Entre na sua conta para continuar</p>
+                </div>
+
+                <div class="alert alert-error" id="loginAlert"></div>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Senha</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Sua senha" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="forgot-password">
+                        <a href="#" onclick="showForgotForm()">Esqueci minha senha</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="loginBtn">
+                        Entrar
+                    </button>
+                </form>
+
+                <div class="register-link">
+                    Ainda não tem conta? <a href="#" onclick="showRegisterForm()">Cadastre-se grátis</a>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="register-form" id="registerForm">
+                <a href="#" class="back-link" onclick="showLoginForm()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Voltar ao login
+                </a>
+
+                <div class="login-header">
+                    <h1 class="login-title">Criar Conta</h1>
+                    <p class="login-subtitle">Cadastre sua empresa e comece a usar</p>
+                </div>
+
+                <div class="alert" id="registerAlert"></div>
+
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label class="form-label">Nome da Empresa</label>
+                        <input type="text" class="form-input" id="registerEmpresa" placeholder="Minha Empresa Solar" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Seu Nome</label>
+                            <input type="text" class="form-input" id="registerNome" placeholder="João Silva" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cargo</label>
+                            <select class="form-input" id="registerCargo">
+                                <option value="admin">Administrador</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="vendedor">Vendedor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-input" id="registerEmail" placeholder="seu@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Telefone</label>
+                        <input type="tel" class="form-input" id="registerTelefone" placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Senha</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
+                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirmar Senha</label>
+                        <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Repita a senha" required>
+                        <p class="form-error" id="passwordError">As senhas não conferem</p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="registerBtn">
+                        Criar Conta Grátis
+                    </button>
+                </form>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div class="forgot-form" id="forgotForm">
+                <a href="#" class="back-link" onclick="showLoginForm()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Voltar ao login
+                </a>
+
+                <div class="login-header">
+                    <h1 class="login-title">Recuperar Senha</h1>
+                    <p class="login-subtitle">Digite seu e-mail para receber o link de recuperação</p>
+                </div>
+
+                <div class="alert" id="forgotAlert"></div>
+
+                <form onsubmit="handleForgotPassword(event)">
+                    <div class="form-group">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-input" id="forgotEmail" placeholder="seu@email.com" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="forgotBtn">
+                        Enviar Link de Recuperação
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuração Supabase
+        const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Verificar se já está logado
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = 'index.html';
+            }
+        }
+        checkAuth();
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Show/Hide forms
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.remove('visible');
+            document.getElementById('forgotForm').classList.remove('visible');
+            clearAlerts();
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('visible');
+            document.getElementById('forgotForm').classList.remove('visible');
+            clearAlerts();
+        }
+
+        function showForgotForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('visible');
+            document.getElementById('forgotForm').classList.add('visible');
+            clearAlerts();
+        }
+
+        function clearAlerts() {
+            document.querySelectorAll('.alert').forEach(el => {
+                el.classList.remove('visible');
+                el.textContent = '';
+            });
+        }
+
+        function showAlert(elementId, message, type) {
+            const alert = document.getElementById(elementId);
+            alert.textContent = message;
+            alert.className = `alert alert-${type} visible`;
+        }
+
+        function setLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            if (loading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="btn-loading"><span class="spinner"></span> Aguarde...</span>';
+            } else {
+                btn.disabled = false;
+                btn.textContent = btn.dataset.originalText || 'Enviar';
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const btn = document.getElementById('loginBtn');
+            btn.dataset.originalText = btn.textContent;
+            setLoading('loginBtn', true);
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                // Redirecionar para o CRM
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error('Erro no login:', error);
+                let message = 'Erro ao fazer login. Tente novamente.';
+                if (error.message.includes('Invalid login')) {
+                    message = 'E-mail ou senha incorretos';
+                }
+                showAlert('loginAlert', message, 'error');
+            } finally {
+                setLoading('loginBtn', false);
+                document.getElementById('loginBtn').textContent = 'Entrar';
+            }
+        }
+
+        // Handle Register
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const empresaNome = document.getElementById('registerEmpresa').value;
+            const nome = document.getElementById('registerNome').value;
+            const cargo = document.getElementById('registerCargo').value;
+            const email = document.getElementById('registerEmail').value;
+            const telefone = document.getElementById('registerTelefone').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            // Validar senhas
+            if (password !== passwordConfirm) {
+                document.getElementById('passwordError').classList.add('visible');
+                return;
+            }
+            document.getElementById('passwordError').classList.remove('visible');
+
+            const btn = document.getElementById('registerBtn');
+            btn.dataset.originalText = btn.textContent;
+            setLoading('registerBtn', true);
+
+            try {
+                // 1. Primeiro criar a empresa
+                const { data: empresaData, error: empresaError } = await supabase
+                    .from('empresas')
+                    .insert({ nome: empresaNome })
+                    .select()
+                    .single();
+
+                if (empresaError) throw empresaError;
+
+                const empresaId = empresaData.id;
+
+                // 2. Criar usuário no Supabase Auth com empresa_id nos metadados
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            nome: nome,
+                            empresa_id: empresaId,
+                            role: cargo === 'admin' ? 'admin' : 'user',
+                            telefone: telefone
+                        }
+                    }
+                });
+
+                if (error) {
+                    // Se falhar ao criar usuário, deletar a empresa criada
+                    await supabase.from('empresas').delete().eq('id', empresaId);
+                    throw error;
+                }
+
+                showAlert('registerAlert', 'Conta criada com sucesso! Verifique seu e-mail para confirmar o cadastro.', 'success');
+
+                // Limpar formulário
+                e.target.reset();
+
+            } catch (error) {
+                console.error('Erro no cadastro:', error);
+                let message = 'Erro ao criar conta. Tente novamente.';
+                if (error.message.includes('already registered')) {
+                    message = 'Este e-mail já está cadastrado';
+                }
+                showAlert('registerAlert', message, 'error');
+            } finally {
+                setLoading('registerBtn', false);
+                document.getElementById('registerBtn').textContent = 'Criar Conta Grátis';
+            }
+        }
+
+        // Handle Forgot Password
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+
+            const btn = document.getElementById('forgotBtn');
+            btn.dataset.originalText = btn.textContent;
+            setLoading('forgotBtn', true);
+
+            try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/crm/reset-password.html'
+                });
+
+                if (error) throw error;
+
+                showAlert('forgotAlert', 'E-mail enviado! Verifique sua caixa de entrada.', 'success');
+
+            } catch (error) {
+                console.error('Erro na recuperação:', error);
+                showAlert('forgotAlert', 'Erro ao enviar e-mail. Verifique o endereço e tente novamente.', 'error');
+            } finally {
+                setLoading('forgotBtn', false);
+                document.getElementById('forgotBtn').textContent = 'Enviar Link de Recuperação';
+            }
+        }
+    </script>
+</body>
+</html>

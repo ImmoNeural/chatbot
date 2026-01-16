@@ -1,0 +1,527 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage[margin=1.5cm, top=2cm, bottom=2cm]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{float}
+
+% Cores
+\definecolor{primary}{RGB}{6,162,136}
+\definecolor{secondary}{RGB}{7,95,110}
+
+% Configuração do hyperref para campos editáveis
+\hypersetup{
+    pdftitle={Proposta Comercial CRM Solar},
+    pdfauthor={My Clever Bot},
+    colorlinks=true,
+    linkcolor=secondary,
+    urlcolor=primary
+}
+
+% Cabeçalho e rodapé
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{gray}{Proposta Comercial - CRM Solar}}
+\fancyhead[R]{\small\textcolor{gray}{Página \thepage}}
+\fancyfoot[C]{\small\textcolor{gray}{My Clever Bot Tecnologia em Inteligência Artificial LTDA | CNPJ: 62.050.286/0001-77}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Estilo de títulos
+\titleformat{\section}{\Large\bfseries\color{primary}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{secondary}}{\thesubsection}{0.5em}{}
+
+% Comandos para campos editáveis
+\newcommand{\campo}[2]{%
+    \TextField[name=#1, width=#2, bordercolor=primary, backgroundcolor=yellow!10, charsize=10pt]{}%
+}
+\newcommand{\campomulti}[3]{%
+    \TextField[name=#1, width=#2, height=#3, multiline=true, bordercolor=primary, backgroundcolor=yellow!10, charsize=10pt]{}%
+}
+
+\begin{document}
+\begin{Form}
+
+% ===========================================
+% CAPA (Página 1 - sem cabeçalho)
+% ===========================================
+\thispagestyle{empty}
+
+\begin{center}
+{\LARGE\bfseries\textcolor{primary}{PROPOSTA COMERCIAL}}\\[0.5em]
+{\large\textcolor{secondary}{CRM Solar - Sistema de Gestão Completo}}\\[0.3em]
+{\large\textcolor{secondary}{para Empresas de Energia Solar}}\\[1em]
+\rule{\textwidth}{2pt}
+\end{center}
+
+\vspace{0.5em}
+
+% Imagem de campo solar
+\begin{center}
+\includegraphics[width=0.9\textwidth]{solar-field.jpg}
+\end{center}
+
+\vspace{0.5em}
+
+\begin{center}
+\begin{tabular}{lcl}
+\textbf{Versão:} & & 1.0 \\
+\textbf{Data:} & & 12 de Dezembro de 2025 \\
+\textbf{Validade:} & & 7 dias corridos \\
+\end{tabular}
+\end{center}
+
+\vspace{1em}
+\rule{\textwidth}{1pt}
+
+\vfill
+
+\begin{center}
+\textbf{\large MY CLEVER BOT}\\[0.3em]
+\textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}\\[0.3em]
+\textcolor{gray}{CNPJ: 62.050.286/0001-77}
+\end{center}
+
+\clearpage
+
+% ===========================================
+% PÁGINA 2 em diante
+% ===========================================
+\section{APRESENTAÇÃO DO SISTEMA}
+% ===========================================
+
+O \textbf{CRM Solar} é uma solução completa e moderna para gestão de empresas de energia fotovoltaica, desenvolvida com tecnologias de ponta para maximizar a conversão de leads e otimizar processos comerciais.
+
+\subsection{Tecnologias Utilizadas}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{primary!20}
+\textbf{Componente} & \textbf{Tecnologia} & \textbf{Benefício} \\
+\hline
+Frontend & HTML5, CSS3, JavaScript & Interface responsiva \\
+\hline
+Backend & Supabase (PostgreSQL) & Escalabilidade \\
+\hline
+Autenticação & Supabase Auth & Login seguro com 2FA \\
+\hline
+Chatbot & Widget customizado & Captação automática \\
+\hline
+Mensageria & WhatsApp API & Comunicação oficial \\
+\hline
+Hospedagem & Cloud flexível & Alta disponibilidade \\
+\hline
+\end{tabular}
+\end{center}
+
+% ===========================================
+\section{FUNCIONALIDADES INCLUÍDAS}
+% ===========================================
+
+\subsection{Gestão de Leads}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Captação automática} via chatbot inteligente no site
+    \item \textbf{Qualificação automatizada} com perguntas personalizadas
+    \item \textbf{Lead Scoring} (0-100 pontos) baseado em critérios configuráveis
+    \item \textbf{Importação/Exportação} de dados em CSV e Excel
+    \item \textbf{Download de dados e documentos} do cliente em um clique
+\end{itemize}
+
+\subsection{Kanban de Oportunidades}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Visualização em colunas} das etapas do funil de vendas
+    \item \textbf{Drag \& Drop} para movimentação manual
+    \item \textbf{Movimentação semi-automática} progressiva ou retrógrada baseada em regras
+    \item \textbf{Filtros avançados} por vendedor, período, valor
+\end{itemize}
+
+\subsection{Propostas Comerciais}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Geração automática} de propostas em PDF
+    \item \textbf{Memorial técnico} com dimensionamento solar
+    \item \textbf{Cálculo de ROI} e payback automático
+    \item \textbf{Versionamento} de propostas
+\end{itemize}
+
+\subsection{Comunicação Integrada}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{WhatsApp API} integrada
+    \item \textbf{Templates} de mensagens aprovados
+    \item \textbf{Histórico completo} de conversas por lead
+    \item \textbf{Chatbot 24/7} para atendimento inicial
+\end{itemize}
+
+\subsection{Automações}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Nutrição automática} de leads frios
+    \item \textbf{Alertas de follow-up} por inatividade
+    \item \textbf{Marcação automática} de leads perdidos (30+ dias sem resposta)
+    \item \textbf{Distribuição round-robin} de leads entre vendedores
+\end{itemize}
+
+\subsection{Relatórios e Dashboards}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Dashboard em tempo real} com KPIs principais
+    \item \textbf{Taxa de conversão} por etapa do funil
+    \item \textbf{Gráfico de número de leads} por status
+    \item \textbf{Gráfico de propostas} residenciais e empresariais
+    \item \textbf{Projeção de receita} (pipeline)
+\end{itemize}
+
+\subsection{Multi-tenant (SaaS)}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Isolamento total} de dados por empresa
+    \item \textbf{Planos flexíveis} (Microempresa, Pequeno Porte, Plus)
+    \item \textbf{Customização} de logo, cores e estilo da proposta por tenant
+    \item \textbf{Gestão de usuários} e permissões
+\end{itemize}
+
+% ===========================================
+\section{NOVOS RECURSOS DESTA VERSÃO}
+% ===========================================
+
+\subsection{Download de Dados e Documentos}
+
+Funcionalidade que permite baixar todas as informações e documentos de um cliente:
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{primary!20}
+\textbf{Recurso} & \textbf{Descrição} \\
+\hline
+Exportar Lead & Dados cadastrais, qualificação, histórico \\
+\hline
+Documentos & Propostas, contratos, ARTs em ZIP \\
+\hline
+Interações & Timeline completa de comunicações \\
+\hline
+Formato & PDF consolidado ou arquivos separados \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Movimentação Semi-Automática do Kanban}
+
+Sistema inteligente de progressão e retrocesso de cards:
+
+\textbf{Progressão Automática:}
+\begin{itemize}[noitemsep]
+    \item Qualificado $\rightarrow$ Proposta Enviada (quando proposta é gerada)
+    \item Proposta Enviada $\rightarrow$ Em Negociação (quando cliente visualiza)
+    \item Em Negociação $\rightarrow$ Contrato (quando proposta é aceita)
+\end{itemize}
+
+\textbf{Retrocesso Automático:}
+\begin{itemize}[noitemsep]
+    \item Em Negociação $\rightarrow$ Qualificado (após 14 dias sem interação)
+    \item Qualificado $\rightarrow$ Em Nutrição (após 7 dias + 3 tentativas)
+\end{itemize}
+
+\textbf{Customizável} de acordo com a necessidade do comprador da Propriedade Intelectual.
+
+% ===========================================
+\section{RECURSOS ADICIONAIS (OPCIONAIS)}
+% ===========================================
+
+\subsection{Tradução para Espanhol}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{primary!20}
+\textbf{Item} & \textbf{Descrição} \\
+\hline
+Escopo & Interface completa do CRM, chatbot, propostas \\
+\hline
+Método & Seletor de idiomas (Português / Espanhol) \\
+\hline
+\rowcolor{yellow!20}
+\textbf{Investimento} & \textbf{R\$ 5.000,00} \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Módulo de Eletromobilidade}
+
+Expansão do sistema para incluir gestão de projetos de carregadores de veículos elétricos:
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{primary!20}
+\textbf{Funcionalidade} & \textbf{Descrição} \\
+\hline
+Qualificação EV & Chatbot específico para eletromobilidade \\
+\hline
+Campos técnicos & Garagem, veículos, kVA, distância ao quadro \\
+\hline
+Dimensionamento & Cálculo de carregadores (7kW a 150kW) \\
+\hline
+Propostas EV & Templates para venda, locação, EV as a Service \\
+\hline
+Checklist & Vistoria para instalação de carregadores \\
+\hline
+\rowcolor{yellow!20}
+\textbf{Investimento} & \textbf{R\$ 15.000,00} \\
+\hline
+\end{tabular}
+\end{center}
+
+% ===========================================
+\section{CUSTOS OPERACIONAIS MENSAIS}
+% ===========================================
+
+A COMPRADORA será responsável pelos custos operacionais de infraestrutura e APIs:
+
+\begin{center}
+\begin{tabular}{|l|l|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Serviço} & \textbf{Descrição} & \textbf{Custo Est.} \\
+\hline
+Banco de Dados + Auth & PostgreSQL gerenciado & US\$ 25/mês \\
+\hline
+WhatsApp API & API oficial de mensagens & US\$ 20/mês \\
+\hline
+Domínio & Registro anual & US\$ 3/mês \\
+\hline
+Hospedagem & Hostgator ou similar & US\$ 10/mês \\
+\hline
+\rowcolor{yellow!20}
+\textbf{Total Estimado} & & \textbf{< US\$ 60/mês} \\
+\hline
+\end{tabular}
+\end{center}
+
+% ===========================================
+\section{PLANOS DE ASSINATURA (SaaS)}
+% ===========================================
+
+Para seus clientes finais:
+
+\begin{center}
+\begin{tabular}{|l|c|c|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Plano} & \textbf{Usuários} & \textbf{Leads/mês} & \textbf{Preço Sugerido} \\
+\hline
+Microempresa & Até 2 & Até 100 & R\$ 80/mês \\
+\hline
+Pequeno Porte & Até 5 & Até 500 & R\$ 250/mês \\
+\hline
+Pequeno Porte Plus & Até 10 & Ilimitado & R\$ 400+/mês \\
+\hline
+\end{tabular}
+\end{center}
+
+% ===========================================
+\section{RESUMO DO INVESTIMENTO}
+% ===========================================
+
+\subsection{Sistema Base}
+
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Item} & \textbf{Valor} \\
+\hline
+CRM Solar completo com todas as funcionalidades & Incluído \\
+\hline
+Chatbot de qualificação de leads & Incluído \\
+\hline
+Kanban semi-automático & Incluído \\
+\hline
+Download de dados/documentos & Incluído \\
+\hline
+Multi-tenant (SaaS) & Incluído \\
+\hline
+Integração WhatsApp API & Incluído \\
+\hline
+Suporte 90 dias + 8h treinamento & Incluído \\
+\hline
+\rowcolor{yellow!20}
+\textbf{TOTAL SISTEMA BASE} & \textbf{R\$ 30.000,00} \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Módulos Adicionais (Opcionais)}
+
+\begin{center}
+\begin{tabular}{|c|l|r|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Sel.} & \textbf{Módulo} & \textbf{Valor} & \textbf{Total c/ Base} \\
+\hline
+\CheckBox[name=opt_espanhol, width=0.5cm]{} & Tradução Espanhol & R\$ 5.000 & R\$ 35.000 \\
+\hline
+\CheckBox[name=opt_eletromobilidade, width=0.5cm]{} & Eletromobilidade & R\$ 15.000 & R\$ 45.000 \\
+\hline
+\rowcolor{yellow!20}
+\CheckBox[name=opt_combo, width=0.5cm]{} & Combo (ambos com 10\% desc.) & R\$ 18.000 & R\$ 48.000 \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+\textit{Marque a opção desejada. O valor total será: Base (R\$ 30.000) + Módulo selecionado.}
+
+\textit{Nota: Os prazos de entrega dos módulos adicionais são somados à data de 31 de Janeiro de 2026.}
+
+\subsection{Custos Recorrentes}
+
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Item} & \textbf{Custo} \\
+\hline
+APIs + Infraestrutura & < US\$ 60/mês (R\$ 360) \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{TOTAL GERAL DO INVESTIMENTO}
+
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline
+\rowcolor{primary!20}
+\textbf{Descrição} & \textbf{Valor} \\
+\hline
+Sistema Base (todas funcionalidades) & R\$ 30.000,00 \\
+\hline
++ Tradução Espanhol (opcional) & R\$ 5.000,00 \\
+\hline
++ Eletromobilidade (opcional) & R\$ 15.000,00 \\
+\hline
++ Combo com 10\% desc. (opcional) & R\$ 18.000,00 \\
+\hline
+\rowcolor{green!20}
+\textbf{TOTAL (preencher):} & \TextField[name=total_final, width=3.5cm, backgroundcolor=green!20, charsize=12pt]{} \\
+\hline
+\end{tabular}
+\end{center}
+
+% ===========================================
+\section{CONDIÇÕES COMERCIAIS}
+% ===========================================
+
+\subsection{Forma de Pagamento}
+
+\begin{center}
+\begin{tabular}{|l|c|r|l|}
+\hline
+\rowcolor{primary!20}
+\textbf{Parcela} & \textbf{Percentual} & \textbf{Valor} & \textbf{Vencimento} \\
+\hline
+Sinal & 15\% & \TextField[name=valor_sinal, width=2.5cm, backgroundcolor=white, charsize=10pt]{} & No ato da assinatura \\
+\hline
+\rowcolor{yellow!20}
+Parcela Final & 85\% & \TextField[name=valor_final, width=2.5cm, backgroundcolor=yellow!20, charsize=10pt]{} & 31 de Janeiro de 2026 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textit{Exemplo: Para Sistema Base (R\$ 30.000): Sinal = R\$ 4.500 | Final = R\$ 25.500}
+
+\subsection{Prazo de Entrega (Módulos Adicionais)}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{primary!20}
+\textbf{Módulo} & \textbf{Prazo após 31/Jan/2026} \\
+\hline
+Tradução Espanhol & + 15 dias úteis \\
+\hline
+Eletromobilidade & + 30 dias úteis \\
+\hline
+Combo & + 40 dias úteis \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection{Garantia e Suporte}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Garantia:} 90 dias para correção de bugs
+    \item \textbf{Suporte:} Via WhatsApp/Email em horário comercial
+    \item \textbf{Treinamento:} 8 horas incluídas
+    \item \textbf{Documentação:} Manual completo do sistema
+\end{itemize}
+
+% ===========================================
+\section{PRÓXIMOS PASSOS}
+% ===========================================
+
+\begin{enumerate}
+    \item \textbf{Aprovação} desta proposta
+    \item \textbf{Pagamento} do sinal (15\%)
+    \item \textbf{Kickoff} do projeto
+    \item \textbf{Desenvolvimento} conforme cronograma
+    \item \textbf{Homologação} e ajustes
+    \item \textbf{Entrega} e treinamento
+    \item \textbf{Go-live}
+\end{enumerate}
+
+% ===========================================
+\section{CONTATO}
+% ===========================================
+
+\begin{center}
+\textbf{\large MY CLEVER BOT}\\[0.3em]
+\textbf{TECNOLOGIA EM INTELIGÊNCIA ARTIFICIAL LTDA}\\[0.3em]
+CNPJ: 62.050.286/0001-77
+\end{center}
+
+\vspace{1em}
+
+\begin{center}
+\rule{0.8\textwidth}{0.5pt}\\[0.5em]
+\textit{Esta proposta tem validade de \textbf{7 dias corridos} a partir da data de emissão.}\\[0.5em]
+\rule{0.8\textwidth}{0.5pt}
+\end{center}
+
+\vspace{2em}
+
+% ===========================================
+\section{ACEITE}
+% ===========================================
+
+Declaro que li e aceito os termos desta proposta comercial.
+
+\vspace{1.5em}
+
+\begin{tabular}{ll}
+\textbf{Nome:} & \campo{aceite_nome}{10cm} \\[1em]
+\textbf{Empresa:} & \campo{aceite_empresa}{10cm} \\[1em]
+\textbf{Data:} & \campo{aceite_data}{5cm} \\[2em]
+\textbf{Assinatura:} & \rule{10cm}{0.4pt} \\
+\end{tabular}
+
+\vspace{1em}
+\begin{center}
+\textit{\small Este documento pode ser assinado eletronicamente.}
+\end{center}
+
+\end{Form}
+\end{document}

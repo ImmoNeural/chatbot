@@ -1,7 +1,14 @@
-// Interactive Chat Widget for n8n - Versão com Funil de Qualificação
+// Interactive Chat Widget for n8n - Versão v238 Sunbotic Theme
 (function() {
-    // Initialize widget only once
-    if (window.N8nChatWidgetLoaded) return;
+    // Remove widget anterior se existir (força atualização de cores)
+    const oldWidget = document.querySelector('.chat-assist-widget');
+    if (oldWidget) oldWidget.remove();
+    const oldStyles = document.querySelectorAll('style[data-chat-widget]');
+    oldStyles.forEach(s => s.remove());
+
+    // Initialize widget v238
+    if (window.N8nChatWidgetV238) return;
+    window.N8nChatWidgetV238 = true;
     window.N8nChatWidgetLoaded = true;
 
     // Load font resource - using Poppins for a fresh look
@@ -10,21 +17,27 @@
     fontElement.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap';
     document.head.appendChild(fontElement);
 
-    // Apply widget styles with a modern design approach
+    // Apply widget styles with a modern design approach - Sunbotic Theme
     const widgetStyles = document.createElement('style');
     widgetStyles.textContent = `
         .chat-assist-widget {
-            --chat-color-primary: var(--chat-widget-primary, #667eea);
-            --chat-color-secondary: var(--chat-widget-secondary, #764ba2);
-            --chat-color-tertiary: var(--chat-widget-tertiary, #a1b3df);
-            --chat-color-light: var(--chat-widget-light, #d4eaf9);
-            --chat-color-surface: var(--chat-widget-surface, #ffffff);
-            --chat-color-text: var(--chat-widget-text, #1f2937);
-            --chat-color-text-light: var(--chat-widget-text-light, #6b7280);
-            --chat-color-border: var(--chat-widget-border, #e5e7eb);
-            --chat-shadow-sm: 0 1px 3px rgba(7, 247, 191, 0.1);
-            --chat-shadow-md: 0 4px 6px rgba(7, 247, 191, 0.15);
-            --chat-shadow-lg: 0 10px 15px rgba(7, 247, 191, 0.2);
+            --chat-color-primary: #06a288;
+            --chat-color-secondary: #075f6e;
+            --chat-color-tertiary: #bdfbff;
+            --chat-color-light: #e0f7f5;
+            --chat-color-surface: #ffffff;
+            --chat-color-text: #1f2937;
+            --chat-color-text-light: #6b7280;
+            --chat-color-border: #e5e7eb;
+            --chat-button-primary: #bdfbff;
+            --chat-button-secondary: #2d3748;
+            --chat-bubble-bg: #ffffff;
+            --chat-bubble-text: #202c3c;
+            --chat-avatar-primary: #06a288;
+            --chat-avatar-secondary: #075f6e;
+            --chat-shadow-sm: 0 1px 3px rgba(6, 162, 136, 0.1);
+            --chat-shadow-md: 0 4px 6px rgba(6, 162, 136, 0.15);
+            --chat-shadow-lg: 0 10px 15px rgba(6, 162, 136, 0.2);
             --chat-radius-sm: 8px;
             --chat-radius-md: 12px;
             --chat-radius-lg: 20px;
@@ -182,7 +195,7 @@
         }
 
         .chat-assist-widget .chat-bubble.user-bubble {
-            background: linear-gradient(135deg, var(--chat-widget-primarybubble) 0%, var(--chat-widget-secondarybubble) 100%);
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%);
             color: white;
             align-self: flex-end;
             border-bottom-right-radius: 4px;
@@ -190,8 +203,8 @@
         }
 
         .chat-assist-widget .chat-bubble.bot-bubble {
-            background: white;
-            color: var(--chat-color-text);
+            background: #ffffff;
+            color: #202c3c;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
             box-shadow: var(--chat-shadow-sm);
@@ -210,7 +223,7 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -514,22 +527,22 @@
         }
 
         .blue-button {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
             color: white !important;
         }
 
         .green-button {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
             color: white !important;
         }
 
         .orange-button {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
             color: white !important;
         }
 
         .yellow-button {
-            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
             color: white !important;
         }
 
@@ -604,22 +617,30 @@
     `;
     document.head.appendChild(widgetStyles);
 
-    // Default configuration
+    // Default configuration - Sunbotic Theme
     const defaultSettings = {
         webhook: { url: '', route: '' },
         branding: {
-            logo: '',
-            name: 'Chat Assistant',
-            welcomeText: 'Hello! How can I help you today?',
-            responseTimeText: 'Responds in a few seconds',
+            logo: 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png',
+            name: 'Sunbotic 🌞 Energia Solar',
+            welcomeText: 'Olá! Como posso ajudá-lo hoje?',
+            responseTimeText: 'Responde em segundos',
             poweredBy: { text: 'Powered by Neureka AI', link: 'https://neureka-ai.com' }
         },
         style: {
-            primaryColor: '#10b981',
-            secondaryColor: '#059669',
+            primaryColor: '#06a288',
+            secondaryColor: '#075f6e',
             position: 'right',
             backgroundColor: '#ffffff',
             fontColor: '#1f2937'
+        },
+        customStyles: {
+            buttonPrimary: '#bdfbff',
+            buttonSecondary: '#2d3748',
+            bubbleBackground: '#ffffff',
+            bubbleText: '#202c3c',
+            avatarPrimary: '#06a288',
+            avatarSecondary: '#075f6e'
         },
         suggestedQuestions: []
     };
@@ -629,6 +650,7 @@
         webhook: { ...defaultSettings.webhook, ...window.ChatWidgetConfig.webhook },
         branding: { ...defaultSettings.branding, ...window.ChatWidgetConfig.branding },
         style: { ...defaultSettings.style, ...window.ChatWidgetConfig.style },
+        customStyles: { ...defaultSettings.customStyles, ...window.ChatWidgetConfig.customStyles },
         suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions
     } : defaultSettings;
 
@@ -696,6 +718,16 @@
     widgetRoot.style.setProperty('--chat-widget-secondary', settings.style.secondaryColor);
     widgetRoot.style.setProperty('--chat-widget-surface', settings.style.backgroundColor);
     widgetRoot.style.setProperty('--chat-widget-text', settings.style.fontColor);
+
+    // Apply customStyles
+    widgetRoot.style.setProperty('--chat-widget-button-primary', settings.customStyles.buttonPrimary);
+    widgetRoot.style.setProperty('--chat-widget-button-secondary', settings.customStyles.buttonSecondary);
+    widgetRoot.style.setProperty('--chat-widget-bubble-bg', settings.customStyles.bubbleBackground);
+    widgetRoot.style.setProperty('--chat-widget-bubble-text', settings.customStyles.bubbleText);
+    widgetRoot.style.setProperty('--chat-widget-avatar-primary', settings.customStyles.avatarPrimary);
+    widgetRoot.style.setProperty('--chat-widget-avatar-secondary', settings.customStyles.avatarSecondary);
+    widgetRoot.style.setProperty('--chat-widget-primarybubble', settings.style.primaryColor);
+    widgetRoot.style.setProperty('--chat-widget-secondarybubble', settings.style.secondaryColor);
 
     // Create chat panel
     const chatWindow = document.createElement('div');

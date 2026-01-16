@@ -147,7 +147,7 @@ async function renderStatusNegociacao(leadId) {
         .from('status_negociacao')
         .select('*')
         .eq('lead_id', leadId)
-        .single();
+        .maybeSingle();
 
     const st = status || {};
 
@@ -236,8 +236,11 @@ async function renderStatusNegociacao(leadId) {
 }
 
 async function salvarStatusNegociacao(leadId) {
+    const empresaId = window.currentEmpresa?.id;
+
     const statusData = {
         lead_id: leadId,
+        empresa_id: empresaId,
         cliente_agendou_reuniao: document.getElementById('checkbox-reuniao-agendada').checked,
         data_reuniao_agendada: document.getElementById('data-reuniao').value || null,
         observacoes_reuniao: document.getElementById('obs-reuniao').value
@@ -253,6 +256,7 @@ async function salvarStatusNegociacao(leadId) {
         // Registrar na timeline
         await supabase.from('interacoes').insert([{
             lead_id: leadId,
+            empresa_id: empresaId,
             tipo: 'sistema',
             titulo: 'Status de Negociação Atualizado',
             descricao: statusData.cliente_agendou_reuniao ?
