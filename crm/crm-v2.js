@@ -3,10 +3,12 @@
 // =========================================
 
 // Configuração Supabase
-const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
+const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabaseClient.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Evita redeclaração do supabase
+const supabaseClient = window.supabaseClient || window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.supabaseClient = supabaseClient;
 
 // =========================================
 // AUTENTICAÇÃO
@@ -28,7 +30,7 @@ async function handleLogin(event) {
     loginError.classList.add('hidden');
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -61,7 +63,7 @@ async function handleLogin(event) {
 
 // Verificar sessão ao carregar página
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (session) {
         console.log('✅ Sessão ativa encontrada');
@@ -80,7 +82,7 @@ async function checkSession() {
 
 // Logout
 async function handleLogout() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
 
     // Mostrar tela de login
@@ -99,7 +101,7 @@ async function handleForgotPassword(event) {
     if (!email) return;
 
     try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/reset-password.html'
         });
 
@@ -1657,7 +1659,7 @@ async function salvarQualificacao(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabase.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Qualificação Atualizada',
@@ -1681,7 +1683,7 @@ async function salvarQualificacao(leadId) {
                 .eq('id', leadId);
 
             // Registrar na timeline
-            await supabase.from('interacoes').insert([{
+            await supabaseClient.from('interacoes').insert([{
                 lead_id: leadId,
                 tipo: 'sistema',
                 titulo: 'Lead Qualificado Automaticamente',
@@ -2067,7 +2069,7 @@ async function salvarNovaTarefa() {
 
         // Se tarefa vinculada a lead, registrar na timeline
         if (leadId) {
-            await supabase.from('interacoes').insert([{
+            await supabaseClient.from('interacoes').insert([{
                 lead_id: leadId,
                 tipo: 'tarefa',
                 titulo: `📋 Nova Tarefa: ${titulo}`,
@@ -2579,7 +2581,7 @@ async function abrirReversao(notifId) {
         }
 
         // Chamar função SQL para reverter
-        const { data, error } = await supabase.rpc('reverter_mudanca_automatica', {
+        const { data, error } = await supabaseClient.rpc('reverter_mudanca_automatica', {
             p_historico_id: historico.id,
             p_user_id: null // TODO: pegar user_id do usuário logado
         });
@@ -3392,7 +3394,7 @@ async function uploadDocumento(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabase.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Documento Enviado',
@@ -3605,7 +3607,7 @@ async function enviarPropostaPorEmail(propostaId, leadId) {
     // TODO: Implementar envio de email via API
 
     // Por enquanto, apenas registrar na timeline
-    await supabase.from('interacoes').insert([{
+    await supabaseClient.from('interacoes').insert([{
         lead_id: leadId,
         tipo: 'email',
         titulo: 'Proposta Enviada por Email',
@@ -3745,7 +3747,7 @@ async function salvarStatusNegociacao(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabase.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Status de Negociação Atualizado',
@@ -3940,7 +3942,7 @@ async function salvarAgendamentoInstalacao(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabase.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Instalação Agendada',
@@ -4049,7 +4051,7 @@ async function marcarComoInstalado(leadId) {
             .eq('id', leadId);
 
         // 7. Registrar na timeline
-        await supabase.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: '🎉 Cliente Instalado com Sucesso!',
