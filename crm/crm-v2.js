@@ -3,11 +3,11 @@
 // =========================================
 
 // Configuração Supabase
-const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabaseClient.co';
+const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8';
 
-// Evita redeclaração do supabase
-const supabaseClient = window.supabaseClient || window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Cria cliente Supabase (evita redeclaração)
+const supabaseClient = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 window.supabaseClient = supabaseClient;
 
 // =========================================
@@ -30,7 +30,7 @@ async function handleLogin(event) {
     loginError.classList.add('hidden');
 
     try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
+        const { data, error } = await supabaseClientClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -63,7 +63,7 @@ async function handleLogin(event) {
 
 // Verificar sessão ao carregar página
 async function checkSession() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    const { data: { session } } = await supabaseClientClient.auth.getSession();
 
     if (session) {
         console.log('✅ Sessão ativa encontrada');
@@ -82,7 +82,7 @@ async function checkSession() {
 
 // Logout
 async function handleLogout() {
-    await supabaseClient.auth.signOut();
+    await supabaseClientClient.auth.signOut();
     currentUser = null;
 
     // Mostrar tela de login
@@ -101,7 +101,7 @@ async function handleForgotPassword(event) {
     if (!email) return;
 
     try {
-        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        const { error } = await supabaseClientClient.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/reset-password.html'
         });
 
@@ -188,7 +188,7 @@ async function loadAllData() {
 async function loadCurrentUser() {
     try {
         // Buscar primeiro usuário ativo (para demo)
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('users')
             .select('*')
             .eq('ativo', true)
@@ -211,7 +211,7 @@ async function loadCurrentUser() {
 }
 
 async function loadLeads() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('leads')
         .select('*')
         .order('created_at', { ascending: false });
@@ -226,7 +226,7 @@ async function loadLeads() {
 }
 
 async function loadOportunidades() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('oportunidades')
         .select(`
             *,
@@ -253,7 +253,7 @@ async function loadOportunidades() {
 }
 
 async function loadPropostas() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('propostas')
         .select(`
             *,
@@ -275,7 +275,7 @@ async function loadPropostas() {
 }
 
 async function loadInstalados() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('clientes_instalados')
         .select(`
             *,
@@ -294,7 +294,7 @@ async function loadInstalados() {
 
 async function loadInteracoesStats() {
     // Carregar todas as interações
-    const { data: interacoes, error: intError } = await supabase
+    const { data: interacoes, error: intError } = await supabaseClient
         .from('interacoes')
         .select('lead_id, tipo');
 
@@ -304,7 +304,7 @@ async function loadInteracoesStats() {
     }
 
     // Carregar todas as propostas
-    const { data: props, error: propError } = await supabase
+    const { data: props, error: propError } = await supabaseClient
         .from('propostas')
         .select('oportunidade_id, oportunidades!inner(lead_id)');
 
@@ -313,7 +313,7 @@ async function loadInteracoesStats() {
     }
 
     // Carregar instalações
-    const { data: installs, error: instError } = await supabase
+    const { data: installs, error: instError } = await supabaseClient
         .from('clientes_instalados')
         .select('lead_id');
 
@@ -372,7 +372,7 @@ async function loadInteracoesStats() {
 }
 
 async function loadTarefas() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('tarefas')
         .select(`
             *,
@@ -706,7 +706,7 @@ async function atualizarEtapaOportunidade(id, novaEtapa) {
         }
 
         // Atualizar etapa
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('oportunidades')
             .update({
                 etapa: novaEtapa,
@@ -744,7 +744,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
         switch (etapa) {
             case 'levantamento':
                 // Verificar se tem documentos/fotos ou qualificação preenchida
-                const { data: qualificacao } = await supabase
+                const { data: qualificacao } = await supabaseClient
                     .from('qualificacao')
                     .select('*')
                     .eq('lead_id', leadId)
@@ -761,7 +761,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
             case 'simulacao':
                 // Verificar se tem proposta gerada
                 // Primeiro buscar a oportunidade do lead
-                const { data: oportunidade, error: oppError } = await supabase
+                const { data: oportunidade, error: oppError } = await supabaseClient
                     .from('oportunidades')
                     .select('id')
                     .eq('lead_id', leadId)
@@ -777,7 +777,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
                 }
 
                 // Depois buscar proposta pela oportunidade
-                const { data: propostas, error: propError } = await supabase
+                const { data: propostas, error: propError } = await supabaseClient
                     .from('propostas')
                     .select('*')
                     .eq('oportunidade_id', oportunidade.id);
@@ -796,7 +796,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
 
             case 'proposta':
                 // Verificar se tem dados de negociação
-                const { data: negociacao } = await supabase
+                const { data: negociacao } = await supabaseClient
                     .from('negociacao')
                     .select('*')
                     .eq('lead_id', leadId)
@@ -812,7 +812,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
 
             case 'negociacao':
                 // Verificar se proposta foi aceita
-                const { data: negociacaoStatus } = await supabase
+                const { data: negociacaoStatus } = await supabaseClient
                     .from('negociacao')
                     .select('status_proposta')
                     .eq('lead_id', leadId)
@@ -828,7 +828,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
 
             case 'fechamento':
                 // Verificar se tem ART, homologação e data preenchidos
-                const { data: instalacao } = await supabase
+                const { data: instalacao } = await supabaseClient
                     .from('instalacao')
                     .select('*')
                     .eq('lead_id', leadId)
@@ -1009,7 +1009,7 @@ async function toggleFavorito(oportunidadeId) {
     const novoEstado = !oportunidade.favorito;
 
     // Atualizar no banco
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('oportunidades')
         .update({ favorito: novoEstado })
         .eq('id', oportunidadeId);
@@ -1097,7 +1097,7 @@ async function openLeadModal(leadId) {
     currentLead = lead;
 
     // Buscar oportunidade para determinar o estágio
-    const { data: oportunidade } = await supabase
+    const { data: oportunidade } = await supabaseClient
         .from('oportunidades')
         .select('etapa')
         .eq('lead_id', leadId)
@@ -1202,7 +1202,7 @@ async function salvarNovaInteracao() {
 
     try {
         // Salvar interação
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('interacoes')
             .insert([{
                 lead_id: currentLead.id,
@@ -1216,7 +1216,7 @@ async function salvarNovaInteracao() {
         // Se marcado como tentativa sem resposta, incrementar contador
         if (semResposta) {
             // Buscar valor atual do banco primeiro
-            const { data: leadAtual, error: fetchError } = await supabase
+            const { data: leadAtual, error: fetchError } = await supabaseClient
                 .from('leads')
                 .select('tentativas_contato')
                 .eq('id', currentLead.id)
@@ -1227,7 +1227,7 @@ async function salvarNovaInteracao() {
             } else {
                 const novoValor = (leadAtual.tentativas_contato || 0) + 1;
 
-                const { error: leadError } = await supabase
+                const { error: leadError } = await supabaseClient
                     .from('leads')
                     .update({
                         tentativas_contato: novoValor,
@@ -1376,7 +1376,7 @@ async function saveLead() {
             data_prevista_retorno: document.getElementById('edit-data-retorno').value || null
         };
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('leads')
             .update(updatedData)
             .eq('id', currentLead.id);
@@ -1407,7 +1407,7 @@ async function renderLeadTimeline(leadId) {
     const container = document.getElementById('timeline-container');
 
     // Buscar interações
-    const { data: interacoes, error } = await supabase
+    const { data: interacoes, error } = await supabaseClient
         .from('interacoes')
         .select('*')
         .eq('lead_id', leadId)
@@ -1453,7 +1453,7 @@ async function renderLeadQualificacao(leadId) {
     const container = document.getElementById('qualificacao-content');
 
     // Buscar qualificação
-    const { data: qualificacao, error } = await supabase
+    const { data: qualificacao, error } = await supabaseClient
         .from('qualificacao')
         .select('*')
         .eq('lead_id', leadId)
@@ -1627,7 +1627,7 @@ async function salvarQualificacao(leadId) {
 
     try {
         // Buscar qualificação existente para preservar dados do chatbot
-        const { data: existingQual } = await supabase
+        const { data: existingQual } = await supabaseClient
             .from('qualificacao')
             .select('*')
             .eq('lead_id', leadId)
@@ -1652,14 +1652,14 @@ async function salvarQualificacao(leadId) {
             observacoes: formData.get('observacoes')
         };
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('qualificacao')
             .upsert(qualificacaoData, { onConflict: 'lead_id' });
 
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClient.from('interacoes').insert([{
+        await supabaseClientClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Qualificação Atualizada',
@@ -1669,7 +1669,7 @@ async function salvarQualificacao(leadId) {
         showNotification('Qualificação salva com sucesso!', 'success');
 
         // Buscar lead atualizado com score para verificar se deve qualificar
-        const { data: leadAtualizado } = await supabase
+        const { data: leadAtualizado } = await supabaseClient
             .from('leads')
             .select('lead_score, status')
             .eq('id', leadId)
@@ -1677,13 +1677,13 @@ async function salvarQualificacao(leadId) {
 
         // Se score >= 50, atualizar status para qualificado automaticamente
         if (leadAtualizado && leadAtualizado.lead_score >= 50 && leadAtualizado.status !== 'qualificado') {
-            await supabase
+            await supabaseClient
                 .from('leads')
                 .update({ status: 'qualificado' })
                 .eq('id', leadId);
 
             // Registrar na timeline
-            await supabaseClient.from('interacoes').insert([{
+            await supabaseClientClient.from('interacoes').insert([{
                 lead_id: leadId,
                 tipo: 'sistema',
                 titulo: 'Lead Qualificado Automaticamente',
@@ -1899,7 +1899,7 @@ function renderTarefasColumn(containerId, tarefas, color) {
 
 async function concluirTarefa(tarefaId) {
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('tarefas')
             .update({
                 status: 'concluida',
@@ -1962,7 +1962,7 @@ async function salvarEdicaoTarefa() {
             prioridade
         };
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('tarefas')
             .update(dados)
             .eq('id', currentTaskId);
@@ -1983,7 +1983,7 @@ async function deletarTarefa(tarefaId) {
     if (!confirm('Tem certeza que deseja deletar esta tarefa?')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('tarefas')
             .delete()
             .eq('id', tarefaId);
@@ -2061,7 +2061,7 @@ async function salvarNovaTarefa() {
             lead_id: leadId
         };
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('tarefas')
             .insert([novaTarefaData]);
 
@@ -2069,7 +2069,7 @@ async function salvarNovaTarefa() {
 
         // Se tarefa vinculada a lead, registrar na timeline
         if (leadId) {
-            await supabaseClient.from('interacoes').insert([{
+            await supabaseClientClient.from('interacoes').insert([{
                 lead_id: leadId,
                 tipo: 'tarefa',
                 titulo: `📋 Nova Tarefa: ${titulo}`,
@@ -2322,7 +2322,7 @@ async function salvarNovoLead(event) {
             lead_score: 0
         };
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('leads')
             .insert([novoLead]);
 
@@ -2342,7 +2342,7 @@ async function deleteLead(leadId) {
     if (!confirm('Tem certeza que deseja deletar este lead?')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('leads')
             .delete()
             .eq('id', leadId);
@@ -2403,7 +2403,7 @@ function logout() {
 
 async function loadNotificacoes() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('notificacoes')
             .select('*')
             .order('created_at', { ascending: false })
@@ -2514,7 +2514,7 @@ function formatarDataRelativa(dataString) {
 
 async function marcarComoLida(notifId) {
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('notificacoes')
             .update({ lida: true })
             .eq('id', notifId);
@@ -2538,7 +2538,7 @@ async function marcarTodasLidas() {
 
         if (naoLidas.length === 0) return;
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('notificacoes')
             .update({ lida: true })
             .in('id', naoLidas);
@@ -2566,7 +2566,7 @@ async function abrirReversao(notifId) {
 
     try {
         // Buscar o histórico relacionado a esta notificação
-        const { data: historico, error: histError } = await supabase
+        const { data: historico, error: histError } = await supabaseClient
             .from('historico_mudancas_automaticas')
             .select('*')
             .eq('lead_id', notif.lead_id)
@@ -2581,7 +2581,7 @@ async function abrirReversao(notifId) {
         }
 
         // Chamar função SQL para reverter
-        const { data, error } = await supabaseClient.rpc('reverter_mudanca_automatica', {
+        const { data, error } = await supabaseClientClient.rpc('reverter_mudanca_automatica', {
             p_historico_id: historico.id,
             p_user_id: null // TODO: pegar user_id do usuário logado
         });
@@ -2591,7 +2591,7 @@ async function abrirReversao(notifId) {
         showNotification('Ação revertida com sucesso!', 'success');
 
         // Marcar notificação como respondida
-        await supabase
+        await supabaseClient
             .from('notificacoes')
             .update({ respondida: true })
             .eq('id', notifId);
@@ -2778,7 +2778,7 @@ function renderKanbanFiltered() {
 // =========================================
 async function trackProposta(token) {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('propostas')
             .select('*, oportunidades:oportunidade_id(lead_id, leads:lead_id(nome, email))')
             .eq('token_rastreio', token)
@@ -2791,7 +2791,7 @@ async function trackProposta(token) {
 
         // Registrar visualização se ainda não foi visualizada
         if (!data.data_visualizacao) {
-            await supabase
+            await supabaseClient
                 .from('propostas')
                 .update({
                     data_visualizacao: new Date().toISOString(),
@@ -3114,7 +3114,7 @@ async function gerarPropostaComercial(propostaIndex) {
             console.log('📋 currentLead:', currentLead);
 
             // Buscar oportunidade do lead
-            const { data: oportunidade, error: oppError } = await supabase
+            const { data: oportunidade, error: oppError } = await supabaseClient
                 .from('oportunidades')
                 .select('id')
                 .eq('lead_id', currentLead.id)
@@ -3154,7 +3154,7 @@ async function gerarPropostaComercial(propostaIndex) {
             console.log('⏳ Iniciando insert no Supabase...');
 
             // Salvar proposta no banco SEM .select() primeiro
-            const { data: propostaSalva, error } = await supabase
+            const { data: propostaSalva, error } = await supabaseClient
                 .from('propostas')
                 .insert([dadosProposta]);
 
@@ -3199,7 +3199,7 @@ async function salvarCalculoNoLead(leadId, resultado) {
         // Salvar o cálculo na tabela de interações como nota
         const melhorProposta = resultado.propostas[0];
 
-        await supabase
+        await supabaseClient
             .from('interacoes')
             .insert([{
                 lead_id: leadId,
@@ -3285,7 +3285,7 @@ async function renderDocumentos(leadId) {
     const container = document.getElementById('qualificacao-content');
 
     // Buscar documentos existentes
-    const { data: documentos } = await supabase
+    const { data: documentos } = await supabaseClient
         .from('documentos')
         .select('*')
         .eq('lead_id', leadId)
@@ -3379,7 +3379,7 @@ async function uploadDocumento(leadId) {
     try {
         // Upload para Supabase Storage (simulado - você precisará configurar o storage)
         // Por enquanto, vamos salvar apenas o registro sem o arquivo real
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('documentos')
             .insert([{
                 lead_id: leadId,
@@ -3394,7 +3394,7 @@ async function uploadDocumento(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClient.from('interacoes').insert([{
+        await supabaseClientClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Documento Enviado',
@@ -3414,7 +3414,7 @@ async function deletarDocumento(docId, leadId) {
     if (!confirm('Deseja realmente deletar este documento?')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('documentos')
             .delete()
             .eq('id', docId);
@@ -3495,7 +3495,7 @@ async function renderResumoProposta(leadId) {
     const container = document.getElementById('qualificacao-content');
 
     // Buscar última proposta do lead
-    const { data: propostas } = await supabase
+    const { data: propostas } = await supabaseClient
         .from('propostas')
         .select('*, oportunidades!inner(lead_id)')
         .eq('oportunidades.lead_id', leadId)
@@ -3607,7 +3607,7 @@ async function enviarPropostaPorEmail(propostaId, leadId) {
     // TODO: Implementar envio de email via API
 
     // Por enquanto, apenas registrar na timeline
-    await supabaseClient.from('interacoes').insert([{
+    await supabaseClientClient.from('interacoes').insert([{
         lead_id: leadId,
         tipo: 'email',
         titulo: 'Proposta Enviada por Email',
@@ -3636,7 +3636,7 @@ async function renderStatusNegociacao(leadId) {
     const container = document.getElementById('qualificacao-content');
 
     // Buscar status de negociação
-    const { data: status } = await supabase
+    const { data: status } = await supabaseClient
         .from('status_negociacao')
         .select('*')
         .eq('lead_id', leadId)
@@ -3740,14 +3740,14 @@ async function salvarStatusNegociacao(leadId) {
     };
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('status_negociacao')
             .upsert(statusData, { onConflict: 'lead_id' });
 
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClient.from('interacoes').insert([{
+        await supabaseClientClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Status de Negociação Atualizado',
@@ -3772,7 +3772,7 @@ async function renderInstalacao(leadId) {
     const container = document.getElementById('qualificacao-content');
 
     // Buscar dados de instalação
-    const { data: instalacao } = await supabase
+    const { data: instalacao } = await supabaseClient
         .from('instalacao')
         .select('*')
         .eq('lead_id', leadId)
@@ -3935,14 +3935,14 @@ async function salvarAgendamentoInstalacao(leadId) {
     };
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('instalacao')
             .upsert(instalacaoData, { onConflict: 'lead_id' });
 
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClient.from('interacoes').insert([{
+        await supabaseClientClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Instalação Agendada',
@@ -3969,7 +3969,7 @@ async function marcarComoInstalado(leadId) {
 
     try {
         // 1. Buscar dados do lead
-        const { data: lead, error: leadError } = await supabase
+        const { data: lead, error: leadError } = await supabaseClient
             .from('leads')
             .select('*')
             .eq('id', leadId)
@@ -3978,7 +3978,7 @@ async function marcarComoInstalado(leadId) {
         if (leadError) throw leadError;
 
         // 2. Buscar última proposta aceita
-        const { data: propostas, error: propostaError } = await supabase
+        const { data: propostas, error: propostaError } = await supabaseClient
             .from('propostas')
             .select('*, oportunidades!inner(lead_id)')
             .eq('oportunidades.lead_id', leadId)
@@ -3995,7 +3995,7 @@ async function marcarComoInstalado(leadId) {
         console.log('🔍 Valor final:', proposta?.valor_final);
 
         // 3. Buscar dados de instalação
-        const { data: instalacao, error: instError } = await supabase
+        const { data: instalacao, error: instError } = await supabaseClient
             .from('instalacao')
             .select('*')
             .eq('lead_id', leadId)
@@ -4023,7 +4023,7 @@ async function marcarComoInstalado(leadId) {
             nps: null // Será preenchido depois no pós-venda
         };
 
-        const { error: insertError } = await supabase
+        const { error: insertError } = await supabaseClient
             .from('clientes_instalados')
             .insert([clienteInstaladoData]);
 
@@ -4031,7 +4031,7 @@ async function marcarComoInstalado(leadId) {
 
         // 5. NÃO deletar oportunidade - preservar para manter relacionamento com proposta
         // Apenas marcar como concluída para remover do Kanban
-        const { data: updateData, error: updateOppError } = await supabase
+        const { data: updateData, error: updateOppError } = await supabaseClient
             .from('oportunidades')
             .update({
                 etapa: 'concluida', // Marca como concluída
@@ -4045,13 +4045,13 @@ async function marcarComoInstalado(leadId) {
         console.log('✅ Oportunidade marcada como concluída:', updateData);
 
         // 6. Atualizar status do lead
-        await supabase
+        await supabaseClient
             .from('leads')
             .update({ status: 'instalado' })
             .eq('id', leadId);
 
         // 7. Registrar na timeline
-        await supabaseClient.from('interacoes').insert([{
+        await supabaseClientClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: '🎉 Cliente Instalado com Sucesso!',
