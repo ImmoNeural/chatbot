@@ -89,23 +89,23 @@ ON CONFLICT (lead_id) DO NOTHING;
 -- =========================================
 INSERT INTO oportunidades (id, lead_id, etapa, valor_estimado, probabilidade, data_previsao_fechamento, data_ultima_atualizacao) VALUES
 -- Levantamento
-('0a111111-1111-1111-1111-111111111111', 'b1111111-1111-1111-1111-111111111111', 'levantamento', 32000, 30, '2025-12-15', NOW() - INTERVAL '5 days'),
-('0a222222-2222-2222-2222-222222222222', 'b2222222-2222-2222-2222-222222222222', 'levantamento', 28000, 25, '2025-12-20', NOW() - INTERVAL '3 days'),
+('0a111111-1111-1111-1111-111111111111', 'b1111111-1111-1111-1111-111111111111', 'levantamento', 32000, 30, '2026-01-30', NOW() - INTERVAL '5 days'),
+('0a222222-2222-2222-2222-222222222222', 'b2222222-2222-2222-2222-222222222222', 'levantamento', 28000, 25, '2026-02-05', NOW() - INTERVAL '3 days'),
 
 -- Simulação
-('0a333333-3333-3333-3333-333333333333', '71111111-1111-1111-1111-111111111111', 'simulacao', 26000, 40, '2025-12-10', NOW() - INTERVAL '2 days'),
-('0a444444-4444-4444-4444-444444444444', '72222222-2222-2222-2222-222222222222', 'simulacao', 30000, 45, '2025-12-12', NOW() - INTERVAL '1 day'),
+('0a333333-3333-3333-3333-333333333333', '71111111-1111-1111-1111-111111111111', 'simulacao', 26000, 40, '2026-01-25', NOW() - INTERVAL '2 days'),
+('0a444444-4444-4444-4444-444444444444', '72222222-2222-2222-2222-222222222222', 'simulacao', 30000, 45, '2026-01-27', NOW() - INTERVAL '1 day'),
 
 -- Proposta
-('0a555555-5555-5555-5555-555555555555', '75555555-5555-5555-5555-555555555555', 'proposta', 27000, 60, '2025-12-05', NOW() - INTERVAL '8 hours'),
-('0a666666-6666-6666-6666-666666666666', 'b3333333-3333-3333-3333-333333333333', 'proposta', 180000, 65, '2025-12-08', NOW() - INTERVAL '1 day'),
+('0a555555-5555-5555-5555-555555555555', '75555555-5555-5555-5555-555555555555', 'proposta', 27000, 60, '2026-01-20', NOW() - INTERVAL '8 hours'),
+('0a666666-6666-6666-6666-666666666666', 'b3333333-3333-3333-3333-333333333333', 'proposta', 180000, 65, '2026-01-23', NOW() - INTERVAL '1 day'),
 
 -- Negociação
-('0a777777-7777-7777-7777-777777777777', '73333333-3333-3333-3333-333333333333', 'negociacao', 290000, 75, '2025-12-01', NOW() - INTERVAL '12 hours'),
-('0a888888-8888-8888-8888-888888888888', '76666666-6666-6666-6666-666666666666', 'negociacao', 95000, 70, '2025-12-03', NOW() - INTERVAL '6 hours'),
+('0a777777-7777-7777-7777-777777777777', '73333333-3333-3333-3333-333333333333', 'negociacao', 290000, 75, '2026-01-15', NOW() - INTERVAL '12 hours'),
+('0a888888-8888-8888-8888-888888888888', '76666666-6666-6666-6666-666666666666', 'negociacao', 95000, 70, '2026-01-18', NOW() - INTERVAL '6 hours'),
 
 -- Fechamento
-('0a999999-9999-9999-9999-999999999999', 'e1111111-1111-1111-1111-111111111111', 'fechamento', 33000, 90, '2025-11-28', NOW() - INTERVAL '3 hours'),
+('0a999999-9999-9999-9999-999999999999', 'e1111111-1111-1111-1111-111111111111', 'fechamento', 33000, 90, '2026-01-12', NOW() - INTERVAL '3 hours'),
 
 -- Perdido (para estatística)
 ('0a000000-0000-0000-0000-000000000001', 'f1111111-1111-1111-1111-111111111111', 'perdido', 28000, 0, NULL, NOW() - INTERVAL '10 days')
@@ -180,13 +180,13 @@ ON CONFLICT (numero_proposta) DO NOTHING;
 -- =========================================
 INSERT INTO clientes_instalados (id, lead_id, oportunidade_id, proposta_final_id, numero_contrato, valor_final_negociado, data_assinatura, data_instalacao, potencia_instalada_kwp, num_modulos_instalados, garantia_modulos_anos, garantia_inversor_anos, garantia_instalacao_anos, economia_real_mensal, geracao_media_mensal_kwh, nps, feedback) VALUES
 -- Roberto Alves
-('0d111111-1111-1111-1111-111111111111', 'e1111111-1111-1111-1111-111111111111', '0a999999-9999-9999-9999-999999999999', '0b555555-5555-5555-5555-555555555555', 'CONT-2025-001', 33250, '2025-10-20', '2025-11-05', 6.3, 14, 25, 5, 2, 920, 780, 9, 'Excelente serviço! Sistema funcionando perfeitamente. Economia já apareceu na primeira conta.'),
+('0d111111-1111-1111-1111-111111111111', 'e1111111-1111-1111-1111-111111111111', '0a999999-9999-9999-9999-999999999999', '0b555555-5555-5555-5555-555555555555', 'CONT-2026-001', 33250, '2025-12-05', '2025-12-20', 6.3, 14, 25, 5, 2, 920, 780, 9, 'Excelente serviço! Sistema funcionando perfeitamente. Economia já apareceu na primeira conta.'),
 
 -- Patricia Rocha
-('0d222222-2222-2222-2222-222222222222', 'e2222222-2222-2222-2222-222222222222', NULL, NULL, 'CONT-2025-002', 27500, '2025-09-15', '2025-10-02', 5.4, 12, 25, 5, 2, 780, 650, 10, 'Recomendo! Equipe profissional e sistema de qualidade.'),
+('0d222222-2222-2222-2222-222222222222', 'e2222222-2222-2222-2222-222222222222', NULL, NULL, 'CONT-2026-002', 27500, '2025-11-01', '2025-11-17', 5.4, 12, 25, 5, 2, 780, 650, 10, 'Recomendo! Equipe profissional e sistema de qualidade.'),
 
 -- Mercado Central
-('0d333333-3333-3333-3333-333333333333', 'e3333333-3333-3333-3333-333333333333', NULL, NULL, 'CONT-2024-015', 225000, '2024-08-10', '2024-09-20', 25.2, 56, 25, 5, 2, 6200, 3100, 8, 'Ótimo investimento. Redução significativa na conta de energia.')
+('0d333333-3333-3333-3333-333333333333', 'e3333333-3333-3333-3333-333333333333', NULL, NULL, 'CONT-2025-015', 225000, '2025-09-25', '2025-11-05', 25.2, 56, 25, 5, 2, 6200, 3100, 8, 'Ótimo investimento. Redução significativa na conta de energia.')
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================
