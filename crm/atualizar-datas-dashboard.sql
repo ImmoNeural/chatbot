@@ -40,9 +40,7 @@ WHERE created_at < NOW() - INTERVAL '30 days';
 -- =========================================
 UPDATE propostas SET
     created_at = NOW() - (random() * INTERVAL '15 days'),
-    updated_at = NOW() - (random() * INTERVAL '3 days'),
-    data_validade = CURRENT_DATE + 30,
-    data_geracao = CURRENT_DATE - (random() * 10)::integer
+    updated_at = NOW() - (random() * INTERVAL '3 days')
 WHERE created_at < NOW() - INTERVAL '30 days';
 
 -- =========================================
