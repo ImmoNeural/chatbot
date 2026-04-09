@@ -64,8 +64,7 @@ WHERE created_at < NOW() - INTERVAL '30 days';
 -- =========================================
 UPDATE clientes_instalados SET
     created_at = NOW() - (random() * INTERVAL '60 days'),
-    data_instalacao = CURRENT_DATE - (random() * 45)::integer,
-    data_ativacao = CURRENT_DATE - (random() * 40)::integer
+    data_instalacao = CURRENT_DATE - (random() * 45)::integer
 WHERE created_at < NOW() - INTERVAL '90 days';
 
 -- =========================================
