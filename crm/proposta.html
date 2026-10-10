@@ -222,18 +222,12 @@
 
         async function carregarProposta(token) {
             try {
+                // Busca pela funcao SECURITY DEFINER get_proposta_publica:
+                // o banco devolve no maximo a proposta deste token. A tabela
+                // 'propostas' nao fica acessivel pela chave anon publica, que
+                // esta visivel no codigo desta pagina.
                 const { data, error } = await supabase
-                    .from('propostas')
-                    .select(`
-                        *,
-                        oportunidades:oportunidade_id (
-                            id,
-                            lead_id,
-                            leads:lead_id (nome, email)
-                        )
-                    `)
-                    .eq('token_rastreio', token)
-                    .single();
+                    .rpc('get_proposta_publica', { p_token: token });
 
                 if (error || !data) {
                     console.error('Erro ao buscar proposta:', error);
@@ -309,23 +303,27 @@
 
             if (confirm('Deseja aceitar esta proposta? Nossa equipe entrará em contato para finalizar o contrato.')) {
                 try {
-                    const { error } = await supabase
-                        .from('propostas')
-                        .update({
-                            status: 'aceita',
-                            data_resposta: new Date().toISOString()
-                        })
-                        .eq('id', propostaAtual.id);
+                    // A funcao grava o status, a data e a interacao na timeline
+                    // do lead numa unica chamada. O anon nao tem UPDATE na
+                    // tabela propostas nem INSERT em interacoes.
+                    const token = new URLSearchParams(window.location.search).get('t');
+
+                    const { data, error } = await supabase
+                        .rpc('responder_proposta_publica', {
+                            p_token: token,
+                            p_status: 'aceita'
+                        });
 
                     if (error) throw error;
 
-                    // Criar interação automática
-                    await supabase.from('interacoes').insert({
-                        lead_id: propostaAtual.oportunidades.lead_id,
-                        tipo: 'sistema',
-                        titulo: 'Proposta Aceita!',
-                        descricao: `Cliente aceitou a proposta ${propostaAtual.numero_proposta} no valor de ${formatCurrency(propostaAtual.valor_final)}`
-                    });
+                    if (data && data.ok === false) {
+                        if (data.erro === 'ja_respondida') {
+                            alert('Esta proposta já foi respondida (' + data.status_atual + ').');
+                        } else {
+                            alert('Não foi possível registrar sua resposta. Entre em contato conosco.');
+                        }
+                        return;
+                    }
 
                     alert('✅ Proposta aceita com sucesso!\n\nNossa equipe entrará em contato em breve para finalizar o contrato. Obrigado!');
 
