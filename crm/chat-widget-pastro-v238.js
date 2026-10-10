@@ -651,7 +651,11 @@
         branding: { ...defaultSettings.branding, ...window.ChatWidgetConfig.branding },
         style: { ...defaultSettings.style, ...window.ChatWidgetConfig.style },
         customStyles: { ...defaultSettings.customStyles, ...window.ChatWidgetConfig.customStyles },
-        suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions
+        suggestedQuestions: window.ChatWidgetConfig.suggestedQuestions || defaultSettings.suggestedQuestions,
+        // Obrigatorio para o RLS multi-tenant: o lead precisa nascer dentro
+        // de uma empresa, senao o banco recusa o INSERT (ver
+        // crm/migrations/SECURITY_lockdown_rls.sql).
+        empresa_id: window.ChatWidgetConfig.empresa_id || null
     } : defaultSettings;
 
     // Session tracking
@@ -675,6 +679,17 @@
 
     // Function to save lead to Supabase
     async function saveLeadToSupabase(data) {
+        // Sem empresa_id o INSERT e recusado pelo RLS. Avisa claro no console
+        // em vez de deixar o lead sumir silenciosamente.
+        if (!settings.empresa_id) {
+            console.error(
+                '[chat-widget] empresa_id ausente: o lead NAO foi salvo. ' +
+                'Defina window.ChatWidgetConfig.empresa_id com o id da sua ' +
+                'empresa na tabela "empresas" do Supabase.'
+            );
+            return false;
+        }
+
         try {
             const response = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
                 method: 'POST',
@@ -684,6 +699,7 @@
                     'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
+                    empresa_id: settings.empresa_id,
                     email: data.email,
                     phone: data.phone,
                     family_size: data.familySize,
@@ -692,6 +708,14 @@
                     created_at: new Date().toISOString()
                 })
             });
+
+            if (!response.ok) {
+                // 401/403 aqui normalmente significa policy de INSERT ausente
+                // ou empresa_id invalido/inativo.
+                console.error('[chat-widget] Supabase recusou o lead:',
+                              response.status, await response.text());
+            }
+
             return response.ok;
         } catch (error) {
             console.error('Erro ao salvar lead:', error);

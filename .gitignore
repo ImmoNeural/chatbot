@@ -1,0 +1,36 @@
+# ===== SEGREDOS - NUNCA COMMITAR =====
+# Chaves de API (OpenAI, n8n, Twilio, etc.)
+GPTKey.txt
+*GPTKey*
+*.key
+*.pem
+secrets.*
+credentials.*
+
+# Variaveis de ambiente
+.env
+.env.*
+!.env.example
+
+# Chave service_role do Supabase (NUNCA no frontend)
+service_role*
+*service-role*
+
+# ===== SUPABASE CLI =====
+supabase/.temp/
+supabase/.branches/
+
+# ===== SISTEMA / EDITOR =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# ===== DEPENDENCIAS / BUILD =====
+node_modules/
+dist/
+build/
+*.log

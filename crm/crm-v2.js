@@ -30,7 +30,7 @@ async function handleLogin(event) {
     loginError.classList.add('hidden');
 
     try {
-        const { data, error } = await supabaseClientClient.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -40,12 +40,8 @@ async function handleLogin(event) {
         console.log('✅ Login bem-sucedido!', data);
         currentUser = data.user;
 
-        // Esconder tela de login e mostrar CRM
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('crmApp').classList.remove('hidden');
-
-        // Carregar dados do CRM
-        await loadAllData();
+        // Mesma sequencia de boot usada na carga da pagina.
+        await iniciarCrm();
         showModule('dashboard');
 
     } catch (error) {
@@ -63,16 +59,11 @@ async function handleLogin(event) {
 
 // Verificar sessão ao carregar página
 async function checkSession() {
-    const { data: { session } } = await supabaseClientClient.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (session) {
         console.log('✅ Sessão ativa encontrada');
         currentUser = session.user;
-
-        // Mostrar CRM direto
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('crmApp').classList.remove('hidden');
-
         return true;
     } else {
         console.log('⚠️ Nenhuma sessão ativa');
@@ -82,7 +73,7 @@ async function checkSession() {
 
 // Logout
 async function handleLogout() {
-    await supabaseClientClient.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
 
     // Mostrar tela de login
@@ -101,7 +92,7 @@ async function handleForgotPassword(event) {
     if (!email) return;
 
     try {
-        const { error } = await supabaseClientClient.auth.resetPasswordForEmail(email, {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/reset-password.html'
         });
 
@@ -136,24 +127,36 @@ let conversionChart = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Iniciando CRM Solar...');
 
-    // TEMPORÁRIO: Pular autenticação e entrar direto
-    currentUser = {
-        email: 'neurekaai@gmail.com',
-        id: '43e3509e-1d15-400f-a81e-09e2917ba30b',
-        user_metadata: { nome: 'Neureka' }
-    };
+    // Sem sessao valida o banco nao devolve nada: as tabelas estao sob RLS
+    // e so respondem ao papel 'authenticated' (ver
+    // crm/migrations/SECURITY_lockdown_rls.sql). Por isso a tela de login
+    // fica na frente ate existir sessao, em vez de carregar um CRM vazio.
+    const autenticado = await checkSession();
 
-    // Esconder login e mostrar CRM
+    if (!autenticado) {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('crmApp').classList.add('hidden');
+        return;
+    }
+
+    await iniciarCrm();
+});
+
+// Carrega o CRM depois que existe sessao. Chamado pela inicializacao e
+// tambem por handleLogin, para nao duplicar a sequencia de boot.
+async function iniciarCrm() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('crmApp').classList.remove('hidden');
 
-    // Carregar dados
     await loadAllData();
     await loadCurrentUser();
     initializeKanban();
     setupEventListeners();
-    setInterval(refreshData, 30000);
-});
+
+    if (!window._crmRefreshTimer) {
+        window._crmRefreshTimer = setInterval(refreshData, 30000);
+    }
+}
 
 // =========================================
 // CARREGAR DADOS
@@ -1659,7 +1662,7 @@ async function salvarQualificacao(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClientClient.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Qualificação Atualizada',
@@ -1683,7 +1686,7 @@ async function salvarQualificacao(leadId) {
                 .eq('id', leadId);
 
             // Registrar na timeline
-            await supabaseClientClient.from('interacoes').insert([{
+            await supabaseClient.from('interacoes').insert([{
                 lead_id: leadId,
                 tipo: 'sistema',
                 titulo: 'Lead Qualificado Automaticamente',
@@ -2069,7 +2072,7 @@ async function salvarNovaTarefa() {
 
         // Se tarefa vinculada a lead, registrar na timeline
         if (leadId) {
-            await supabaseClientClient.from('interacoes').insert([{
+            await supabaseClient.from('interacoes').insert([{
                 lead_id: leadId,
                 tipo: 'tarefa',
                 titulo: `📋 Nova Tarefa: ${titulo}`,
@@ -2393,8 +2396,9 @@ function exportLeads() {
 }
 
 function logout() {
-    // Implementar logout
-    window.location.href = '/';
+    // Antes isto so trocava a URL e deixava a sessao do Supabase viva no
+    // localStorage: quem abrisse o CRM de novo entrava sem senha.
+    handleLogout();
 }
 
 // =========================================
@@ -2581,7 +2585,7 @@ async function abrirReversao(notifId) {
         }
 
         // Chamar função SQL para reverter
-        const { data, error } = await supabaseClientClient.rpc('reverter_mudanca_automatica', {
+        const { data, error } = await supabaseClient.rpc('reverter_mudanca_automatica', {
             p_historico_id: historico.id,
             p_user_id: null // TODO: pegar user_id do usuário logado
         });
@@ -3394,7 +3398,7 @@ async function uploadDocumento(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClientClient.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Documento Enviado',
@@ -3607,7 +3611,7 @@ async function enviarPropostaPorEmail(propostaId, leadId) {
     // TODO: Implementar envio de email via API
 
     // Por enquanto, apenas registrar na timeline
-    await supabaseClientClient.from('interacoes').insert([{
+    await supabaseClient.from('interacoes').insert([{
         lead_id: leadId,
         tipo: 'email',
         titulo: 'Proposta Enviada por Email',
@@ -3747,7 +3751,7 @@ async function salvarStatusNegociacao(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClientClient.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Status de Negociação Atualizado',
@@ -3942,7 +3946,7 @@ async function salvarAgendamentoInstalacao(leadId) {
         if (error) throw error;
 
         // Registrar na timeline
-        await supabaseClientClient.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: 'Instalação Agendada',
@@ -4051,7 +4055,7 @@ async function marcarComoInstalado(leadId) {
             .eq('id', leadId);
 
         // 7. Registrar na timeline
-        await supabaseClientClient.from('interacoes').insert([{
+        await supabaseClient.from('interacoes').insert([{
             lead_id: leadId,
             tipo: 'sistema',
             titulo: '🎉 Cliente Instalado com Sucesso!',
