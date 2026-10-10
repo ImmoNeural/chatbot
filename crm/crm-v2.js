@@ -11,6 +11,167 @@ const supabaseClient = window.supabaseClient || window.supabase.createClient(SUP
 window.supabaseClient = supabaseClient;
 
 // =========================================
+// SISTEMA DE DESIGN "PAPEL E MESA" — TOKENS
+// =========================================
+// Este arquivo gera metade da interface por template string, e template string
+// nao enxerga CSS: por isso os tokens precisam existir tambem aqui, em um unico
+// lugar, com os valores medidos do crm/DESIGN-SYSTEM.md.
+const TOKENS = {
+    '--brand-300': '#8FC9C1',
+    '--brand-400': '#5FAEA4',
+    '--brand-500': '#3B9287',
+    '--brand-600': '#297A72',
+    '--brand-700': '#1A5952',
+    '--ink-1': '#16211F',
+    '--ink-2': '#3D4744',
+    '--ink-3': '#5A6764',
+    '--paper': '#FBFAF7',
+    '--card': '#FFFFFF',
+    '--sunken': '#F4F1EA',
+    '--rule': '#D9D3C6',
+    '--ok': '#1B7A4B',
+    '--atencao': '#9A6209',
+    '--grave': '#B3421C',
+    '--critico': '#A3231F',
+    '--info': '#1F5F8B'
+};
+
+// Rampa ordinal do funil: a escala da marca do claro ao escuro. A luminancia cai
+// de forma monotonica (0.515 -> 0.080), entao a ordem das 5 etapas continua
+// legivel para quem nao distingue matiz. Arco-iris reprova medido.
+const RAMPA_FUNIL = ['--brand-300', '--brand-400', '--brand-500', '--brand-600', '--brand-700'];
+
+// Chart.js pinta em canvas e nao resolve var(): o token tem de chegar na config
+// ja em hex. Le do :root para o CSS seguir sendo a fonte unica, e cai no valor
+// medido do spec se a folha de estilo ainda nao carregou.
+function corDoToken(nome) {
+    const lido = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+    return lido || TOKENS[nome] || TOKENS['--ink-1'];
+}
+
+// Reserva de estilo do que ESTE arquivo emite (chip, regua, toast, botao).
+// Entra como PRIMEIRO no de <head> de proposito: assim qualquer regra do
+// index.html com a mesma especificidade vence a daqui, e o CSS segue dono do
+// visual. Sem a reserva, um var(--brand-600) escrito em atributo style
+// resolveria vazio e o botao primario ficaria com texto branco sobre nada.
+function aplicarReservaDeEstilo() {
+    if (document.getElementById('crm-tokens-reserva')) return;
+
+    const raiz = Object.entries(TOKENS).map(([k, v]) => `${k}:${v}`).join(';');
+    const style = document.createElement('style');
+    style.id = 'crm-tokens-reserva';
+    style.textContent = `
+:root{${raiz};--luz:72%;
+  --fonte-texto:'Inter',system-ui,sans-serif;
+  --fonte-numero:'Atkinson Hyperlegible','Inter',system-ui,sans-serif;
+  --fonte-titulo:'Fraunces',Georgia,serif}
+
+/* Numero que vira decisao: Atkinson tabular, para o digito alinhar na coluna
+   e para 1/l/I e 0/O nao se confundirem em celula densa. */
+.num{font-family:var(--fonte-numero);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.num-dir{text-align:right}
+/* Serifada so em figura de display >=24px (KPI, preco). Nunca em rotulo. */
+.num-display{font-family:var(--fonte-titulo);font-variant-numeric:tabular-nums;font-optical-sizing:auto;font-size:28px;line-height:1.1;font-weight:600;color:var(--ink-1)}
+
+.tinta-1{color:var(--ink-1)}
+.tinta-2{color:var(--ink-2)}
+.tinta-3{color:var(--ink-3)}
+.cor-ok{color:var(--ok)}
+.cor-atencao{color:var(--atencao)}
+.cor-grave{color:var(--grave)}
+.cor-critico{color:var(--critico)}
+.cor-info{color:var(--info)}
+.cor-marca{color:var(--brand-600)}
+/* A estrela de favorito mora na borda superior do card, onde o banho do
+   queimado de sol tem alfa maximo. Em --atencao media 4,18:1 na faixa 60;
+   em --brand-700 mede 6,26:1. */
+.cor-marca-700{color:var(--brand-700)}
+
+.sup-card{background:var(--card)}
+.sup-recuo{background:var(--sunken)}
+/* Fio estrutural de 2px: 1px a 1,2:1 desaparece em monitor TN com sol na janela. */
+.fio{border:2px solid var(--rule)}
+.fio-topo{border-top:2px solid var(--rule)}
+/* Enfase por fio de 2px na marca, nao por sombra difusa nem por pilula verde. */
+[data-recomendado]{border-color:var(--brand-600)}
+/* Mesmo bloco recuado que o index.html chama de .secao-recuada: um nome so. */
+.secao-recuada{background:var(--sunken);border:2px solid var(--rule);border-radius:6px}
+.linha:hover{background:var(--sunken)}
+/* Um unico anel de foco, visivel, em vez de tres matizes de utilitario. */
+.foco-marca:focus-visible,.foco-marca:focus{outline:2px solid var(--brand-600);outline-offset:1px}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--brand-600)}
+.opcao:hover{background:var(--sunken)}
+/* Campo de formulario: mesmo nome do index.html. Placeholder em --ink-3 e sem
+   opacidade, senao o texto de apoio cai abaixo do piso de 4,5:1. */
+.campo{padding:6px 10px;font-family:var(--fonte-texto);font-size:13px;color:var(--ink-1);background:var(--card);border:2px solid var(--rule);border-radius:6px}
+.campo::placeholder{color:var(--ink-3);opacity:1}
+.campo:focus{outline:none;border-color:var(--brand-600)}
+
+.botao-primario{background:var(--brand-600);color:var(--card);border:2px solid var(--brand-700);border-radius:6px;font-weight:600;cursor:pointer}
+.botao-primario:hover{background:var(--brand-700)}
+.botao-secundario{background:var(--card);color:var(--ink-1);border:2px solid var(--rule);border-radius:6px;font-weight:600;cursor:pointer}
+.botao-secundario:hover{background:var(--sunken)}
+.botao-info{background:var(--info);color:var(--card);border:2px solid var(--info);border-radius:6px;font-weight:600;cursor:pointer}
+.botao-info:hover{filter:brightness(.9)}
+.botao-ok{background:var(--ok);color:var(--card);border:2px solid var(--ok);border-radius:6px;font-weight:600;cursor:pointer}
+.botao-ok:hover{filter:brightness(.9)}
+.botao-acao{color:var(--brand-600)}
+.botao-acao:hover{color:var(--brand-700)}
+.botao-acao-perigo{color:var(--critico)}
+.botao-acao-perigo:hover{color:var(--grave)}
+.botao-acao-ok{color:var(--ok)}
+/* Desabilitado por borda tracejada + cursor + rotulo. Opacidade apaga texto e
+   e o caminho mais curto para reprovar contraste. */
+.desabilitado{background:var(--card);border:2px dashed var(--rule);color:var(--ink-3);cursor:not-allowed}
+
+/* Status: sempre icone + palavra. A cor e reforco, nunca o unico canal. */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;border:2px solid currentColor;background:var(--card);white-space:nowrap}
+.chip-parado{color:var(--atencao)}
+.chip-perdido{color:var(--grave)}
+.chip-atrasada{color:var(--critico)}
+.chip-ok{color:var(--ok)}
+.chip-info{color:var(--info)}
+.chip-neutro{color:var(--ink-2);border-color:var(--rule)}
+
+/* Regua do lead score: 120px, tique de 1px cravado nos 50 pontos (o limiar de
+   qualificacao), faixa por palavra e denominador explicito. */
+.regua{display:inline-flex;align-items:center;gap:8px}
+.regua-trilha{position:relative;width:120px;height:10px;background:var(--sunken);border:2px solid var(--rule);border-radius:6px}
+.regua-preenche{position:absolute;left:0;top:0;height:100%;background:var(--brand-500);border-radius:4px}
+.regua-tique{position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--ink-1)}
+.regua-valor{font-size:12px;color:var(--ink-1)}
+.regua-faixa{font-size:11px;font-weight:700;letter-spacing:.4px;color:var(--ink-2)}
+
+/* Toast: so erro e acao do usuario. A informacao recorrente vive na fita, e e
+   por isso que ele desceu para o pe da tela: o topo agora e da fita e nao pode
+   ser coberto. Os 96px de folga e o z-index acima de 999 existem porque o
+   lancador do chat mora exatamente nesse canto: a 16px o toast ficava 122x44px
+   encoberto por ele, e desde que o toast de sucesso saiu daqui o que sobra
+   neste canal e justamente a mensagem de ERRO. */
+.toast{position:fixed;bottom:96px;right:16px;z-index:1000;display:flex;align-items:center;gap:8px;max-width:380px;padding:10px 14px;border-radius:6px;border:2px solid var(--rule);background:var(--card);font-weight:600}
+.toast-texto{color:var(--ink-1);font-weight:600}
+.toast-success{border-color:var(--ok);color:var(--ok)}
+.toast-danger{border-color:var(--critico);color:var(--critico)}
+.toast-warning{border-color:var(--atencao);color:var(--atencao)}
+.toast-info{border-color:var(--info);color:var(--info)}
+
+.icone-tipo{background:var(--sunken);border:2px solid var(--rule);color:var(--ink-1)}
+.kpi-figura{background:var(--sunken);border:2px solid var(--rule);color:var(--brand-600)}
+.tarefa-card{background:var(--card);border:2px solid var(--rule);border-left-width:6px;border-radius:6px}
+.tarefa-card[data-prazo="atrasada"]{border-left-color:var(--critico)}
+.tarefa-card[data-prazo="hoje"]{border-left-color:var(--atencao)}
+.tarefa-card[data-prazo="proxima"]{border-left-color:var(--info)}
+.avatar-marca{background:var(--brand-600);color:var(--card)}
+`;
+    document.head.insertBefore(style, document.head.firstChild);
+}
+
+aplicarReservaDeEstilo();
+
+// A linha do horizonte (--luz) e definida no <head> do index.html, antes do
+// primeiro paint, para o fio nunca piscar. Nao duplicamos aqui: um dono so.
+
+// =========================================
 // AUTENTICAÇÃO
 // =========================================
 let currentUser = null;
@@ -156,6 +317,12 @@ async function iniciarCrm() {
     if (!window._crmRefreshTimer) {
         window._crmRefreshTimer = setInterval(refreshData, 30000);
     }
+
+    // O contador SYNC sobe desde a ultima carga: é ele que diz que o dado está
+    // fresco, papel que antes era do toast.
+    if (!window._crmFitaTimer) {
+        window._crmFitaTimer = setInterval(atualizarSyncDaFita, 1000);
+    }
 }
 
 // =========================================
@@ -171,15 +338,25 @@ async function loadAllData() {
             loadPropostas(),
             loadInstalados(),
             loadTarefas(),
-            loadKPIs(),
             loadInteracoesStats(),
             loadNotificacoes()
         ]);
 
+        // loadKPIs soma os arrays que os loaders acima preenchem, entao precisa
+        // vir DEPOIS do await. Dentro do Promise.all ela rodava em paralelo com
+        // eles e somava array vazio: a fita publicava "PIPELINE R$ 0,00 · ATIVOS 0"
+        // nos primeiros 30 segundos de toda sessao, enquanto as raias do kanban
+        // mostravam o valor real na mesma tela. Fita que mente nao substitui toast.
+        await loadKPIs();
+
         // Renderizar módulo atual
         renderCurrentModule();
 
-        showNotification('Dados carregados com sucesso!', 'success');
+        // O toast de sucesso saiu daqui: com refresh de 30s ele aparecia duas
+        // vezes por minuto, 8h por dia. A carga agora se anuncia na fita.
+        ultimaCargaEm = Date.now();
+        atualizarFitaOperacao();
+        varrerFita();
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
         showNotification('Erro ao carregar dados', 'danger');
@@ -395,6 +572,7 @@ async function loadTarefas() {
     const atrasadas = tarefas.filter(t => new Date(t.data_vencimento) < new Date());
     const badge = document.getElementById('tarefas-badge');
     if (atrasadas.length > 0) {
+        badge.classList.add('num');
         badge.textContent = atrasadas.length;
         badge.classList.remove('hidden');
     } else {
@@ -501,33 +679,33 @@ function renderDashboard() {
 function renderKPICards() {
     const kpiContainer = document.querySelector('#module-dashboard .grid');
 
+    // A cor por KPI saiu: 'blue'/'green'/'purple'/'yellow' montavam
+    // bg-${color}-100 e text-${color}-600 por interpolacao, quatro matizes sem
+    // significado nenhum. As quatro figuras agora tem o mesmo tratamento e o
+    // icone e que distingue o indicador.
     const kpiData = [
         {
             title: 'Leads Ativos',
             value: kpis.leads_ativos,
             icon: 'fa-users',
-            color: 'blue',
             change: '+12%'
         },
         {
             title: 'Pipeline',
             value: formatCurrency(kpis.pipeline_valor),
             icon: 'fa-dollar-sign',
-            color: 'green',
             change: '+8%'
         },
         {
             title: 'Instalados',
             value: kpis.clientes_instalados,
             icon: 'fa-check-circle',
-            color: 'purple',
             change: '+5%'
         },
         {
             title: 'NPS Médio',
             value: kpis.nps_medio,
             icon: 'fa-star',
-            color: 'yellow',
             change: '+0.5'
         }
     ];
@@ -536,14 +714,14 @@ function renderKPICards() {
         <div class="module-card kpi-card p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-600 text-sm font-medium">${kpi.title}</p>
-                    <p class="text-3xl font-bold text-gray-800 mt-2">${kpi.value}</p>
-                    <p class="text-green-600 text-sm mt-2">
-                        <i class="fas fa-arrow-up"></i> ${kpi.change} vs mês anterior
+                    <p class="tinta-2 text-sm font-medium">${kpi.title}</p>
+                    <p class="num-display mt-2">${kpi.value}</p>
+                    <p class="cor-ok text-sm mt-2">
+                        <i class="fas fa-arrow-up"></i> <span class="num">${kpi.change}</span> vs mês anterior
                     </p>
                 </div>
-                <div class="w-14 h-14 bg-${kpi.color}-100 rounded-full flex items-center justify-center">
-                    <i class="fas ${kpi.icon} text-2xl text-${kpi.color}-600"></i>
+                <div class="kpi-figura w-14 h-14 rounded-full flex items-center justify-center">
+                    <i class="fas ${kpi.icon} text-2xl"></i>
                 </div>
             </div>
         </div>
@@ -553,6 +731,50 @@ function renderKPICards() {
 function renderCharts() {
     renderFunnelChart();
     renderConversionChart();
+}
+
+// Base comum dos dois graficos: eixo e grade recessivos, texto nos tokens de
+// tinta e tooltip com fio de 2px. Nunca eixo duplo — um grafico, uma escala.
+function opcoesGrafico() {
+    const tinta = corDoToken('--ink-3');
+    const fio = corDoToken('--rule');
+
+    return {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false,
+                labels: { color: corDoToken('--ink-2') }
+            },
+            tooltip: {
+                backgroundColor: corDoToken('--ink-1'),
+                titleColor: corDoToken('--card'),
+                bodyColor: corDoToken('--card'),
+                borderColor: fio,
+                borderWidth: 2,
+                cornerRadius: 6,
+                padding: 10,
+                bodyFont: { family: "'Atkinson Hyperlegible','Inter',sans-serif" }
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false, color: fio },
+                border: { color: fio, width: 2 },
+                ticks: { color: tinta }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: fio, lineWidth: 1, drawTicks: false },
+                border: { display: false },
+                ticks: {
+                    color: tinta,
+                    precision: 0,
+                    font: { family: "'Atkinson Hyperlegible','Inter',sans-serif" }
+                }
+            }
+        }
+    };
 }
 
 function renderFunnelChart() {
@@ -573,22 +795,16 @@ function renderFunnelChart() {
             labels: ['Levantamento', 'Simulação', 'Proposta', 'Negociação', 'Fechamento'],
             datasets: [{
                 label: 'Oportunidades',
-                data: counts,
-                backgroundColor: [
-                    '#3b82f6',
-                    '#8b5cf6',
-                    '#ec4899',
-                    '#f59e0b',
-                    '#10b981'
-                ]
+                // O funil e dado sequencial (5 etapas em ordem), nao categorico:
+                // o arco-iris anterior dava a MESMA cor para violeta e azul em
+                // deuteranopia. Rampa de uma matiz, luminancia decrescente.
+                backgroundColor: RAMPA_FUNIL.map(corDoToken),
+                borderColor: corDoToken('--brand-700'),
+                borderWidth: 1,
+                data: counts
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
+        options: opcoesGrafico()
     });
 }
 
@@ -609,18 +825,19 @@ function renderConversionChart() {
             datasets: [{
                 label: 'Conversões',
                 data: conversoes,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderColor: corDoToken('--brand-600'),
+                // Preenchimento no tom claro da marca: fundo de grafico, nunca texto.
+                backgroundColor: corDoToken('--brand-300') + '59',
+                pointBackgroundColor: corDoToken('--brand-700'),
+                pointBorderColor: corDoToken('--card'),
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                borderWidth: 2,
                 tension: 0.4,
                 fill: true
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
+        options: opcoesGrafico()
     });
 }
 
@@ -633,22 +850,22 @@ function renderRecentLeads() {
         .slice(0, 5);
 
     container.innerHTML = recentLeads.map(lead => `
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer" onclick="openLeadModal('${lead.id}')">
+        <div class="flex items-center justify-between p-4 sup-recuo rounded-lg linha transition cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background: #309086;">
+                <div class="avatar-marca w-10 h-10 rounded-full flex items-center justify-center">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-800">${lead.nome || lead.email}</p>
-                    <p class="text-sm text-gray-600">${lead.email}</p>
+                    <p class="font-semibold tinta-1">${lead.nome || lead.email}</p>
+                    <p class="text-sm tinta-2">${lead.email}</p>
                 </div>
             </div>
             <div class="text-right">
-                <span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span>
-                <p class="text-xs text-gray-500 mt-1">${formatDate(lead.created_at)}</p>
+                ${badgeStatus(lead.status)}
+                <p class="num text-xs tinta-3 mt-1">${formatDate(lead.created_at)}</p>
             </div>
         </div>
-    `).join('') || '<p class="text-gray-500 text-center py-8">Nenhum lead recente do chatbot</p>';
+    `).join('') || '<p class="tinta-3 text-center py-8">Nenhum lead recente do chatbot</p>';
 }
 
 // =========================================
@@ -865,15 +1082,33 @@ function renderKanban() {
 
         const oportunidadesEtapa = oportunidades.filter(o => o.etapa === etapa);
 
-        // Atualizar contador
+        // Atualizar contador. A figura tabular entra por classList porque o
+        // elemento vive no index.html e so recebe textContent, sem filhos.
         if (countBadge) {
+            countBadge.classList.add('num');
             countBadge.textContent = oportunidadesEtapa.length;
+        }
+
+        // Valor somado da raia: o vendedor decide por dinheiro parado na coluna,
+        // nao por quantidade de cartoes. Escreve so se o cabecalho da coluna
+        // tiver o elemento, porque esse markup e do index.html.
+        const somaRaia = document.querySelector(`.kanban-column[data-etapa="${etapa}"] .kanban-soma`);
+        if (somaRaia) {
+            somaRaia.classList.add('num');
+            somaRaia.textContent = formatCurrency(
+                oportunidadesEtapa.reduce((t, o) => t + (parseFloat(o.valor_estimado) || 0), 0)
+            );
         }
 
         container.innerHTML = oportunidadesEtapa.map(oportunidade => {
             const lead = oportunidade.leads;
             const diasInativo = calcularDiasInativo(oportunidade.data_ultima_atualizacao);
-            const isInactive = diasInativo > 14;
+            // Tres degraus em vez de um binario: 15 dias deixa de ser identico a
+            // 120. O banho quente do CSS le este atributo; a opacidade saiu de
+            // cena, porque apagar o card que mais precisa de toque custa negocio.
+            const faixaDias = diasInativo >= 60 ? '60'
+                : diasInativo >= 30 ? '30'
+                : diasInativo >= 14 ? '14' : '';
 
             // Pegar estatísticas de interações
             const stats = interacoesStats[oportunidade.lead_id] || {
@@ -899,90 +1134,71 @@ function renderKanban() {
             const instalacao = instalados.find(inst => inst.oportunidade_id === oportunidade.id);
             const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
 
-            // Determinar badge/ícone de status
-            let statusBadge = '';
-            let statusColor = '';
-            let statusText = '';
-            let statusIcon = '';
+            // Status por ícone + palavra. Antes era um ponto colorido com a
+            // primeira letra ("P"), que some para quem não distingue matiz — e
+            // "perdido" (tijolo) dividia o mesmo vermelho de "parado" (âmbar).
+            let statusChip = '';
 
             if (temInstalacaoAgendada) {
-                // Mostrar troféu se tiver instalação agendada
-                statusIcon = '🏆';
-                statusText = 'Instalação Agendada';
-                statusColor = 'text-yellow-600';
+                statusChip = chipStatus('chip-info', 'fa-trophy', 'Agendada');
             } else if (lead?.status === 'perdido') {
-                statusBadge = 'bg-red-500';
-                statusColor = 'text-red-500';
-                statusText = 'Perdido';
+                statusChip = chipStatus('chip-perdido', 'fa-circle-xmark', 'Perdido');
             } else if (lead?.status === 'qualificado') {
-                statusBadge = 'bg-green-500';
-                statusColor = 'text-green-500';
-                statusText = 'Qualificado';
+                statusChip = chipStatus('chip-ok', 'fa-circle-check', 'Qualificado');
             } else if (lead?.status === 'em_nutricao') {
-                statusBadge = 'bg-orange-500';
-                statusColor = 'text-orange-500';
-                statusText = 'Em Nutrição';
+                statusChip = chipStatus('chip-parado', 'fa-seedling', 'Nutrição');
             }
 
             return `
-                <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
+                <div class="kanban-card"${faixaDias ? ` data-dias-faixa="${faixaDias}"` : ''} data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
                     <!-- Cabeçalho com nome e estrela de favorito -->
-                    <div class="flex items-start justify-between mb-2">
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                <i class="fas fa-clock"></i> ${dataFormatada} ${horaFormatada}
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <div class="flex-1 min-w-0 kanban-card-titulo">
+                            <h4 class="font-semibold tinta-1 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
+                            <p class="text-xs tinta-3 mt-0.5">
+                                <i class="fas fa-clock"></i> <span class="num">${dataFormatada} ${horaFormatada}</span>
                             </p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            ${statusIcon ? `
-                                <div class="flex items-center gap-1" title="${statusText}">
-                                    <span class="text-lg">${statusIcon}</span>
-                                </div>
-                            ` : statusBadge ? `
-                                <div class="flex items-center gap-1.5" title="${statusText}">
-                                    <div class="w-2 h-2 rounded-full ${statusBadge}"></div>
-                                    <span class="text-xs font-medium ${statusColor}">${statusText.charAt(0)}</span>
-                                </div>
-                            ` : ''}
-                            <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
-                                <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
+                        <div class="flex items-center gap-2 kanban-card-acoes">
+                            ${statusChip}
+                            <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="transition-transform hover:scale-110" title="${oportunidade.favorito ? 'Remover dos favoritos' : 'Marcar como favorito'}">
+                                <i class="fas fa-star text-lg ${oportunidade.favorito ? 'cor-marca-700' : 'tinta-3'}"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Valor e consumo -->
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-bold text-green-600">${formatCurrency(oportunidade.valor_estimado)}</span>
-                        <span class="text-xs text-gray-600">
-                            <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh
+                    <!-- Valor e consumo: numero que vira decisao, em figura tabular -->
+                    <div class="flex items-center justify-between mb-2 kanban-card-valor">
+                        <span class="num text-sm font-bold tinta-1">${formatCurrency(oportunidade.valor_estimado)}</span>
+                        <span class="text-xs tinta-2">
+                            <i class="fas fa-bolt"></i> <span class="num">${lead?.consumo_mensal || 0}</span> kWh
                         </span>
                     </div>
 
-                    <!-- Ícones de estatísticas -->
-                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                    <!-- Ícones de estatísticas: contagem zero fica legível, não apagada -->
+                    <div class="flex items-center justify-between pt-2 fio-topo">
                         <!-- Email -->
                         <div class="flex items-center gap-1" title="${stats.emails} email(s) enviado(s)">
-                            <i class="fas fa-envelope text-xs ${stats.emails > 0 ? 'text-blue-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.emails > 0 ? 'text-blue-600 font-semibold' : 'text-gray-400'}">${stats.emails}</span>
+                            <i class="fas fa-envelope text-xs ${stats.emails > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.emails > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.emails}</span>
                         </div>
 
                         <!-- Chamadas -->
                         <div class="flex items-center gap-1" title="${stats.chamadas} ligaç(ões) realizada(s)">
-                            <i class="fas fa-phone text-xs ${stats.chamadas > 0 ? 'text-purple-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.chamadas > 0 ? 'text-purple-600 font-semibold' : 'text-gray-400'}">${stats.chamadas}</span>
+                            <i class="fas fa-phone text-xs ${stats.chamadas > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.chamadas > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.chamadas}</span>
                         </div>
 
                         <!-- Propostas -->
                         <div class="flex items-center gap-1" title="${stats.propostas} proposta(s) criada(s)">
-                            <i class="fas fa-file-invoice-dollar text-xs ${stats.propostas > 0 ? 'text-green-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.propostas > 0 ? 'text-green-600 font-semibold' : 'text-gray-400'}">${stats.propostas}</span>
+                            <i class="fas fa-file-invoice-dollar text-xs ${stats.propostas > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.propostas > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.propostas}</span>
                         </div>
 
                         <!-- Instalações -->
                         <div class="flex items-center gap-1" title="${stats.instalacoes} instalação(ões) concluída(s)">
-                            <i class="fas fa-solar-panel text-xs ${stats.instalacoes > 0 ? 'text-orange-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.instalacoes > 0 ? 'text-orange-600 font-semibold' : 'text-gray-400'}">${stats.instalacoes}</span>
+                            <i class="fas fa-solar-panel text-xs ${stats.instalacoes > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.instalacoes > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.instalacoes}</span>
                         </div>
 
                         <!-- Badge tipo cliente -->
@@ -991,11 +1207,24 @@ function renderKanban() {
                         </span>
                     </div>
 
-                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-exclamation-triangle"></i> ${diasInativo} dias sem atualização</p>` : ''}
+                    ${faixaDias ? `
+                        <p class="mt-2">
+                            <span class="chip chip-parado">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span class="num">${diasInativo}</span> dias sem contato
+                            </span>
+                        </p>
+                    ` : ''}
                 </div>
             `;
-        }).join('') || '<p class="text-gray-400 text-sm text-center py-4">Nenhuma oportunidade</p>';
+        }).join('') || '<p class="tinta-3 text-sm text-center py-4">Nenhuma oportunidade</p>';
     });
+}
+
+// Status nunca sai só na cor: o chip carrega ícone + palavra, e a palavra é que
+// separa "parado" de "perdido" para quem não distingue matiz.
+function chipStatus(classe, icone, palavra) {
+    return `<span class="chip ${classe}" title="${palavra}"><i class="fas ${icone}"></i> ${palavra}</span>`;
 }
 
 function calcularDiasInativo(dataUltimaAtualizacao) {
@@ -1042,16 +1271,16 @@ function renderLeadsTable() {
     const tbody = document.getElementById('leads-table-body');
     if (!tbody) return;
 
-    tbody.innerHTML = leads.map(lead => `
-        <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
+    tbody.innerHTML = ordenarLista(leads, 'leads').map(lead => `
+        <tr class="linha cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                    <div class="avatar-marca w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3">
                         ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
-                        <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>
-                        <p class="text-sm text-gray-600">${lead.email}</p>
+                        <p class="font-semibold tinta-1">${lead.nome || 'Sem nome'}</p>
+                        <p class="text-sm tinta-2">${lead.email}</p>
                     </div>
                 </div>
             </td>
@@ -1060,29 +1289,22 @@ function renderLeadsTable() {
                     ${lead.tipo_cliente === 'empresarial' ? 'Empresarial' : 'Residencial'}
                 </span>
             </td>
-            <td class="px-6 py-4 font-semibold">${lead.consumo_mensal || 0} kWh</td>
+            <td class="px-6 py-4 num num-dir font-semibold tinta-1">${lead.consumo_mensal || 0} kWh</td>
+            <td class="px-6 py-4">${reguaScore(lead.lead_score)}</td>
             <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-16 bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: ${lead.lead_score || 0}%"></div>
-                    </div>
-                    <span class="text-sm font-semibold">${lead.lead_score || 0}</span>
-                </div>
+                ${badgeStatus(lead.status)}
             </td>
+            <td class="px-6 py-4 text-sm tinta-2">${lead.user_id ? 'Atribuído' : 'Não atribuído'}</td>
             <td class="px-6 py-4">
-                <span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span>
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-600">${lead.user_id ? 'Atribuído' : 'Não atribuído'}</td>
-            <td class="px-6 py-4">
-                <button onclick="event.stopPropagation(); editLead('${lead.id}')" class="text-blue-600 hover:text-blue-800 mr-3">
+                <button onclick="event.stopPropagation(); editLead('${lead.id}')" class="botao-acao mr-3">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button onclick="event.stopPropagation(); deleteLead('${lead.id}')" class="text-red-600 hover:text-red-800">
+                <button onclick="event.stopPropagation(); deleteLead('${lead.id}')" class="botao-acao botao-acao-perigo">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
+    `).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhum lead encontrado</td></tr>';
 }
 
 // =========================================
@@ -1263,31 +1485,31 @@ async function renderLeadInfo(lead) {
 
     container.innerHTML = `
         <div>
-            <p class="text-sm text-gray-600">Tipo</p>
+            <p class="text-sm tinta-2">Tipo</p>
             <p class="font-semibold">${lead.tipo_cliente === 'empresarial' ? 'Empresarial' : 'Residencial'}</p>
         </div>
         <div>
-            <p class="text-sm text-gray-600">Telefone</p>
+            <p class="text-sm tinta-2">Telefone</p>
             <p class="font-semibold">${lead.phone || 'Não informado'}</p>
         </div>
         <div>
-            <p class="text-sm text-gray-600">Consumo Mensal</p>
-            <p class="font-semibold">${lead.consumo_mensal || 0} kWh</p>
+            <p class="text-sm tinta-2">Consumo Mensal</p>
+            <p class="num font-semibold tinta-1">${lead.consumo_mensal || 0} kWh</p>
         </div>
         <div>
-            <p class="text-sm text-gray-600">Status</p>
-            <p><span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span></p>
+            <p class="text-sm tinta-2">Status</p>
+            <p>${badgeStatus(lead.status)}</p>
+        </div>
+        <div class="col-span-2">
+            <p class="text-sm tinta-2">Lead Score</p>
+            <p class="mt-1">${reguaScore(lead.lead_score)}</p>
         </div>
         <div>
-            <p class="text-sm text-gray-600">Lead Score</p>
-            <p class="font-semibold text-green-600">${lead.lead_score || 0}/100</p>
-        </div>
-        <div>
-            <p class="text-sm text-gray-600">Origem</p>
+            <p class="text-sm tinta-2">Origem</p>
             <p class="font-semibold">${lead.origem || 'chatbot'}</p>
         </div>
         <div class="col-span-2">
-            <p class="text-sm text-gray-600">Cadastrado em</p>
+            <p class="text-sm tinta-2">Cadastrado em</p>
             <p class="font-semibold">${formatDate(lead.created_at)}</p>
         </div>
     `;
@@ -1315,31 +1537,31 @@ function renderLeadInfoEdit(lead) {
 
     container.innerHTML = `
         <div>
-            <label class="text-sm text-gray-600">Nome</label>
-            <input type="text" id="edit-nome" value="${lead.nome || ''}" class="w-full border rounded px-3 py-2 mt-1">
+            <label class="text-sm tinta-2">Nome</label>
+            <input type="text" id="edit-nome" value="${lead.nome || ''}" class="campo w-full mt-1">
         </div>
         <div>
-            <label class="text-sm text-gray-600">Email</label>
-            <input type="email" id="edit-email" value="${lead.email || ''}" class="w-full border rounded px-3 py-2 mt-1">
+            <label class="text-sm tinta-2">Email</label>
+            <input type="email" id="edit-email" value="${lead.email || ''}" class="campo w-full mt-1">
         </div>
         <div>
-            <label class="text-sm text-gray-600">Telefone</label>
-            <input type="text" id="edit-phone" value="${lead.phone || ''}" class="w-full border rounded px-3 py-2 mt-1">
+            <label class="text-sm tinta-2">Telefone</label>
+            <input type="text" id="edit-phone" value="${lead.phone || ''}" class="campo w-full mt-1">
         </div>
         <div>
-            <label class="text-sm text-gray-600">Tipo</label>
-            <select id="edit-tipo" class="w-full border rounded px-3 py-2 mt-1">
+            <label class="text-sm tinta-2">Tipo</label>
+            <select id="edit-tipo" class="campo w-full mt-1">
                 <option value="residencial" ${lead.tipo_cliente === 'residencial' ? 'selected' : ''}>Residencial</option>
                 <option value="empresarial" ${lead.tipo_cliente === 'empresarial' ? 'selected' : ''}>Empresarial</option>
             </select>
         </div>
         <div>
-            <label class="text-sm text-gray-600">Consumo Mensal (kWh)</label>
-            <input type="number" id="edit-consumo" value="${lead.consumo_mensal || 0}" class="w-full border rounded px-3 py-2 mt-1">
+            <label class="text-sm tinta-2">Consumo Mensal (kWh)</label>
+            <input type="number" id="edit-consumo" value="${lead.consumo_mensal || 0}" class="campo w-full mt-1">
         </div>
         <div>
-            <label class="text-sm text-gray-600">Status</label>
-            <select id="edit-status" class="w-full border rounded px-3 py-2 mt-1">
+            <label class="text-sm tinta-2">Status</label>
+            <select id="edit-status" class="campo w-full mt-1">
                 <option value="novo" ${lead.status === 'novo' ? 'selected' : ''}>Novo</option>
                 <option value="qualificado" ${lead.status === 'qualificado' ? 'selected' : ''}>Qualificado</option>
                 <option value="em_nutricao" ${lead.status === 'em_nutricao' ? 'selected' : ''}>Em Nutrição</option>
@@ -1349,19 +1571,19 @@ function renderLeadInfoEdit(lead) {
             </select>
         </div>
         <div class="col-span-2">
-            <label class="text-sm text-gray-600">Motivo de Espera <span class="text-xs text-gray-400">(Para nutrição automática)</span></label>
-            <textarea id="edit-motivo-espera" class="w-full border rounded px-3 py-2 mt-1 text-sm" rows="2" placeholder="Ex: Vai construir a casa em 6 meses, aguardando aprovação de financiamento, etc.">${lead.motivo_espera || ''}</textarea>
-            <p class="text-xs text-gray-500 mt-1">💡 Se preenchido + sem interação 7-14 dias → move para "Em Nutrição" automaticamente</p>
+            <label class="text-sm tinta-2">Motivo de Espera <span class="text-xs tinta-3">(Para nutrição automática)</span></label>
+            <textarea id="edit-motivo-espera" class="campo w-full mt-1 text-sm" rows="2" placeholder="Ex: Vai construir a casa em 6 meses, aguardando aprovação de financiamento, etc.">${lead.motivo_espera || ''}</textarea>
+            <p class="text-xs tinta-3 mt-1">💡 Se preenchido + sem interação 7-14 dias → move para "Em Nutrição" automaticamente</p>
         </div>
         <div>
-            <label class="text-sm text-gray-600">Data Prevista de Retorno</label>
-            <input type="date" id="edit-data-retorno" value="${lead.data_prevista_retorno || ''}" class="w-full border rounded px-3 py-2 mt-1">
-            <p class="text-xs text-gray-500 mt-1">Quando retomar o contato</p>
+            <label class="text-sm tinta-2">Data Prevista de Retorno</label>
+            <input type="date" id="edit-data-retorno" value="${lead.data_prevista_retorno || ''}" class="campo w-full mt-1">
+            <p class="text-xs tinta-3 mt-1">Quando retomar o contato</p>
         </div>
         <div>
-            <label class="text-sm text-gray-600">Tentativas de Contato</label>
-            <input type="number" id="edit-tentativas" value="${lead.tentativas_contato || 0}" class="w-full border rounded px-3 py-2 mt-1" readonly>
-            <p class="text-xs text-gray-500 mt-1">3+ tentativas + 30 dias → marca como "Perdido"</p>
+            <label class="text-sm tinta-2">Tentativas de Contato</label>
+            <input type="number" id="edit-tentativas" value="${lead.tentativas_contato || 0}" class="campo desabilitado w-full mt-1" readonly title="Somente leitura: contado pelo sistema">
+            <p class="text-xs tinta-3 mt-1">3+ tentativas + 30 dias → marca como "Perdido"</p>
         </div>
     `;
 }
@@ -1421,14 +1643,16 @@ async function renderLeadTimeline(leadId) {
         return;
     }
 
+    // Sete tipos pintados de sete matizes era arco-iris categorico: o glifo
+    // ja distingue o tipo, entao o circulo fica neutro e o icone legivel.
     const iconMap = {
-        email: { icon: 'fa-envelope', color: 'bg-blue-500' },
-        whatsapp: { icon: 'fa-whatsapp', color: 'bg-green-500' },
-        chamada: { icon: 'fa-phone', color: 'bg-purple-500' },
-        visita: { icon: 'fa-home', color: 'bg-orange-500' },
-        nota: { icon: 'fa-sticky-note', color: 'bg-yellow-500' },
-        upload: { icon: 'fa-paperclip', color: 'bg-gray-500' },
-        sistema: { icon: 'fa-robot', color: 'bg-indigo-500' }
+        email: { icon: 'fa-envelope' },
+        whatsapp: { icon: 'fa-whatsapp' },
+        chamada: { icon: 'fa-phone' },
+        visita: { icon: 'fa-home' },
+        nota: { icon: 'fa-sticky-note' },
+        upload: { icon: 'fa-paperclip' },
+        sistema: { icon: 'fa-robot' }
     };
 
     container.innerHTML = interacoes.map(interacao => {
@@ -1436,20 +1660,20 @@ async function renderLeadTimeline(leadId) {
 
         return `
             <div class="timeline-item">
-                <div class="timeline-icon ${config.color} text-white">
+                <div class="timeline-icon icone-tipo" title="${formatTipo(interacao.tipo)}">
                     <i class="fas ${config.icon}"></i>
                 </div>
-                <div class="bg-gray-50 rounded-lg p-4">
+                <div class="sup-recuo rounded-lg p-4">
                     <div class="flex items-center justify-between mb-2">
-                        <h4 class="font-semibold text-gray-800">${interacao.titulo || formatTipo(interacao.tipo)}</h4>
-                        <span class="text-xs text-gray-500">${formatDateTime(interacao.created_at)}</span>
+                        <h4 class="font-semibold tinta-1">${interacao.titulo || formatTipo(interacao.tipo)}</h4>
+                        <span class="text-xs tinta-3">${formatDateTime(interacao.created_at)}</span>
                     </div>
-                    ${interacao.descricao ? `<p class="text-sm text-gray-600">${interacao.descricao}</p>` : ''}
-                    ${interacao.arquivo_url ? `<a href="${interacao.arquivo_url}" target="_blank" class="text-blue-600 text-sm hover:underline mt-2 inline-block"><i class="fas fa-file"></i> Ver arquivo</a>` : ''}
+                    ${interacao.descricao ? `<p class="text-sm tinta-2">${interacao.descricao}</p>` : ''}
+                    ${interacao.arquivo_url ? `<a href="${interacao.arquivo_url}" target="_blank" class="cor-info text-sm hover:underline mt-2 inline-block"><i class="fas fa-file"></i> Ver arquivo</a>` : ''}
                 </div>
             </div>
         `;
-    }).join('') || '<p class="text-gray-500 text-center py-8">Nenhuma interação registrada</p>';
+    }).join('') || '<p class="tinta-3 text-center py-8">Nenhuma interação registrada</p>';
 }
 
 async function renderLeadQualificacao(leadId) {
@@ -1463,7 +1687,7 @@ async function renderLeadQualificacao(leadId) {
         .single();
 
     if (error && error.code !== 'PGRST116') {
-        container.innerHTML = '<p class="text-red-500 text-center py-8">Erro ao carregar qualificação</p>';
+        container.innerHTML = '<p class="cor-critico text-center py-8">Erro ao carregar qualificação</p>';
         return;
     }
 
@@ -1472,75 +1696,77 @@ async function renderLeadQualificacao(leadId) {
     container.innerHTML = `
         <form id="form-qualificacao" class="space-y-6">
             <!-- Seção: Viabilidade Técnica -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Viabilidade Técnica</h3>
+                    <h3 class="text-lg font-bold tinta-1">Viabilidade Técnica</h3>
                 </div>
                 <div class="space-y-3">
-                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                    <label class="flex items-start gap-3 cursor-pointer opcao p-2 rounded">
                         <input type="checkbox" name="telhado_bom_estado" ${qual.telhado_bom_estado ? 'checked' : ''}
-                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
-                        <span class="text-gray-700">
+                               class="mt-1 w-5 h-5 rounded foco-marca">
+                        <span class="tinta-1">
                             <strong>Telhado em bom estado</strong>
-                            <p class="text-sm text-gray-500">Sem rachaduras, telhas quebradas ou infiltrações</p>
+                            <p class="text-sm tinta-3">Sem rachaduras, telhas quebradas ou infiltrações</p>
                         </span>
                     </label>
-                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                    <label class="flex items-start gap-3 cursor-pointer opcao p-2 rounded">
                         <input type="checkbox" name="pouco_sombreamento" ${qual.pouco_sombreamento ? 'checked' : ''}
-                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
-                        <span class="text-gray-700">
+                               class="mt-1 w-5 h-5 rounded foco-marca">
+                        <span class="tinta-1">
                             <strong>Pouco ou nenhum sombreamento (&lt; 20%)</strong>
-                            <p class="text-sm text-gray-500">Sem árvores, prédios ou estruturas que façam sombra</p>
+                            <p class="text-sm tinta-3">Sem árvores, prédios ou estruturas que façam sombra</p>
                         </span>
                     </label>
-                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                    <label class="flex items-start gap-3 cursor-pointer opcao p-2 rounded">
                         <input type="checkbox" name="estrutura_suporta_peso" ${qual.estrutura_suporta_peso ? 'checked' : ''}
-                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
-                        <span class="text-gray-700">
+                               class="mt-1 w-5 h-5 rounded foco-marca">
+                        <span class="tinta-1">
                             <strong>Estrutura suporta peso dos painéis</strong>
-                            <p class="text-sm text-gray-500">Telhado tem capacidade estrutural adequada (15-20 kg/m²)</p>
+                            <p class="text-sm tinta-3">Telhado tem capacidade estrutural adequada (15-20 kg/m²)</p>
                         </span>
                     </label>
-                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                    <label class="flex items-start gap-3 cursor-pointer opcao p-2 rounded">
                         <input type="checkbox" name="telhado_compativel" ${qual.telhado_compativel ? 'checked' : ''}
-                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
-                        <span class="text-gray-700">
+                               class="mt-1 w-5 h-5 rounded foco-marca">
+                        <span class="tinta-1">
                             <strong>Tipo de telhado compatível</strong>
-                            <p class="text-sm text-gray-500">Cerâmico, metálico, fibrocimento ou laje</p>
+                            <p class="text-sm tinta-3">Cerâmico, metálico, fibrocimento ou laje</p>
                         </span>
                     </label>
-                    <label class="flex items-start gap-3 cursor-pointer hover:bg-blue-100 p-2 rounded">
+                    <label class="flex items-start gap-3 cursor-pointer opcao p-2 rounded">
                         <input type="checkbox" name="acesso_adequado" ${qual.acesso_adequado ? 'checked' : ''}
-                               class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
-                        <span class="text-gray-700">
+                               class="mt-1 w-5 h-5 rounded foco-marca">
+                        <span class="tinta-1">
                             <strong>Acesso adequado para instalação</strong>
-                            <p class="text-sm text-gray-500">Escada, andaime ou acesso seguro ao telhado</p>
+                            <p class="text-sm tinta-3">Escada, andaime ou acesso seguro ao telhado</p>
                         </span>
                     </label>
                 </div>
-                <div class="mt-4 p-3 rounded ${qual.viabilidade_tecnica ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
-                    <strong>${qual.viabilidade_tecnica ? '✓ Viável tecnicamente' : 'Marque todos os itens para confirmar viabilidade'}</strong>
+                <div class="mt-4 p-3 secao-recuada">
+                    ${qual.viabilidade_tecnica
+                        ? chipStatus('chip-ok', 'fa-circle-check', 'Viável tecnicamente')
+                        : chipStatus('chip-neutro', 'fa-list-check', 'Marque todos os itens para confirmar viabilidade')}
                 </div>
             </div>
 
             <!-- Seção: Decisor -->
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Poder de Decisão</h3>
+                    <h3 class="text-lg font-bold tinta-1">Poder de Decisão</h3>
                 </div>
                 <div class="space-y-3">
-                    <label class="flex items-start gap-3 cursor-pointer hover:bg-purple-100 p-2 rounded">
+                    <label class="flex items-start gap-3 cursor-pointer opcao p-2 rounded">
                         <input type="checkbox" name="decisor_autonomia" ${qual.decisor_autonomia || qual.decisor ? 'checked' : ''}
-                               class="mt-1 w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
-                        <span class="text-gray-700">
+                               class="mt-1 w-5 h-5 rounded foco-marca">
+                        <span class="tinta-1">
                             <strong>Tem autonomia para decidir</strong>
-                            <p class="text-sm text-gray-500">
+                            <p class="text-sm tinta-3">
                                 <strong>Residencial:</strong> Proprietário que decide sozinho<br>
                                 <strong>Empresarial:</strong> Dono, CEO, CFO ou diretor com autonomia
                             </p>
@@ -1548,25 +1774,25 @@ async function renderLeadQualificacao(leadId) {
                     </label>
                 </div>
                 <div class="mt-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Observações sobre decisor</label>
+                    <label class="block text-sm font-medium tinta-1 mb-1">Observações sobre decisor</label>
                     <textarea name="observacoes_decisor" rows="2"
-                              class="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                              class="campo w-full text-sm"
                               placeholder="Ex: Precisa consultar sócio, esposa tem veto, etc.">${qual.observacoes_decisor || ''}</textarea>
                 </div>
             </div>
 
             <!-- Seção: Prontidão de Compra -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Prontidão de Compra</h3>
+                    <h3 class="text-lg font-bold tinta-1">Prontidão de Compra</h3>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Quando pretende instalar?</label>
+                    <label class="block text-sm font-medium tinta-1 mb-2">Quando pretende instalar?</label>
                     <select name="prontidao_compra"
-                            class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-500">
+                            class="campo w-full">
                         <option value="">Selecione...</option>
                         <option value="imediato" ${qual.prontidao_compra === 'imediato' ? 'selected' : ''}>Imediato (compra já)</option>
                         <option value="30_dias" ${qual.prontidao_compra === '30_dias' ? 'selected' : ''}>Até 30 dias</option>
@@ -1579,8 +1805,8 @@ async function renderLeadQualificacao(leadId) {
             <!-- Campos adicionais -->
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Telhado</label>
-                    <select name="tipo_telhado" class="w-full border rounded px-3 py-2">
+                    <label class="block text-sm font-medium tinta-1 mb-1">Tipo de Telhado</label>
+                    <select name="tipo_telhado" class="campo w-full">
                         <option value="">Selecione...</option>
                         <option value="fibrocimento" ${qual.tipo_telhado === 'fibrocimento' ? 'selected' : ''}>Fibrocimento</option>
                         <option value="ceramico" ${qual.tipo_telhado === 'ceramico' ? 'selected' : ''}>Cerâmico</option>
@@ -1590,8 +1816,8 @@ async function renderLeadQualificacao(leadId) {
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Ligação</label>
-                    <select name="tipo_ligacao" class="w-full border rounded px-3 py-2">
+                    <label class="block text-sm font-medium tinta-1 mb-1">Tipo de Ligação</label>
+                    <select name="tipo_ligacao" class="campo w-full">
                         <option value="">Selecione...</option>
                         <option value="monofasica" ${qual.tipo_ligacao === 'monofasica' ? 'selected' : ''}>Monofásica</option>
                         <option value="bifasica" ${qual.tipo_ligacao === 'bifasica' ? 'selected' : ''}>Bifásica</option>
@@ -1601,16 +1827,16 @@ async function renderLeadQualificacao(leadId) {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Observações Gerais</label>
+                <label class="block text-sm font-medium tinta-1 mb-1">Observações Gerais</label>
                 <textarea name="observacoes" rows="3"
-                          class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                          class="campo w-full"
                           placeholder="Informações adicionais sobre a qualificação...">${qual.observacoes || ''}</textarea>
             </div>
 
             <!-- Botão Salvar -->
             <div class="flex gap-3">
                 <button type="submit"
-                        class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition shadow-lg">
+                        class="flex-1 botao-primario px-6 py-3">
                     <i class="fas fa-save mr-2"></i>Salvar Qualificação
                 </button>
             </div>
@@ -1718,7 +1944,10 @@ function showTab(tabName) {
     document.querySelectorAll('#leadModal .tab-button').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    // currentTarget, nao target: configurarAbasDinamicas injeta um <i> dentro do
+    // #tab-btn-dynamic, e um clique no icone faria event.target ser o <i> — o
+    // .active ia para o icone e a barra de abas ficava sem nada selecionado.
+    (event.currentTarget || event.target).classList.add('active');
 }
 
 // =========================================
@@ -1729,62 +1958,53 @@ function renderPropostas() {
     if (!container) return;
 
     container.innerHTML = propostas.map(proposta => {
-        const statusColors = {
-            rascunho: 'gray',
-            enviada: 'blue',
-            visualizada: 'warning',
-            aceita: 'success',
-            recusada: 'danger',
-            revisao: 'info'
-        };
-
         return `
             <div class="module-card p-6">
                 <div class="flex items-start justify-between mb-4">
                     <div>
-                        <h4 class="font-bold text-gray-800">${proposta.numero_proposta}</h4>
-                        <p class="text-sm text-gray-600">${proposta.oportunidades?.leads?.nome || 'Lead sem nome'}</p>
+                        <h4 class="font-bold tinta-1">${proposta.numero_proposta}</h4>
+                        <p class="text-sm tinta-2">${proposta.oportunidades?.leads?.nome || 'Lead sem nome'}</p>
                     </div>
-                    <span class="badge badge-${statusColors[proposta.status] || 'gray'}">${formatStatus(proposta.status)}</span>
+                    ${badgeStatus(proposta.status)}
                 </div>
 
                 <div class="space-y-2 mb-4 text-sm">
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Potência:</span>
-                        <span class="font-semibold">${proposta.potencia_total_kwp} kWp</span>
+                        <span class="tinta-2">Potência:</span>
+                        <span class="num font-semibold tinta-1">${proposta.potencia_total_kwp} kWp</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Módulos:</span>
-                        <span class="font-semibold">${proposta.num_modulos} un</span>
+                        <span class="tinta-2">Módulos:</span>
+                        <span class="num font-semibold tinta-1">${proposta.num_modulos} un</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Valor:</span>
-                        <span class="font-semibold text-green-600">${formatCurrency(proposta.valor_final)}</span>
+                        <span class="tinta-2">Valor:</span>
+                        <span class="num font-semibold tinta-1">${formatCurrency(proposta.valor_final)}</span>
                     </div>
                 </div>
 
                 <div class="flex gap-2">
-                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="flex-1 text-white py-2 rounded-lg transition text-sm" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="botao-primario flex-1 py-2 text-sm">
                         <i class="fas fa-eye mr-1"></i> Visualizar
                     </button>
                     ${proposta.arquivo_pdf_url ? `
-                        <a href="${proposta.arquivo_pdf_url}" target="_blank" class="flex-1 bg-blue-500 text-white text-center py-2 rounded-lg hover:bg-blue-600 transition text-sm">
+                        <a href="${proposta.arquivo_pdf_url}" target="_blank" class="flex-1 botao-secundario text-center py-2 text-sm">
                             <i class="fas fa-file-pdf mr-1"></i> PDF
                         </a>
                     ` : ''}
-                    <button onclick="copiarLinkProposta('${proposta.token_rastreio}')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition text-sm">
+                    <button onclick="copiarLinkProposta('${proposta.token_rastreio}')" class="flex-1 botao-secundario py-2 text-sm">
                         <i class="fas fa-link mr-1"></i> Copiar Link
                     </button>
                 </div>
 
                 ${proposta.data_visualizacao ? `
-                    <p class="text-xs text-gray-500 mt-3">
+                    <p class="text-xs tinta-3 mt-3">
                         <i class="fas fa-eye"></i> Visualizada em ${formatDate(proposta.data_visualizacao)}
                     </p>
                 ` : ''}
             </div>
         `;
-    }).join('') || '<p class="text-gray-500 col-span-3 text-center py-8">Nenhuma proposta encontrada</p>';
+    }).join('') || '<p class="tinta-3 col-span-3 text-center py-8">Nenhuma proposta encontrada</p>';
 }
 
 function abrirProposta(token) {
@@ -1804,45 +2024,49 @@ function copiarLinkProposta(token) {
 // CLIENTES INSTALADOS
 // =========================================
 function renderInstalados() {
-    // Atualizar KPIs
-    document.getElementById('total-instalados').textContent = instalados.length;
+    // Atualizar KPIs. A classe entra por classList porque estes três elementos
+    // vivem no index.html e aqui só recebem textContent: sem a figura tabular o
+    // numeral desalinha a cada carga.
+    marcarComoNumero('total-instalados', instalados.length);
 
     const potenciaTotal = instalados.reduce((sum, c) => sum + (parseFloat(c.potencia_instalada_kwp) || 0), 0);
-    document.getElementById('potencia-total').textContent = potenciaTotal.toFixed(2) + ' kWp';
+    marcarComoNumero('potencia-total', potenciaTotal.toFixed(2) + ' kWp');
 
-    document.getElementById('nps-medio').textContent = kpis.nps_medio;
+    marcarComoNumero('nps-medio', kpis.nps_medio);
 
     // Renderizar tabela
     const tbody = document.getElementById('instalados-table-body');
     if (!tbody) return;
 
-    tbody.innerHTML = instalados.map(cliente => `
-        <tr class="hover:bg-gray-50">
+    tbody.innerHTML = ordenarLista(instalados, 'instalados').map(cliente => `
+        <tr class="linha">
             <td class="px-6 py-4">
                 <p class="font-semibold">${cliente.leads?.nome || 'Sem nome'}</p>
-                <p class="text-sm text-gray-600">${cliente.leads?.email}</p>
+                <p class="text-sm tinta-2">${cliente.leads?.email}</p>
             </td>
-            <td class="px-6 py-4 font-mono text-sm">${cliente.numero_contrato || 'N/A'}</td>
-            <td class="px-6 py-4 text-sm">${formatDate(cliente.data_instalacao)}</td>
-            <td class="px-6 py-4 font-semibold">${cliente.potencia_instalada_kwp || 0} kWp</td>
-            <td class="px-6 py-4 font-semibold text-green-600">${formatCurrency(cliente.valor_final_negociado)}</td>
+            <td class="px-6 py-4 num text-sm tinta-1">${cliente.numero_contrato || 'N/A'}</td>
+            <td class="px-6 py-4 num text-sm tinta-2">${formatDate(cliente.data_instalacao)}</td>
+            <td class="px-6 py-4 num num-dir font-semibold tinta-1">${cliente.potencia_instalada_kwp || 0} kWp</td>
+            <td class="px-6 py-4 num num-dir font-semibold tinta-1">${formatCurrency(cliente.valor_final_negociado)}</td>
             <td class="px-6 py-4">
                 ${cliente.nps != null ? `
                     <div class="flex items-center gap-2">
-                        <span class="font-bold ${cliente.nps >= 9 ? 'text-green-600' : cliente.nps >= 7 ? 'text-yellow-600' : 'text-red-600'}">
-                            ${cliente.nps}
-                        </span>
-                        <i class="fas fa-star text-yellow-500"></i>
+                        <span class="num font-bold tinta-1">${cliente.nps}/10</span>
+                        ${cliente.nps >= 9
+                            ? chipStatus('chip-ok', 'fa-face-smile', 'Promotor')
+                            : cliente.nps >= 7
+                                ? chipStatus('chip-neutro', 'fa-face-meh', 'Neutro')
+                                : chipStatus('chip-perdido', 'fa-face-frown', 'Detrator')}
                     </div>
-                ` : '<span class="text-gray-400">N/A</span>'}
+                ` : '<span class="tinta-3">N/A</span>'}
             </td>
             <td class="px-6 py-4">
-                <button class="text-blue-600 hover:text-blue-800">
+                <button class="botao-acao">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 text-gray-500">Nenhum cliente instalado</td></tr>';
+    `).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhum cliente instalado</td></tr>';
 }
 
 // =========================================
@@ -1862,42 +2086,51 @@ function renderTarefas() {
     });
     const proximas = tarefas.filter(t => new Date(t.data_vencimento) >= amanha);
 
-    renderTarefasColumn('tarefas-atrasadas', atrasadas, 'red');
-    renderTarefasColumn('tarefas-hoje', hojeTarefas, 'yellow');
-    renderTarefasColumn('tarefas-proximas', proximas, 'blue');
+    // O terceiro argumento virou o prazo, nao a cor: border-${color}-500 era
+    // classe montada em runtime e só pintava se o Tailwind compilado a tivesse.
+    renderTarefasColumn('tarefas-atrasadas', atrasadas, 'atrasada');
+    renderTarefasColumn('tarefas-hoje', hojeTarefas, 'hoje');
+    renderTarefasColumn('tarefas-proximas', proximas, 'proxima');
 }
 
-function renderTarefasColumn(containerId, tarefas, color) {
+function renderTarefasColumn(containerId, tarefas, prazo) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    const chipPrazo = {
+        atrasada: chipStatus('chip-atrasada', 'fa-triangle-exclamation', 'Atrasada'),
+        hoje: chipStatus('chip-parado', 'fa-clock', 'Hoje'),
+        proxima: chipStatus('chip-info', 'fa-calendar-day', 'Próxima')
+    }[prazo] || '';
+
     container.innerHTML = tarefas.map(tarefa => `
-        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-${color}-500">
+        <div class="tarefa-card p-4" data-prazo="${prazo}">
             <div class="flex items-start justify-between mb-2">
-                <h4 class="font-semibold text-gray-800 text-sm">${tarefa.titulo}</h4>
+                <h4 class="font-semibold tinta-1 text-sm">${tarefa.titulo}</h4>
                 <div class="flex gap-2">
-                    <button onclick="concluirTarefa('${tarefa.id}')" class="text-green-600 hover:text-green-800" title="Concluir">
+                    <button onclick="concluirTarefa('${tarefa.id}')" class="botao-acao botao-acao-ok" title="Concluir">
                         <i class="fas fa-check"></i>
                     </button>
-                    <button onclick="editarTarefa('${tarefa.id}')" class="text-blue-600 hover:text-blue-800" title="Editar">
+                    <button onclick="editarTarefa('${tarefa.id}')" class="botao-acao" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deletarTarefa('${tarefa.id}')" class="text-red-600 hover:text-red-800" title="Deletar">
+                    <button onclick="deletarTarefa('${tarefa.id}')" class="botao-acao botao-acao-perigo" title="Deletar">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
-            <p class="text-xs text-gray-600 mb-2">${tarefa.descricao || ''}</p>
-            <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-500">
-                    <i class="fas fa-calendar"></i> ${formatDate(tarefa.data_vencimento)}
+            <p class="text-xs tinta-2 mb-2">${tarefa.descricao || ''}</p>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+                <span class="text-xs tinta-2">
+                    <i class="fas fa-calendar"></i> <span class="num">${formatDate(tarefa.data_vencimento)}</span>
                 </span>
+                ${chipPrazo}
                 ${tarefa.leads ? `
-                    <span class="text-xs font-semibold text-gray-700">${tarefa.leads.nome || tarefa.leads.email}</span>
+                    <span class="text-xs font-semibold tinta-1">${tarefa.leads.nome || tarefa.leads.email}</span>
                 ` : ''}
             </div>
         </div>
-    `).join('') || '<p class="text-gray-400 text-sm text-center py-4">Nenhuma tarefa</p>';
+    `).join('') || '<p class="tinta-3 text-sm text-center py-4">Nenhuma tarefa</p>';
 }
 
 async function concluirTarefa(tarefaId) {
@@ -2091,8 +2324,89 @@ async function salvarNovaTarefa() {
 }
 
 // =========================================
+// FITA DE OPERAÇÃO
+// =========================================
+// Faixa sempre presente, em figuras tabulares, que substitui a interrupção
+// recorrente do toast. Os ids vivem no index.html; cada escrita é protegida por
+// checagem de null para o caso de os ids divergirem — fita ausente não pode
+// derrubar a carga de dados.
+let ultimaCargaEm = Date.now();
+
+function escreverNaFita(id, texto, modificador = '') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = texto;
+    // O modificador de cor vive no CSS do index.html e e so reforco: o rotulo
+    // da fita ja diz em palavra o que o numero significa.
+    el.classList.remove('fita__valor--atencao', 'fita__valor--critico');
+    if (modificador) el.classList.add(modificador);
+}
+
+function atualizarFitaOperacao() {
+    // "Parado" é o mesmo critério do card queimado de sol (14 dias), para a fita
+    // e o kanban nunca contarem coisas diferentes.
+    const parados = oportunidades.filter(o =>
+        calcularDiasInativo(o.data_ultima_atualizacao) >= 14
+    ).length;
+
+    const atrasadas = kpis.tarefas_atrasadas ?? 0;
+
+    escreverNaFita('fita-pipeline', formatCurrency(kpis.pipeline_valor));
+    escreverNaFita('fita-ativos', String(kpis.oportunidades_ativas ?? oportunidades.length));
+    escreverNaFita('fita-parados', String(parados), parados > 0 ? 'fita__valor--atencao' : '');
+    escreverNaFita('fita-atrasadas', String(atrasadas), atrasadas > 0 ? 'fita__valor--critico' : '');
+    atualizarSyncDaFita();
+}
+
+function atualizarSyncDaFita() {
+    const seg = Math.max(0, Math.floor((Date.now() - ultimaCargaEm) / 1000));
+    const mm = String(Math.floor(seg / 60)).padStart(2, '0');
+    const ss = String(seg % 60).padStart(2, '0');
+    escreverNaFita('fita-sync', `${mm}:${ss}`);
+}
+
+// Quando o refresh chega, uma régua varre a fita. Avisa sem roubar o foco, que
+// era o pecado do toast de 30 em 30 segundos.
+function varrerFita() {
+    const fita = document.getElementById('fita') || document.querySelector('.fita');
+    if (!fita) return;
+    fita.classList.remove('fita-varrendo');
+    void fita.offsetWidth; // reinicia a animação quando dois refreshes se encostam
+    fita.classList.add('fita-varrendo');
+    setTimeout(() => fita.classList.remove('fita-varrendo'), 1200);
+}
+
+// =========================================
 // UTILITÁRIOS
 // =========================================
+// Régua do lead score. Antes era barra de 64px sempre verde: 8 e 95 saiam
+// iguais e o limiar de qualificação era invisível. Agora 120px com tique de 1px
+// cravado nos 50 pontos, faixa por PALAVRA (matiz não carrega sozinha) e
+// denominador explícito, porque "42" sem o /100 não decide nada.
+function reguaScore(score) {
+    const valor = Math.max(0, Math.min(100, Number(score) || 0));
+    const faixa = valor >= 75 ? 'QUENTE' : valor >= 50 ? 'MORNO' : 'FRIO';
+
+    return `
+        <span class="regua" title="Lead score ${valor} de 100 — ${faixa}">
+            <span class="regua-trilha">
+                <span class="regua-preenche" style="width: ${valor}%"></span>
+                <span class="regua-tique" title="Limiar de qualificação: 50"></span>
+            </span>
+            <span class="num regua-valor">${valor}/100</span>
+            <span class="regua-faixa">${faixa}</span>
+        </span>`;
+}
+
+// Escreve um número em elemento que vive no index.html garantindo a figura
+// tabular. Protegido por null: id ausente não pode derrubar a renderização.
+function marcarComoNumero(id, valor) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('num');
+    el.textContent = valor;
+}
+
 function formatCurrency(value) {
     if (!value) return 'R$ 0,00';
     return new Intl.NumberFormat('pt-BR', {
@@ -2153,6 +2467,30 @@ function formatProntidao(prontidao) {
     return map[prontidao] || 'Não informado';
 }
 
+// Status sempre com ícone + palavra: a cor do badge é reforço. O sufixo sai
+// desta tabela em vez de vir de interpolação solta — badge-blue, por exemplo,
+// nunca existiu no CSS e saia sem estilo nenhum.
+const ESTADOS_STATUS = {
+    novo:            { cor: 'info',    icone: 'fa-circle-dot' },
+    qualificado:     { cor: 'success', icone: 'fa-circle-check' },
+    nao_qualificado: { cor: 'danger',  icone: 'fa-circle-xmark' },
+    em_nutricao:     { cor: 'warning', icone: 'fa-seedling' },
+    convertido:      { cor: 'success', icone: 'fa-handshake' },
+    perdido:         { cor: 'danger',  icone: 'fa-circle-xmark' },
+    instalado:       { cor: 'success', icone: 'fa-solar-panel' },
+    rascunho:        { cor: 'gray',    icone: 'fa-pen' },
+    enviada:         { cor: 'info',    icone: 'fa-paper-plane' },
+    visualizada:     { cor: 'warning', icone: 'fa-eye' },
+    aceita:          { cor: 'success', icone: 'fa-circle-check' },
+    recusada:        { cor: 'danger',  icone: 'fa-circle-xmark' },
+    revisao:         { cor: 'info',    icone: 'fa-rotate' }
+};
+
+function badgeStatus(status) {
+    const estado = ESTADOS_STATUS[status] || { cor: 'gray', icone: 'fa-circle-question' };
+    return `<span class="badge badge-${estado.cor}"><i class="fas ${estado.icone}"></i> ${formatStatus(status)}</span>`;
+}
+
 function getStatusColor(status) {
     const colorMap = {
         novo: 'info',
@@ -2165,18 +2503,35 @@ function getStatusColor(status) {
     return colorMap[status] || 'gray';
 }
 
+// Só erro e ação do usuário chegam aqui: informação recorrente vive na fita.
+// As classes saem do CSS próprio em vez de bg-${colors[type]}-500 montado por
+// interpolação — classe assim só existe se o Tailwind compilado a tiver.
 function showNotification(message, type = 'info') {
-    // Implementação simples - pode usar biblioteca como Toastify
-    const colors = {
-        success: 'green',
-        danger: 'red',
-        warning: 'yellow',
-        info: 'blue'
+    const estados = {
+        success: { icone: 'fa-circle-check', palavra: 'Feito' },
+        danger: { icone: 'fa-circle-exclamation', palavra: 'Erro' },
+        warning: { icone: 'fa-triangle-exclamation', palavra: 'Atenção' },
+        info: { icone: 'fa-circle-info', palavra: 'Aviso' }
     };
+    const tipo = estados[type] ? type : 'info';
+    const estado = estados[tipo];
 
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 bg-${colors[type]}-500 text-white px-6 py-3 rounded-lg shadow-lg z-[100] fade-in`;
-    notification.textContent = message;
+    notification.className = `toast toast-${tipo} fade-in`;
+
+    // Ícone + palavra: a cor da borda é reforço, nunca o único canal.
+    const icone = document.createElement('i');
+    icone.className = `fas ${estado.icone}`;
+    const rotulo = document.createElement('strong');
+    rotulo.textContent = estado.palavra;
+    // textContent porque a mensagem carrega error.message e nome de lead.
+    const texto = document.createElement('span');
+    texto.className = 'toast-texto';
+    texto.textContent = message;
+
+    notification.appendChild(icone);
+    notification.appendChild(rotulo);
+    notification.appendChild(texto);
 
     document.body.appendChild(notification);
 
@@ -2225,6 +2580,66 @@ function setupEventListeners() {
     if (newLeadForm) {
         newLeadForm.addEventListener('submit', salvarNovoLead);
     }
+
+    configurarOrdenacao();
+}
+
+// =========================================
+// ORDENAÇÃO DAS TABELAS DENSAS
+// =========================================
+// Os <th data-ordenavel> do index.html mostram a seta e esperam o aria-sort
+// daqui: sem este bloco a afordancia existiria e nao faria nada. Ordena sempre
+// uma COPIA, porque a ordem dos arrays globais e usada por kanban, fita e KPIs.
+const ordemTabela = {
+    leads: { chave: null, dir: 1 },
+    instalados: { chave: null, dir: 1 }
+};
+
+const CHAVES_ORDENACAO = {
+    consumo: lead => parseFloat(lead.consumo_mensal) || 0,
+    score: lead => parseFloat(lead.lead_score) || 0,
+    valor: cliente => parseFloat(cliente.valor_final_negociado) || 0
+};
+
+function ordenarLista(lista, tabela) {
+    const { chave, dir } = ordemTabela[tabela];
+    const extrai = CHAVES_ORDENACAO[chave];
+    if (!extrai) return lista;
+    return [...lista].sort((a, b) => (extrai(a) - extrai(b)) * dir);
+}
+
+function filtroDeLeadsAtivo() {
+    return ['lead-search', 'lead-status-filter', 'lead-type-filter']
+        .some(id => (document.getElementById(id)?.value || '') !== '');
+}
+
+function configurarOrdenacao() {
+    document.querySelectorAll('.tabela th[data-ordenavel]').forEach(th => {
+        if (th.dataset.ordenacaoLigada) return;
+        th.dataset.ordenacaoLigada = '1';
+
+        th.addEventListener('click', () => {
+            const tabela = th.closest('table')?.id === 'tabela-instalados' ? 'instalados' : 'leads';
+            const estado = ordemTabela[tabela];
+            const chave = th.dataset.ordenavel;
+
+            estado.dir = (estado.chave === chave && estado.dir === 1) ? -1 : 1;
+            estado.chave = chave;
+
+            // aria-sort e o estado que o CSS do index.html le para virar a seta.
+            th.closest('tr').querySelectorAll('th[data-ordenavel]')
+                .forEach(outro => outro.removeAttribute('aria-sort'));
+            th.setAttribute('aria-sort', estado.dir === 1 ? 'ascending' : 'descending');
+
+            if (tabela === 'instalados') {
+                renderInstalados();
+            } else if (filtroDeLeadsAtivo()) {
+                filterLeads();
+            } else {
+                renderLeadsTable();
+            }
+        });
+    });
 }
 
 function filterLeads() {
@@ -2259,16 +2674,16 @@ function renderFilteredLeadsTable(filteredLeads) {
     const tbody = document.getElementById('leads-table-body');
     if (!tbody) return;
 
-    tbody.innerHTML = filteredLeads.map(lead => `
-        <tr class="hover:bg-gray-50 cursor-pointer" onclick="openLeadModal('${lead.id}')">
+    tbody.innerHTML = ordenarLista(filteredLeads, 'leads').map(lead => `
+        <tr class="linha cursor-pointer" onclick="openLeadModal('${lead.id}')">
             <td class="px-6 py-4">
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+                    <div class="avatar-marca w-10 h-10 rounded-full flex items-center justify-center font-bold mr-3">
                         ${(lead.nome || lead.email || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
-                        <p class="font-semibold text-gray-800">${lead.nome || 'Sem nome'}</p>
-                        <p class="text-sm text-gray-600">${lead.email}</p>
+                        <p class="font-semibold tinta-1">${lead.nome || 'Sem nome'}</p>
+                        <p class="text-sm tinta-2">${lead.email}</p>
                     </div>
                 </div>
             </td>
@@ -2277,28 +2692,21 @@ function renderFilteredLeadsTable(filteredLeads) {
                     ${lead.tipo_cliente === 'empresarial' ? 'Empresarial' : 'Residencial'}
                 </span>
             </td>
-            <td class="px-6 py-4">${lead.consumo_mensal || 0} kWh</td>
+            <td class="px-6 py-4 num num-dir tinta-1">${lead.consumo_mensal || 0} kWh</td>
+            <td class="px-6 py-4">${reguaScore(lead.lead_score)}</td>
             <td class="px-6 py-4">
-                <div class="flex items-center">
-                    <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: ${lead.lead_score || 0}%"></div>
-                    </div>
-                    <span class="text-sm font-semibold">${lead.lead_score || 0}</span>
-                </div>
+                ${badgeStatus(lead.status)}
             </td>
-            <td class="px-6 py-4">
-                <span class="badge badge-${getStatusColor(lead.status)}">${formatStatus(lead.status)}</span>
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-600">
+            <td class="px-6 py-4 text-sm tinta-2">
                 ${lead.users ? lead.users.nome : 'Não atribuído'}
             </td>
             <td class="px-6 py-4">
-                <button onclick="event.stopPropagation(); openLeadModal('${lead.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                <button onclick="event.stopPropagation(); openLeadModal('${lead.id}')" class="botao-acao mr-2">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 text-gray-500">Nenhum lead encontrado</td></tr>';
+    `).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhum lead encontrado</td></tr>';
 }
 
 function showNewLeadModal() {
@@ -2430,6 +2838,7 @@ function updateNotificacoesBadge() {
     const naoLidas = notificacoes.filter(n => !n.lida).length;
 
     if (naoLidas > 0) {
+        badge.classList.add('num');
         badge.textContent = naoLidas > 99 ? '99+' : naoLidas;
         badge.classList.remove('hidden');
     } else {
@@ -2454,7 +2863,7 @@ function renderNotificacoes() {
 
     if (notificacoes.length === 0) {
         container.innerHTML = `
-            <div class="p-8 text-center text-gray-500">
+            <div class="p-8 text-center tinta-3">
                 <i class="fas fa-bell-slash text-4xl mb-2"></i>
                 <p>Nenhuma notificação</p>
             </div>
@@ -2464,31 +2873,31 @@ function renderNotificacoes() {
 
     container.innerHTML = notificacoes.map(notif => {
         const icone = {
-            'auto_nutricao': 'fa-seedling text-yellow-500',
-            'auto_perdido': 'fa-times-circle text-red-500',
-            'alerta_inatividade': 'fa-clock text-orange-500',
-            'retomar_contato': 'fa-phone text-blue-500'
-        }[notif.tipo] || 'fa-bell text-gray-500';
+            'auto_nutricao': 'fa-seedling cor-atencao',
+            'auto_perdido': 'fa-times-circle cor-critico',
+            'alerta_inatividade': 'fa-clock cor-atencao',
+            'retomar_contato': 'fa-phone cor-info'
+        }[notif.tipo] || 'fa-bell tinta-2';
 
         return `
-            <div class="p-4 hover:bg-gray-50 transition ${!notif.lida ? 'bg-blue-50' : ''}" onclick="marcarComoLida('${notif.id}')">
+            <div class="p-4 linha transition ${!notif.lida ? 'sup-recuo' : ''}" onclick="marcarComoLida('${notif.id}')">
                 <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <div class="icone-tipo flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center">
                         <i class="fas ${icone}"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-2">
-                            <h4 class="font-semibold text-sm text-gray-900">${notif.titulo}</h4>
-                            ${!notif.lida ? '<span class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+                            <h4 class="font-semibold text-sm tinta-1">${notif.titulo}</h4>
+                            ${!notif.lida ? '<span class="chip chip-info flex-shrink-0"><i class="fas fa-circle-dot"></i> Nova</span>' : ''}
                         </div>
-                        <p class="text-sm text-gray-600 mt-1">${notif.mensagem}</p>
+                        <p class="text-sm tinta-2 mt-1">${notif.mensagem}</p>
                         <div class="flex items-center gap-2 mt-2">
-                            <span class="text-xs text-gray-500">
+                            <span class="text-xs tinta-3">
                                 <i class="fas fa-clock"></i>
                                 ${formatarDataRelativa(notif.created_at)}
                             </span>
                             ${notif.acao_sugerida === 'reverter' ? `
-                                <button onclick="event.stopPropagation(); abrirReversao('${notif.id}')" class="text-xs text-teal-600 hover:text-teal-700 font-semibold">
+                                <button onclick="event.stopPropagation(); abrirReversao('${notif.id}')" class="text-xs botao-acao font-semibold">
                                     <i class="fas fa-undo"></i> Reverter
                                 </button>
                             ` : ''}
@@ -2620,7 +3029,8 @@ function filterKanban(tipo) {
     document.querySelectorAll('#module-kanban .tab-button').forEach(btn => {
         btn.classList.remove('active');
     });
-    event?.target.classList.add('active');
+    // Mesma armadilha do showTab: o alvo e o botao, nunca um filho dele.
+    (event?.currentTarget || event?.target)?.classList.add('active');
 
     // Renderizar kanban filtrado
     renderKanbanFiltered();
@@ -2644,15 +3054,33 @@ function renderKanbanFiltered() {
             );
         }
 
-        // Atualizar contador
+        // Atualizar contador. A figura tabular entra por classList porque o
+        // elemento vive no index.html e so recebe textContent, sem filhos.
         if (countBadge) {
+            countBadge.classList.add('num');
             countBadge.textContent = oportunidadesEtapa.length;
+        }
+
+        // Valor somado da raia: o vendedor decide por dinheiro parado na coluna,
+        // nao por quantidade de cartoes. Escreve so se o cabecalho da coluna
+        // tiver o elemento, porque esse markup e do index.html.
+        const somaRaia = document.querySelector(`.kanban-column[data-etapa="${etapa}"] .kanban-soma`);
+        if (somaRaia) {
+            somaRaia.classList.add('num');
+            somaRaia.textContent = formatCurrency(
+                oportunidadesEtapa.reduce((t, o) => t + (parseFloat(o.valor_estimado) || 0), 0)
+            );
         }
 
         container.innerHTML = oportunidadesEtapa.map(oportunidade => {
             const lead = oportunidade.leads;
             const diasInativo = calcularDiasInativo(oportunidade.data_ultima_atualizacao);
-            const isInactive = diasInativo > 14;
+            // Tres degraus em vez de um binario: 15 dias deixa de ser identico a
+            // 120. O banho quente do CSS le este atributo; a opacidade saiu de
+            // cena, porque apagar o card que mais precisa de toque custa negocio.
+            const faixaDias = diasInativo >= 60 ? '60'
+                : diasInativo >= 30 ? '30'
+                : diasInativo >= 14 ? '14' : '';
 
             // Pegar estatísticas de interações
             const stats = interacoesStats[oportunidade.lead_id] || {
@@ -2678,90 +3106,71 @@ function renderKanbanFiltered() {
             const instalacao = instalados.find(inst => inst.oportunidade_id === oportunidade.id);
             const temInstalacaoAgendada = instalacao?.data_agendamento_instalacao;
 
-            // Determinar badge/ícone de status
-            let statusBadge = '';
-            let statusColor = '';
-            let statusText = '';
-            let statusIcon = '';
+            // Status por ícone + palavra. Antes era um ponto colorido com a
+            // primeira letra ("P"), que some para quem não distingue matiz — e
+            // "perdido" (tijolo) dividia o mesmo vermelho de "parado" (âmbar).
+            let statusChip = '';
 
             if (temInstalacaoAgendada) {
-                // Mostrar troféu se tiver instalação agendada
-                statusIcon = '🏆';
-                statusText = 'Instalação Agendada';
-                statusColor = 'text-yellow-600';
+                statusChip = chipStatus('chip-info', 'fa-trophy', 'Agendada');
             } else if (lead?.status === 'perdido') {
-                statusBadge = 'bg-red-500';
-                statusColor = 'text-red-500';
-                statusText = 'Perdido';
+                statusChip = chipStatus('chip-perdido', 'fa-circle-xmark', 'Perdido');
             } else if (lead?.status === 'qualificado') {
-                statusBadge = 'bg-green-500';
-                statusColor = 'text-green-500';
-                statusText = 'Qualificado';
+                statusChip = chipStatus('chip-ok', 'fa-circle-check', 'Qualificado');
             } else if (lead?.status === 'em_nutricao') {
-                statusBadge = 'bg-orange-500';
-                statusColor = 'text-orange-500';
-                statusText = 'Em Nutrição';
+                statusChip = chipStatus('chip-parado', 'fa-seedling', 'Nutrição');
             }
 
             return `
-                <div class="kanban-card ${isInactive ? 'inactive' : ''}" data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
+                <div class="kanban-card"${faixaDias ? ` data-dias-faixa="${faixaDias}"` : ''} data-id="${oportunidade.id}" onclick="openLeadModal('${oportunidade.lead_id}')">
                     <!-- Cabeçalho com nome e estrela de favorito -->
-                    <div class="flex items-start justify-between mb-2">
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-gray-800 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                <i class="fas fa-clock"></i> ${dataFormatada} ${horaFormatada}
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                        <div class="flex-1 min-w-0 kanban-card-titulo">
+                            <h4 class="font-semibold tinta-1 text-sm">${lead?.nome || lead?.email || 'Lead sem nome'}</h4>
+                            <p class="text-xs tinta-3 mt-0.5">
+                                <i class="fas fa-clock"></i> <span class="num">${dataFormatada} ${horaFormatada}</span>
                             </p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            ${statusIcon ? `
-                                <div class="flex items-center gap-1" title="${statusText}">
-                                    <span class="text-lg">${statusIcon}</span>
-                                </div>
-                            ` : statusBadge ? `
-                                <div class="flex items-center gap-1.5" title="${statusText}">
-                                    <div class="w-2 h-2 rounded-full ${statusBadge}"></div>
-                                    <span class="text-xs font-medium ${statusColor}">${statusText.charAt(0)}</span>
-                                </div>
-                            ` : ''}
-                            <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="focus:outline-none transition-transform hover:scale-110">
-                                <i class="fas fa-star text-lg ${oportunidade.favorito ? 'text-yellow-400' : 'text-gray-300'}"></i>
+                        <div class="flex items-center gap-2 kanban-card-acoes">
+                            ${statusChip}
+                            <button onclick="event.stopPropagation(); toggleFavorito('${oportunidade.id}')" class="transition-transform hover:scale-110" title="${oportunidade.favorito ? 'Remover dos favoritos' : 'Marcar como favorito'}">
+                                <i class="fas fa-star text-lg ${oportunidade.favorito ? 'cor-marca-700' : 'tinta-3'}"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Valor e consumo -->
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-bold text-green-600">${formatCurrency(oportunidade.valor_estimado)}</span>
-                        <span class="text-xs text-gray-600">
-                            <i class="fas fa-bolt"></i> ${lead?.consumo_mensal || 0} kWh
+                    <!-- Valor e consumo: numero que vira decisao, em figura tabular -->
+                    <div class="flex items-center justify-between mb-2 kanban-card-valor">
+                        <span class="num text-sm font-bold tinta-1">${formatCurrency(oportunidade.valor_estimado)}</span>
+                        <span class="text-xs tinta-2">
+                            <i class="fas fa-bolt"></i> <span class="num">${lead?.consumo_mensal || 0}</span> kWh
                         </span>
                     </div>
 
-                    <!-- Ícones de estatísticas -->
-                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                    <!-- Ícones de estatísticas: contagem zero fica legível, não apagada -->
+                    <div class="flex items-center justify-between pt-2 fio-topo">
                         <!-- Email -->
                         <div class="flex items-center gap-1" title="${stats.emails} email(s) enviado(s)">
-                            <i class="fas fa-envelope text-xs ${stats.emails > 0 ? 'text-blue-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.emails > 0 ? 'text-blue-600 font-semibold' : 'text-gray-400'}">${stats.emails}</span>
+                            <i class="fas fa-envelope text-xs ${stats.emails > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.emails > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.emails}</span>
                         </div>
 
                         <!-- Chamadas -->
                         <div class="flex items-center gap-1" title="${stats.chamadas} ligaç(ões) realizada(s)">
-                            <i class="fas fa-phone text-xs ${stats.chamadas > 0 ? 'text-purple-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.chamadas > 0 ? 'text-purple-600 font-semibold' : 'text-gray-400'}">${stats.chamadas}</span>
+                            <i class="fas fa-phone text-xs ${stats.chamadas > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.chamadas > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.chamadas}</span>
                         </div>
 
                         <!-- Propostas -->
                         <div class="flex items-center gap-1" title="${stats.propostas} proposta(s) criada(s)">
-                            <i class="fas fa-file-invoice-dollar text-xs ${stats.propostas > 0 ? 'text-green-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.propostas > 0 ? 'text-green-600 font-semibold' : 'text-gray-400'}">${stats.propostas}</span>
+                            <i class="fas fa-file-invoice-dollar text-xs ${stats.propostas > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.propostas > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.propostas}</span>
                         </div>
 
                         <!-- Instalações -->
                         <div class="flex items-center gap-1" title="${stats.instalacoes} instalação(ões) concluída(s)">
-                            <i class="fas fa-solar-panel text-xs ${stats.instalacoes > 0 ? 'text-orange-500' : 'text-gray-300'}"></i>
-                            <span class="text-xs ${stats.instalacoes > 0 ? 'text-orange-600 font-semibold' : 'text-gray-400'}">${stats.instalacoes}</span>
+                            <i class="fas fa-solar-panel text-xs ${stats.instalacoes > 0 ? 'tinta-1' : 'tinta-3'}"></i>
+                            <span class="num text-xs ${stats.instalacoes > 0 ? 'tinta-1 font-semibold' : 'tinta-3'}">${stats.instalacoes}</span>
                         </div>
 
                         <!-- Badge tipo cliente -->
@@ -2770,10 +3179,17 @@ function renderKanbanFiltered() {
                         </span>
                     </div>
 
-                    ${isInactive ? `<p class="text-xs text-red-500 mt-2"><i class="fas fa-exclamation-triangle"></i> ${diasInativo} dias sem atualização</p>` : ''}
+                    ${faixaDias ? `
+                        <p class="mt-2">
+                            <span class="chip chip-parado">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span class="num">${diasInativo}</span> dias sem contato
+                            </span>
+                        </p>
+                    ` : ''}
                 </div>
             `;
-        }).join('') || '<p class="text-gray-400 text-sm text-center py-4">Nenhuma oportunidade</p>';
+        }).join('') || '<p class="tinta-3 text-sm text-center py-4">Nenhuma oportunidade</p>';
     });
 }
 
@@ -2988,27 +3404,27 @@ function renderResultadosSimulador(resultado) {
         const vpl = proposta.vpl || 0;
 
         return `
-            <div class="bg-white border-2 ${index === 0 ? 'border-green-500' : 'border-gray-200'} rounded-xl p-6 shadow-lg">
-                ${index === 0 ? '<div class="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3">RECOMENDADO</div>' : ''}
+            <div class="sup-card fio rounded-lg p-6" ${index === 0 ? 'data-recomendado="1"' : ''}>
+                ${index === 0 ? chipStatus('chip-ok', 'fa-circle-check', 'Recomendado') : ''}
 
-                <h4 class="text-lg font-bold mb-2">${placa.fabricante}</h4>
-                <p class="text-sm text-gray-600 mb-4">${placa.modelo}</p>
+                <h4 class="text-lg font-bold tinta-1 mb-2 mt-2">${placa.fabricante}</h4>
+                <p class="text-sm tinta-2 mb-4">${placa.modelo}</p>
 
                 <!-- Sistema -->
-                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="sup-recuo rounded-lg p-4 mb-4">
                     <h5 class="font-bold text-sm mb-2">📦 Sistema</h5>
                     <div class="text-sm space-y-1">
                         <div class="flex justify-between">
-                            <span>Placas ${placa.potencia}Wp:</span>
-                            <span class="font-semibold">${numModulos} unidades</span>
+                            <span class="tinta-2">Placas <span class="num">${placa.potencia}</span>Wp:</span>
+                            <span class="num font-semibold tinta-1">${numModulos} unidades</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Potência Total:</span>
-                            <span class="font-semibold">${potenciaRealKwp} kWp</span>
+                            <span class="tinta-2">Potência Total:</span>
+                            <span class="num font-semibold tinta-1">${potenciaRealKwp} kWp</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Área Necessária:</span>
-                            <span class="font-semibold">${area.toFixed(1)} m²</span>
+                            <span class="tinta-2">Área Necessária:</span>
+                            <span class="num font-semibold tinta-1">${area.toFixed(1)} m²</span>
                         </div>
                         <div class="flex justify-between">
                             <span>Inversor:</span>
@@ -3018,52 +3434,52 @@ function renderResultadosSimulador(resultado) {
                 </div>
 
                 <!-- Economia -->
-                <div class="bg-green-50 rounded-lg p-4 mb-4">
-                    <h5 class="font-bold text-sm mb-2 text-green-800">💰 Economia & Retorno</h5>
+                <div class="secao-recuada p-4 mb-4">
+                    <h5 class="font-bold text-sm mb-2 cor-ok">💰 Economia & Retorno</h5>
                     <div class="text-sm space-y-1">
                         <div class="flex justify-between">
-                            <span>Por mês:</span>
-                            <span class="font-bold text-green-600">${formatCurrency(economia.economiaMensal)}</span>
+                            <span class="tinta-2">Por mês:</span>
+                            <span class="num font-bold cor-ok">${formatCurrency(economia.economiaMensal)}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Por ano:</span>
-                            <span class="font-bold text-green-600">${formatCurrency(economia.economiaAnual)}</span>
+                            <span class="tinta-2">Por ano:</span>
+                            <span class="num font-bold cor-ok">${formatCurrency(economia.economiaAnual)}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span>Em 25 anos:</span>
-                            <span class="font-bold text-green-600">${formatCurrency(economia.economia25Anos)}</span>
+                            <span class="tinta-2">Em 25 anos:</span>
+                            <span class="num font-bold cor-ok">${formatCurrency(economia.economia25Anos)}</span>
                         </div>
-                        <div class="border-t border-green-200 pt-2 mt-2 space-y-1">
+                        <div class="fio-topo pt-2 mt-2 space-y-1">
                             <div class="flex justify-between">
-                                <span class="font-bold">Payback:</span>
-                                <span class="font-bold text-green-800">${paybackAnos} anos</span>
+                                <span class="font-bold tinta-1">Payback:</span>
+                                <span class="num font-bold tinta-1">${paybackAnos} anos</span>
                             </div>
                             ${tir > 0 ? `<div class="flex justify-between">
-                                <span class="text-xs">TIR:</span>
-                                <span class="font-semibold text-xs">${tir}% a.a.</span>
+                                <span class="text-xs tinta-2">TIR:</span>
+                                <span class="num font-semibold text-xs tinta-1">${tir}% a.a.</span>
                             </div>` : ''}
                             ${vpl !== 0 ? `<div class="flex justify-between">
-                                <span class="text-xs">VPL:</span>
-                                <span class="font-semibold text-xs">${formatCurrency(vpl)}</span>
+                                <span class="text-xs tinta-2">VPL:</span>
+                                <span class="num font-semibold text-xs tinta-1">${formatCurrency(vpl)}</span>
                             </div>` : ''}
                         </div>
                     </div>
                 </div>
 
                 <!-- Valores -->
-                <div class="border-t-2 pt-4">
+                <div class="fio-topo pt-4">
                     <div class="flex justify-between mb-2">
-                        <span class="text-sm text-gray-600">Custo Total:</span>
-                        <span class="text-sm line-through text-gray-400">${formatCurrency(custos.custoTotal)}</span>
+                        <span class="text-sm tinta-2">Custo Total:</span>
+                        <span class="num text-sm line-through tinta-2">${formatCurrency(custos.custoTotal)}</span>
                     </div>
-                    <div class="flex justify-between mb-3">
-                        <span class="font-bold">Valor Final:</span>
-                        <span class="font-bold text-2xl text-green-600">${formatCurrency(custos.valorVenda)}</span>
+                    <div class="flex items-baseline justify-between mb-3">
+                        <span class="font-bold tinta-1">Valor Final:</span>
+                        <span class="num-display">${formatCurrency(custos.valorVenda)}</span>
                     </div>
-                    <button onclick="verMemoriaCalculo(${index})" class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600 mb-2">
+                    <button onclick="verMemoriaCalculo(${index})" class="w-full botao-secundario py-2 text-sm mb-2">
                         <i class="fas fa-file-invoice mr-2"></i>Ver Memória de Cálculo
                     </button>
-                    <button onclick="gerarPropostaComercial(${index})" class="w-full text-white py-2 rounded-lg text-sm" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
+                    <button onclick="gerarPropostaComercial(${index})" class="botao-primario w-full py-2 text-sm">
                         <i class="fas fa-file-pdf mr-2"></i>Gerar Proposta
                     </button>
                 </div>
@@ -3297,19 +3713,19 @@ async function renderDocumentos(leadId) {
 
     container.innerHTML = `
         <div class="space-y-6">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Upload de Documentos</h3>
+                    <h3 class="text-lg font-bold tinta-1">Upload de Documentos</h3>
                 </div>
-                <p class="text-sm text-gray-600 mb-4">Faça upload de fotos do telhado, conta de luz, documentos do imóvel, etc.</p>
+                <p class="text-sm tinta-2 mb-4">Faça upload de fotos do telhado, conta de luz, documentos do imóvel, etc.</p>
 
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Documento</label>
-                        <select id="tipo-documento" class="w-full border rounded px-3 py-2">
+                        <label class="block text-sm font-medium tinta-1 mb-2">Tipo de Documento</label>
+                        <select id="tipo-documento" class="campo w-full">
                             <option value="foto_telhado">Foto do Telhado</option>
                             <option value="foto_estrutura">Foto da Estrutura</option>
                             <option value="conta_luz">Conta de Luz</option>
@@ -3318,18 +3734,18 @@ async function renderDocumentos(leadId) {
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Arquivo</label>
+                        <label class="block text-sm font-medium tinta-1 mb-2">Arquivo</label>
                         <input type="file" id="arquivo-upload" accept="image/*,.pdf"
-                               class="w-full border rounded px-3 py-2">
+                               class="campo w-full">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                        <label class="block text-sm font-medium tinta-1 mb-2">Observações</label>
                         <textarea id="obs-documento" rows="2"
-                                  class="w-full border rounded px-3 py-2"
+                                  class="campo w-full"
                                   placeholder="Informações adicionais sobre o documento..."></textarea>
                     </div>
                     <button onclick="uploadDocumento('${leadId}')"
-                            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition">
+                            class="w-full botao-primario px-6 py-3">
                         <i class="fas fa-upload mr-2"></i>Fazer Upload
                     </button>
                 </div>
@@ -3337,29 +3753,29 @@ async function renderDocumentos(leadId) {
 
             <!-- Lista de Documentos -->
             <div>
-                <h4 class="font-bold text-gray-800 mb-3">Documentos Enviados</h4>
+                <h4 class="font-bold tinta-1 mb-3">Documentos Enviados</h4>
                 <div class="space-y-2">
                     ${(documentos || []).map(doc => `
-                        <div class="bg-white border rounded-lg p-4 flex items-center justify-between">
+                        <div class="sup-card fio rounded p-4 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <i class="fas fa-file-${doc.mime_type?.includes('pdf') ? 'pdf' : 'image'} text-2xl text-gray-600"></i>
+                                <i class="fas fa-file-${doc.mime_type?.includes('pdf') ? 'pdf' : 'image'} text-2xl tinta-2"></i>
                                 <div>
                                     <p class="font-semibold">${doc.nome_arquivo}</p>
-                                    <p class="text-sm text-gray-500">${formatTipo(doc.tipo)} • ${formatDate(doc.created_at)}</p>
+                                    <p class="text-sm tinta-3">${formatTipo(doc.tipo)} • ${formatDate(doc.created_at)}</p>
                                 </div>
                             </div>
                             <div class="flex gap-2">
                                 <a href="${doc.url_arquivo}" target="_blank"
-                                   class="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600">
+                                   class="botao-acao px-3 py-1 rounded fio">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <button onclick="deletarDocumento('${doc.id}', '${leadId}')"
-                                        class="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600">
+                                        class="botao-acao botao-acao-perigo px-3 py-1 rounded fio">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-                    `).join('') || '<p class="text-gray-500 text-center py-8">Nenhum documento enviado ainda</p>'}
+                    `).join('') || '<p class="tinta-3 text-center py-8">Nenhum documento enviado ainda</p>'}
                 </div>
             </div>
         </div>
@@ -3442,32 +3858,32 @@ async function renderQualificacaoComSimulador(leadId) {
     container.innerHTML = `
         <div class="space-y-6">
             <!-- Texto Explicativo -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-3 mb-4">
-                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-8 h-8 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <h3 class="text-xl font-bold text-gray-800">Etapa de Simulação</h3>
+                    <h3 class="text-xl font-bold tinta-1">Etapa de Simulação</h3>
                 </div>
-                <p class="text-gray-700 leading-relaxed mb-4">
+                <p class="tinta-1 leading-relaxed mb-4">
                     Agora você pode gerar o <strong>projeto completo do sistema solar fotovoltaico</strong>
                     para este cliente. O sistema irá calcular automaticamente:
                 </p>
-                <ul class="space-y-2 text-gray-700 ml-6">
+                <ul class="space-y-2 tinta-1 ml-6">
                     <li class="flex items-start gap-2">
-                        <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 cor-ok mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
                         <span><strong>Dimensionamento do sistema</strong> - Número de módulos, potência total e inversor adequado</span>
                     </li>
                     <li class="flex items-start gap-2">
-                        <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 cor-ok mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
                         <span><strong>Memória de cálculo técnica</strong> - Geração estimada, área necessária e análise financeira</span>
                     </li>
                     <li class="flex items-start gap-2">
-                        <svg class="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 cor-ok mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
                         <span><strong>Proposta comercial</strong> - Documento profissional pronto para apresentar ao cliente</span>
@@ -3476,15 +3892,12 @@ async function renderQualificacaoComSimulador(leadId) {
             </div>
 
             <!-- Botão Calcular -->
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-8 text-center">
+            <div class="secao-recuada rounded-lg p-8 text-center">
                 <button onclick="abrirSimuladorSolar()"
-                        class="w-full text-white px-8 py-5 rounded-lg font-semibold text-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-102"
-                        style="background: linear-gradient(135deg, #309086 0%, #26a69a 100%);"
-                        onmouseover="this.style.background='linear-gradient(135deg, #267269 0%, #1e8a7e 100%)'"
-                        onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #26a69a 100%)'">
+                        class="botao-primario w-full px-8 py-5 text-lg">
                     <i class="fas fa-solar-panel mr-3"></i>Calcular Sistema Solar
                 </button>
-                <p class="text-sm text-gray-600 mt-4">
+                <p class="text-sm tinta-2 mt-4">
                     O simulador abrirá em uma nova janela com todos os dados do lead já preenchidos
                 </p>
             </div>
@@ -3511,9 +3924,9 @@ async function renderResumoProposta(leadId) {
     if (!proposta) {
         container.innerHTML = `
             <div class="text-center py-12">
-                <i class="fas fa-file-invoice text-6xl text-gray-300 mb-4"></i>
-                <p class="text-gray-600">Nenhuma proposta gerada ainda</p>
-                <p class="text-sm text-gray-500 mt-2">Gere uma proposta na etapa de Simulação</p>
+                <i class="fas fa-file-invoice text-6xl tinta-3 mb-4"></i>
+                <p class="tinta-2">Nenhuma proposta gerada ainda</p>
+                <p class="text-sm tinta-3 mt-2">Gere uma proposta na etapa de Simulação</p>
             </div>
         `;
         return;
@@ -3522,55 +3935,55 @@ async function renderResumoProposta(leadId) {
     container.innerHTML = `
         <div class="space-y-6">
             <!-- Resumo da Proposta -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xl font-bold text-gray-800">
-                        <i class="fas fa-file-invoice text-blue-600 mr-2"></i>
+                    <h3 class="text-xl font-bold tinta-1">
+                        <i class="fas fa-file-invoice cor-info mr-2"></i>
                         ${proposta.numero_proposta}
                     </h3>
-                    <span class="badge badge-${getStatusBadge(proposta.status)}">${formatStatus(proposta.status)}</span>
+                    ${badgeStatus(proposta.status)}
                 </div>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="bg-white rounded-lg p-4">
-                        <p class="text-sm text-gray-600">Potência do Sistema</p>
-                        <p class="text-2xl font-bold text-blue-600">${proposta.potencia_total_kwp} kWp</p>
+                        <p class="text-sm tinta-2">Potência do Sistema</p>
+                        <p class="num-display">${proposta.potencia_total_kwp} kWp</p>
                     </div>
                     <div class="bg-white rounded-lg p-4">
-                        <p class="text-sm text-gray-600">Número de Módulos</p>
-                        <p class="text-2xl font-bold text-green-600">${proposta.num_modulos} un</p>
+                        <p class="text-sm tinta-2">Número de Módulos</p>
+                        <p class="num-display">${proposta.num_modulos} un</p>
                     </div>
                     <div class="bg-white rounded-lg p-4">
-                        <p class="text-sm text-gray-600">Valor Total</p>
-                        <p class="text-2xl font-bold text-purple-600">${formatCurrency(proposta.valor_total)}</p>
+                        <p class="text-sm tinta-2">Valor Total</p>
+                        <p class="num-display">${formatCurrency(proposta.valor_total)}</p>
                     </div>
                     <div class="bg-white rounded-lg p-4">
-                        <p class="text-sm text-gray-600">Valor Final</p>
-                        <p class="text-2xl font-bold text-green-600">${formatCurrency(proposta.valor_final)}</p>
+                        <p class="text-sm tinta-2">Valor Final</p>
+                        <p class="num-display">${formatCurrency(proposta.valor_final)}</p>
                     </div>
                 </div>
 
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Tipo Inversor:</span>
+                        <span class="tinta-2">Tipo Inversor:</span>
                         <span class="font-semibold">${proposta.tipo_inversor || 'N/A'}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Marca Módulos:</span>
+                        <span class="tinta-2">Marca Módulos:</span>
                         <span class="font-semibold">${proposta.marca_modulos || 'N/A'}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Economia Mensal Prevista:</span>
-                        <span class="font-semibold text-green-600">${formatCurrency(proposta.economia_mensal_prevista || 0)}</span>
+                        <span class="tinta-2">Economia Mensal Prevista:</span>
+                        <span class="num font-semibold cor-ok">${formatCurrency(proposta.economia_mensal_prevista || 0)}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Payback:</span>
-                        <span class="font-semibold">${proposta.payback_meses || 0} meses</span>
+                        <span class="tinta-2">Payback:</span>
+                        <span class="num font-semibold tinta-1">${proposta.payback_meses || 0} meses</span>
                     </div>
                 </div>
 
                 ${proposta.data_visualizacao ? `
-                    <div class="mt-4 p-3 bg-green-100 text-green-700 rounded">
+                    <div class="mt-4 p-3 secao-recuada cor-ok rounded">
                         <i class="fas fa-eye mr-2"></i>
                         <strong>Visualizada em:</strong> ${formatDateTime(proposta.data_visualizacao)}
                     </div>
@@ -3580,25 +3993,22 @@ async function renderResumoProposta(leadId) {
             <!-- Ações -->
             <div class="space-y-3">
                 <button onclick="enviarPropostaPorEmail('${proposta.id}', '${leadId}')"
-                        class="w-full text-white px-6 py-4 rounded-lg font-semibold text-lg transition shadow-md hover:shadow-lg"
-                        style="background: linear-gradient(135deg, #42a5f5 0%, #5c6bc0 100%);"
-                        onmouseover="this.style.background='linear-gradient(135deg, #1e88e5 0%, #3f51b5 100%)'"
-                        onmouseout="this.style.background='linear-gradient(135deg, #42a5f5 0%, #5c6bc0 100%)'">
+                        class="botao-info w-full px-6 py-4 text-lg">
                     <i class="fas fa-envelope mr-2"></i>Enviar Proposta por Email
                 </button>
-                <p class="text-sm text-gray-500 text-center">
+                <p class="text-sm tinta-3 text-center">
                     A proposta será enviada para ${currentLead.email}
                 </p>
 
                 ${proposta.arquivo_pdf_url ? `
                     <a href="${proposta.arquivo_pdf_url}" target="_blank"
-                       class="block w-full bg-blue-600 text-white text-center px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                       class="block w-full botao-secundario text-center px-6 py-3">
                         <i class="fas fa-file-pdf mr-2"></i>Visualizar PDF
                     </a>
                 ` : ''}
 
                 <button onclick="copiarLinkProposta('${proposta.token_rastreio}')"
-                        class="w-full bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
+                        class="w-full botao-secundario px-6 py-3">
                     <i class="fas fa-link mr-2"></i>Copiar Link da Proposta
                 </button>
             </div>
@@ -3651,25 +4061,25 @@ async function renderStatusNegociacao(leadId) {
     container.innerHTML = `
         <div class="space-y-6">
             <!-- Status da Proposta -->
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Status da Proposta</h3>
+                    <h3 class="text-lg font-bold tinta-1">Status da Proposta</h3>
                 </div>
 
                 <div class="space-y-4">
                     <div class="bg-white rounded-lg p-4">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-gray-700">Proposta Visualizada</span>
-                            <span class="${st.proposta_visualizada ? 'text-green-600' : 'text-gray-400'}">
+                            <span class="font-semibold tinta-1">Proposta Visualizada</span>
+                            <span class="${st.proposta_visualizada ? 'cor-ok' : 'tinta-3'}">
                                 <i class="fas fa-${st.proposta_visualizada ? 'check-circle' : 'circle'}"></i>
                                 ${st.proposta_visualizada ? 'Sim' : 'Não'}
                             </span>
                         </div>
                         ${st.data_visualizacao ? `
-                            <p class="text-sm text-gray-500 mt-2">
+                            <p class="text-sm tinta-3 mt-2">
                                 Visualizada em: ${formatDateTime(st.data_visualizacao)}
                             </p>
                         ` : ''}
@@ -3677,14 +4087,14 @@ async function renderStatusNegociacao(leadId) {
 
                     <div class="bg-white rounded-lg p-4">
                         <div class="flex items-center justify-between">
-                            <span class="font-semibold text-gray-700">Proposta Aceita</span>
-                            <span class="${st.proposta_aceita ? 'text-green-600' : 'text-gray-400'}">
+                            <span class="font-semibold tinta-1">Proposta Aceita</span>
+                            <span class="${st.proposta_aceita ? 'cor-ok' : 'tinta-3'}">
                                 <i class="fas fa-${st.proposta_aceita ? 'check-circle' : 'circle'}"></i>
                                 ${st.proposta_aceita ? 'Sim' : 'Não'}
                             </span>
                         </div>
                         ${st.data_aceite ? `
-                            <p class="text-sm text-gray-500 mt-2">
+                            <p class="text-sm tinta-3 mt-2">
                                 Aceita em: ${formatDateTime(st.data_aceite)}
                             </p>
                         ` : ''}
@@ -3693,40 +4103,37 @@ async function renderStatusNegociacao(leadId) {
             </div>
 
             <!-- Reunião Agendada -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Agendamento de Reunião</h3>
+                    <h3 class="text-lg font-bold tinta-1">Agendamento de Reunião</h3>
                 </div>
 
                 <div class="space-y-3">
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="checkbox" id="checkbox-reuniao-agendada"
                                ${st.cliente_agendou_reuniao ? 'checked' : ''}
-                               class="w-5 h-5 text-blue-600 rounded">
+                               class="w-5 h-5 rounded foco-marca">
                         <span class="font-semibold">Cliente agendou reunião</span>
                     </label>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data e Hora da Reunião</label>
+                        <label class="block text-sm font-medium tinta-1 mb-2">Data e Hora da Reunião</label>
                         <input type="datetime-local" id="data-reuniao"
                                value="${st.data_reuniao_agendada ? new Date(st.data_reuniao_agendada).toISOString().slice(0,16) : ''}"
-                               class="w-full border rounded px-3 py-2">
+                               class="campo w-full">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações sobre a Reunião</label>
+                        <label class="block text-sm font-medium tinta-1 mb-2">Observações sobre a Reunião</label>
                         <textarea id="obs-reuniao" rows="3"
-                                  class="w-full border rounded px-3 py-2">${st.observacoes_reuniao || ''}</textarea>
+                                  class="campo w-full">${st.observacoes_reuniao || ''}</textarea>
                     </div>
 
                     <button onclick="salvarStatusNegociacao('${leadId}')"
-                            class="w-full text-white px-6 py-3 rounded-lg font-semibold transition shadow-md hover:shadow-lg"
-                            style="background: linear-gradient(135deg, #309086 0%, #26a69a 100%);"
-                            onmouseover="this.style.background='linear-gradient(135deg, #267269 0%, #1e8a7e 100%)'"
-                            onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #26a69a 100%)'">
+                            class="botao-primario w-full px-6 py-3">
                         <i class="fas fa-save mr-2"></i>Salvar Status
                     </button>
                 </div>
@@ -3787,12 +4194,12 @@ async function renderInstalacao(leadId) {
     container.innerHTML = `
         <div class="space-y-6">
             <!-- Aprovações Técnicas -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Aprovações Técnicas</h3>
+                    <h3 class="text-lg font-bold tinta-1">Aprovações Técnicas</h3>
                 </div>
 
                 <div class="space-y-4">
@@ -3801,22 +4208,22 @@ async function renderInstalacao(leadId) {
                         <label class="flex items-center gap-3 cursor-pointer mb-3">
                             <input type="checkbox" id="checkbox-art"
                                    ${inst.art_aprovada ? 'checked' : ''}
-                                   class="w-5 h-5 text-green-600 rounded">
-                            <span class="font-semibold text-gray-700">ART Aprovada</span>
+                                   class="w-5 h-5 rounded foco-marca">
+                            <span class="font-semibold tinta-1">ART Aprovada</span>
                         </label>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm text-gray-600 mb-1">Data da ART</label>
+                                <label class="block text-sm tinta-2 mb-1">Data da ART</label>
                                 <input type="date" id="data-art"
                                        value="${inst.data_art ? inst.data_art.split('T')[0] : ''}"
-                                       class="w-full border rounded px-3 py-2 text-sm">
+                                       class="campo w-full text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm text-gray-600 mb-1">Número da ART</label>
+                                <label class="block text-sm tinta-2 mb-1">Número da ART</label>
                                 <input type="text" id="numero-art"
                                        value="${inst.numero_art || ''}"
                                        placeholder="Ex: 123456789"
-                                       class="w-full border rounded px-3 py-2 text-sm">
+                                       class="campo w-full text-sm">
                             </div>
                         </div>
                     </div>
@@ -3826,22 +4233,22 @@ async function renderInstalacao(leadId) {
                         <label class="flex items-center gap-3 cursor-pointer mb-3">
                             <input type="checkbox" id="checkbox-homologacao"
                                    ${inst.homologacao_aprovada ? 'checked' : ''}
-                                   class="w-5 h-5 text-green-600 rounded">
-                            <span class="font-semibold text-gray-700">Homologação com Distribuidora Aprovada</span>
+                                   class="w-5 h-5 rounded foco-marca">
+                            <span class="font-semibold tinta-1">Homologação com Distribuidora Aprovada</span>
                         </label>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm text-gray-600 mb-1">Data da Homologação</label>
+                                <label class="block text-sm tinta-2 mb-1">Data da Homologação</label>
                                 <input type="date" id="data-homologacao"
                                        value="${inst.data_homologacao ? inst.data_homologacao.split('T')[0] : ''}"
-                                       class="w-full border rounded px-3 py-2 text-sm">
+                                       class="campo w-full text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm text-gray-600 mb-1">Protocolo</label>
+                                <label class="block text-sm tinta-2 mb-1">Protocolo</label>
                                 <input type="text" id="protocolo-homologacao"
                                        value="${inst.protocolo_homologacao || ''}"
                                        placeholder="Ex: PROT-2024-001"
-                                       class="w-full border rounded px-3 py-2 text-sm">
+                                       class="campo w-full text-sm">
                             </div>
                         </div>
                     </div>
@@ -3849,41 +4256,38 @@ async function renderInstalacao(leadId) {
             </div>
 
             <!-- Agendamento de Instalação -->
-            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+            <div class="secao-recuada rounded-lg p-6">
                 <div class="flex items-center gap-2 mb-4">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 tinta-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <h3 class="text-lg font-bold text-gray-800">Agendamento de Instalação</h3>
+                    <h3 class="text-lg font-bold tinta-1">Agendamento de Instalação</h3>
                 </div>
 
                 <div class="space-y-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Data da Instalação</label>
+                        <label class="block text-sm font-medium tinta-1 mb-2">Data da Instalação</label>
                         <input type="date" id="data-instalacao"
                                value="${inst.data_agendamento_instalacao ? inst.data_agendamento_instalacao.split('T')[0] : ''}"
-                               class="w-full border rounded px-3 py-2">
+                               class="campo w-full">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações sobre o Agendamento</label>
+                        <label class="block text-sm font-medium tinta-1 mb-2">Observações sobre o Agendamento</label>
                         <textarea id="obs-agendamento" rows="3"
-                                  class="w-full border rounded px-3 py-2"
+                                  class="campo w-full"
                                   placeholder="Informações importantes sobre a instalação...">${inst.observacoes_agendamento || ''}</textarea>
                     </div>
 
                     ${inst.cliente_notificado ? `
-                        <div class="p-3 bg-green-100 text-green-700 rounded">
+                        <div class="p-3 secao-recuada cor-ok rounded">
                             <i class="fas fa-check-circle mr-2"></i>
                             <strong>Cliente notificado em:</strong> ${formatDateTime(inst.data_notificacao)}
                         </div>
                     ` : ''}
 
                     <button onclick="salvarAgendamentoInstalacao('${leadId}')"
-                            class="w-full text-white px-6 py-4 rounded-lg font-semibold text-lg transition shadow-md hover:shadow-lg"
-                            style="background: linear-gradient(135deg, #309086 0%, #26a69a 100%);"
-                            onmouseover="this.style.background='linear-gradient(135deg, #267269 0%, #1e8a7e 100%)'"
-                            onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #26a69a 100%)'">
+                            class="botao-primario w-full px-6 py-4 text-lg">
                         <i class="fas fa-calendar-check mr-2"></i>Salvar Agendamento e Enviar para Cliente
                     </button>
                 </div>
@@ -3891,31 +4295,45 @@ async function renderInstalacao(leadId) {
 
             <!-- Botão Marcar como Instalado -->
             ${inst.art_aprovada && inst.homologacao_aprovada && inst.data_agendamento_instalacao ? `
-                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-8 text-center">
+                <div class="secao-recuada rounded-lg p-8 text-center">
                     <div class="mb-4">
-                        <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-                            <i class="fas fa-check-circle text-green-600"></i>
-                            <span class="text-sm font-semibold text-gray-700">Todos os requisitos atendidos</span>
-                        </div>
+                        ${chipStatus('chip-ok', 'fa-circle-check', 'Todos os requisitos atendidos')}
                     </div>
                     <button onclick="marcarComoInstalado('${leadId}')"
-                            class="w-full text-white px-8 py-5 rounded-lg font-semibold text-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-102"
-                            style="background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);"
-                            onmouseover="this.style.background='linear-gradient(135deg, #4caf50 0%, #388e3c 100%)'"
-                            onmouseout="this.style.background='linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)'">
+                            class="botao-ok w-full px-8 py-5 text-lg">
                         <i class="fas fa-check-circle mr-3"></i>Marcar como Instalado
                     </button>
-                    <p class="text-sm text-gray-600 mt-3">
+                    <p class="text-sm tinta-2 mt-3">
                         Isso moverá o cliente para a página "Instalados" e removerá do Kanban
                     </p>
                 </div>
             ` : `
-                <div class="bg-gray-50 border border-gray-300 rounded-lg p-6 text-center">
-                    <i class="fas fa-lock text-gray-400 text-3xl mb-3"></i>
-                    <p class="text-gray-600 font-semibold mb-2">Botão "Marcar como Instalado" bloqueado</p>
-                    <p class="text-sm text-gray-500">
-                        Complete os requisitos acima para desbloquear:
-                        <br>✓ ART aprovada | ✓ Homologação aprovada | ✓ Data de instalação
+                <div class="secao-recuada rounded-lg p-6 text-center">
+                    <p class="tinta-1 font-semibold mb-3">
+                        <i class="fas fa-lock"></i> Marcar como Instalado — indisponível
+                    </p>
+                    <!-- Antes os tres requisitos apareciam sempre com visto, mesmo
+                         pendentes. Cada um agora diz o proprio estado. -->
+                    <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
+                        ${inst.art_aprovada
+                            ? chipStatus('chip-ok', 'fa-circle-check', 'ART aprovada')
+                            : chipStatus('chip-parado', 'fa-hourglass-half', 'ART pendente')}
+                        ${inst.homologacao_aprovada
+                            ? chipStatus('chip-ok', 'fa-circle-check', 'Homologação aprovada')
+                            : chipStatus('chip-parado', 'fa-hourglass-half', 'Homologação pendente')}
+                        ${inst.data_agendamento_instalacao
+                            ? chipStatus('chip-ok', 'fa-circle-check', 'Data definida')
+                            : chipStatus('chip-parado', 'fa-hourglass-half', 'Data pendente')}
+                    </div>
+                    <!-- Desabilitado por borda tracejada + cursor + rotulo: opacidade
+                         apagaria o texto e reprovaria contraste. -->
+                    <button type="button" disabled
+                            class="desabilitado w-full px-8 py-5 text-lg"
+                            title="Complete os requisitos acima para liberar">
+                        <i class="fas fa-lock mr-3"></i>Marcar como Instalado
+                    </button>
+                    <p class="text-sm tinta-2 mt-3">
+                        Libera quando ART, homologação e data estiverem preenchidas.
                     </p>
                 </div>
             `}

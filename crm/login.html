@@ -4,8 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - CRM Solar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tipografia. Antes esta pagina carregava Poppins e o CRM declarava
+         Inter: duas identidades no mesmo produto, na mesma jornada. Agora as
+         duas telas de login carregam a mesma pilha. Fraunces so aparece em
+         figura de display >= 24px. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,400..700&display=swap">
+
+    <!-- Font Awesome: o icone do lockup e os icones de status dos alertas
+         saem daqui. Status nunca e so cor, entao a fonte de icone e
+         requisito funcional, nao enfeite. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+        /* =================================================================
+           1. TOKENS — "Papel e Mesa"
+           Mesmos papeis declarados no crm/index.html. Escrevemos contra o
+           papel, nunca contra o hex: trocar a marca passa a ser trocar
+           cinco linhas aqui, nas duas telas.
+           ================================================================= */
+        :root {
+            /* Marca. O #667eea/#764ba2 que esta pagina usava nao pertencia a
+               marca nenhuma, e o #309086 do CRM reprovava (3,85:1 com texto
+               branco). Esta escala preserva a matiz e corrige o contraste. */
+            --brand-300: #8FC9C1;
+            --brand-400: #5FAEA4;
+            --brand-500: #3B9287;   /* ornamento, bordas — NAO para texto */
+            --brand-600: #297A72;   /* texto, links, botoes — 5,10:1 em branco */
+            --brand-700: #1A5952;   /* hover, enfase — 8,09:1 */
+
+            /* Tinta. Piso estrutural: nenhum destes fica abaixo de 4,5:1 na
+               PIOR superficie do sistema (--sunken). Nao existe tom mais
+               fraco disponivel — e por isso que placeholder e rotulo nao tem
+               como reprovar aqui. */
+            --ink-1: #16211F;       /* 14,64:1 */
+            --ink-2: #3D4744;       /*  8,53:1 */
+            --ink-3: #5A6764;       /*  5,23:1 — rotulos, placeholders */
+
+            --ink-sobre-marca: #FFFFFF;   /* 8,09:1 sobre --brand-700 */
+
+            /* Superficies */
+            --paper:  #FBFAF7;      /* fundo de pagina (registro externo) */
+            --card:   #FFFFFF;
+            --sunken: #F4F1EA;
+            --rule:   #D9D3C6;      /* fios estruturais — 2px, nunca 1px */
+
+            /* Status — reservados, nunca reutilizados como serie */
+            --ok:      #1B7A4B;
+            --atencao: #9A6209;
+            --grave:   #B3421C;
+            --critico: #A3231F;
+            --info:    #1F5F8B;
+
+            /* Tipografia */
+            --fonte-texto:  'Inter', system-ui, -apple-system, sans-serif;
+            --fonte-numero: 'Atkinson Hyperlegible', 'Inter', sans-serif;
+            --fonte-titulo: 'Fraunces', Georgia, serif;   /* SOMENTE >= 24px */
+
+            /* Espacamento — registro EXTERNO (calmo). Quem chega aqui vai
+               assinar R$ 50 mil: densidade aqui parece desleixo. */
+            --pad-card-fora:  32px;
+            --pad-campo-fora: 18px;
+
+            --raio:      6px;
+            --raio-fora: 10px;
+
+            /* Ornamento unico: brilho do fio ambar. Sobrescrito no
+               carregamento pela hora solar local. */
+            --luz: 72%;
+        }
+
+        /* =================================================================
+           2. BASE
+           ================================================================= */
         * {
             margin: 0;
             padding: 0;
@@ -13,91 +86,171 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--fonte-texto);
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Papel, nao gradiente de marca. O ornamento carrega a
+               identidade; o fundo so precisa dar respiro. */
+            background: var(--paper);
+            background-image: linear-gradient(180deg, var(--sunken) 0%, var(--paper) 42%);
+            background-repeat: no-repeat;
+            color: var(--ink-1);
+            -webkit-font-smoothing: antialiased;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px 20px;
         }
 
+        /* Foco visivel sempre: quem entra por teclado precisa saber onde
+           esta antes de digitar a senha. */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--brand-600);
+            outline-offset: 2px;
+        }
+
+        /* =================================================================
+           3. O ORNAMENTO UNICO: A LINHA DO HORIZONTE
+           Fio ambar de 2px cujo brilho acompanha a hora solar local.
+           Aparece UMA vez nesta pagina, sob o lockup da marca, e em nenhum
+           outro lugar — e o que costura login, CRM e proposta.
+           ================================================================= */
+        .fio-horizonte {
+            height: 2px;
+            border: 0;
+            background: linear-gradient(90deg,
+                var(--atencao) 0%,
+                hsl(38 95% calc(32% + var(--luz) * 0.34)) 50%,
+                var(--atencao) 100%);
+        }
+
+        /* =================================================================
+           4. O CARD
+           Elevacao por fio de 2px, nunca por sombra difusa: 1px a 1,2:1
+           desaparece em monitor TN descalibrado com sol na janela, que e o
+           hardware real deste publico.
+           ================================================================= */
         .login-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 432px;
         }
 
         .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio-fora);
+            padding: var(--pad-card-fora);
+            box-shadow: none;
         }
 
+        /* =================================================================
+           5. LOCKUP E CABECALHOS
+           ================================================================= */
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
 
+        /* O lockup da marca aparece so na chegada (tela de login). Cadastro
+           e recuperacao sao estados da mesma tela: repetir o lockup — e com
+           ele o ornamento — gastaria o unico gesto de marca do sistema. */
         .login-logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
+            display: block;
+            margin-bottom: 10px;
         }
 
-        .login-logo svg {
-            width: 50px;
-            height: 50px;
-            fill: white;
+        .login-logo i {
+            font-size: 30px;
+            color: var(--brand-600);
         }
 
         .login-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 8px;
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-size: 30px;        /* a serifada e faca: so >= 24px */
+            font-weight: 600;
+            line-height: 1.15;
+            color: var(--ink-1);
+            margin-bottom: 12px;
+        }
+
+        .login-header .fio-horizonte {
+            width: 120px;
+            margin: 0 auto 12px;
         }
 
         .login-subtitle {
             font-size: 14px;
-            color: #6b7280;
+            color: var(--ink-3);
         }
 
+        /* =================================================================
+           6. CAMPOS
+           ================================================================= */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: var(--pad-campo-fora);
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 6px;
         }
 
         .form-input {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.2s;
+            padding: 12px var(--pad-campo-fora);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            font-size: 15px;
+            font-family: var(--fonte-texto);
+            color: var(--ink-1);
+            background: var(--card);
             outline: none;
         }
 
-        .form-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        /* Placeholder tambem passa no piso de 4,5:1. O opacity: 1 e
+           obrigatorio: o default do Firefox apaga o texto. */
+        .form-input::placeholder {
+            color: var(--ink-3);
+            opacity: 1;
         }
 
+        /* O telefone e figura que a pessoa confere digito por digito.
+           Atkinson Hyperlegible tem 1/l/I e 0/O inequivocos. */
+        #registerTelefone {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.01em;
+        }
+
+        .form-input:focus {
+            border-color: var(--brand-600);
+            box-shadow: inset 0 0 0 1px var(--brand-600);
+        }
+
+        /* Erro de campo nunca so por cor: a borda engrossa e o rotulo
+           abaixo do campo diz o que esta errado. */
         .form-input.error {
-            border-color: #ef4444;
+            border-color: var(--critico);
+            box-shadow: inset 0 0 0 1px var(--critico);
+        }
+
+        select.form-input {
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%),
+                              linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+            background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%;
+            background-size: 6px 6px, 6px 6px;
+            background-repeat: no-repeat;
+            padding-right: 40px;
+            cursor: pointer;
         }
 
         .password-wrapper {
@@ -106,68 +259,211 @@
 
         .password-toggle {
             position: absolute;
-            right: 14px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
+            display: flex;
+            padding: 4px;
             background: none;
             border: none;
+            border-radius: var(--raio);
             cursor: pointer;
-            color: #9ca3af;
+            color: var(--ink-3);   /* 5,23:1 — era #9ca3af, 2,54:1 */
         }
 
         .password-toggle:hover {
-            color: #667eea;
+            color: var(--brand-700);
         }
 
         .form-error {
-            font-size: 12px;
-            color: #ef4444;
-            margin-top: 6px;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--critico);   /* 7,14:1 como texto */
+            margin-top: 8px;
             display: none;
         }
 
         .form-error.visible {
-            display: block;
+            display: flex;
         }
 
+        /* Icone + palavra: o fa-circle-exclamation entra por pseudo-elemento
+           porque o JS mexe na className deste elemento. */
+        .form-error::before {
+            content: '\f06a';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            flex: 0 0 auto;
+            line-height: 1.45;
+        }
+
+        /* Row for two inputs */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* =================================================================
+           7. BOTOES
+           O setLoading() sobrescreve o innerHTML do botao e depois restaura
+           por btn.dataset.originalText, que vem de btn.textContent. Por isso
+           nenhum botao depende de filho nenhum: toda a aparencia vem do
+           proprio elemento, e o estado de carga e estilizado pelas classes
+           que a propria funcao escreve (.btn-loading, .spinner).
+           ================================================================= */
         .btn {
             width: 100%;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
+            padding: 13px 20px;
+            border: 2px solid transparent;
+            border-radius: var(--raio);
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            font-family: inherit;
-            transition: all 0.2s;
+            font-family: var(--fonte-texto);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--brand-600);
+            border-color: var(--brand-600);
+            color: var(--ink-sobre-marca);   /* 5,10:1 */
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: var(--brand-700);
+            border-color: var(--brand-700);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
+        /* Desabilitado se expressa por borda tracejada + cursor + rotulo,
+           nunca por opacidade: opacidade apaga texto e e o caminho mais
+           curto para reprovar o piso de 4,5:1. O rotulo ("Aguarde...") vem
+           do setLoading(). */
+        .btn:disabled {
+            opacity: 1;
+            background: var(--sunken);
+            border: 2px dashed var(--rule);
+            color: var(--ink-2);        /* 8,53:1 sobre --sunken */
+            cursor: progress;
+            box-shadow: none;
         }
 
         .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
+            background: var(--card);
+            border-color: var(--rule);
+            color: var(--ink-1);
             margin-top: 12px;
         }
 
         .btn-secondary:hover {
-            background: #e5e7eb;
+            background: var(--sunken);
         }
 
+        .btn-loading {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* O spinner gira contra currentColor porque o botao em carga fica
+           claro (--sunken): um aro branco seria invisivel ali. */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--rule);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Quem pediu menos movimento nao precisa de um aro girando na tela. */
+        @media (prefers-reduced-motion: reduce) {
+            .spinner { animation-duration: 2.4s; }
+        }
+
+        /* =================================================================
+           8. ALERTAS
+           ARMADILHA: showAlert() faz
+               alert.className = `alert alert-${type} visible`
+           ou seja, reescreve a className INTEIRA e apaga qualquer classe de
+           layout que o redesenho adicione no markup. Entao todo o estilo
+           abaixo pende das tres classes que a propria funcao escreve — mais
+           nenhuma. E o icone entra por ::before, que innerHTML/className nao
+           alcancam.
+           ================================================================= */
+        .alert {
+            padding: 14px 16px;
+            border: 2px solid var(--rule);
+            border-left-width: 6px;
+            border-radius: var(--raio);
+            background: var(--card);
+            color: var(--ink-1);
+            font-size: 14px;
+            line-height: 1.45;
+            margin-bottom: var(--pad-campo-fora);
+            display: none;
+        }
+
+        .alert.visible {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .alert::before {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            flex: 0 0 auto;
+            line-height: 1.45;
+        }
+
+        .alert-success {
+            border-color: var(--ok);
+        }
+
+        .alert-success::before {
+            content: '\f058';           /* fa-circle-check */
+            color: var(--ok);
+        }
+
+        .alert-error {
+            border-color: var(--critico);
+        }
+
+        .alert-error::before {
+            content: '\f06a';           /* fa-circle-exclamation */
+            color: var(--critico);
+        }
+
+        /* =================================================================
+           9. ALTERNANCIA ENTRE OS TRES FORMULARIOS
+           O JS alterna .hidden em #loginForm e .visible em #registerForm /
+           #forgotForm. As regras ficam ancoradas tambem no id, para o caso
+           de a classe de layout sair do markup.
+           ================================================================= */
+        .login-form.hidden,
+        #loginForm.hidden {
+            display: none;
+        }
+
+        .register-form,
+        .forgot-form {
+            display: none;
+        }
+
+        .register-form.visible,
+        .forgot-form.visible {
+            display: block;
+        }
+
+        /* =================================================================
+           10. LINKS E AUXILIARES
+           ================================================================= */
         .divider {
             display: flex;
             align-items: center;
@@ -177,126 +473,64 @@
 
         .divider-line {
             flex: 1;
-            height: 1px;
-            background: #e5e7eb;
+            height: 2px;              /* estrutura usa 2px */
+            background: var(--rule);
         }
 
         .divider-text {
             font-size: 12px;
-            color: #9ca3af;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink-3);
         }
 
         .forgot-password {
             text-align: right;
-            margin-bottom: 20px;
+            margin-bottom: var(--pad-campo-fora);
+        }
+
+        .forgot-password a,
+        .register-link a {
+            color: var(--brand-600);
+            text-decoration: underline;
+            text-underline-offset: 3px;
         }
 
         .forgot-password a {
             font-size: 13px;
-            color: #667eea;
-            text-decoration: none;
         }
 
-        .forgot-password a:hover {
-            text-decoration: underline;
+        .forgot-password a:hover,
+        .register-link a:hover,
+        .back-link:hover {
+            color: var(--brand-700);
         }
 
         .register-link {
             text-align: center;
             margin-top: 24px;
-            font-size: 13px;
-            color: #6b7280;
+            font-size: 14px;
+            color: var(--ink-2);      /* 8,53:1 — era #6b7280 */
         }
 
         .register-link a {
-            color: #667eea;
             font-weight: 600;
-            text-decoration: none;
         }
 
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-
-        /* Formulário de Registro */
-        .register-form {
-            display: none;
-        }
-
-        .register-form.visible {
-            display: block;
-        }
-
-        .login-form.hidden {
-            display: none;
-        }
-
-        /* Formulário de Recuperação */
-        .forgot-form {
-            display: none;
-        }
-
-        .forgot-form.visible {
-            display: block;
-        }
-
-        /* Loading */
-        .btn-loading {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Alert */
-        .alert {
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert.visible {
-            display: block;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Back link */
         .back-link {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 13px;
-            color: #667eea;
+            font-size: 14px;
+            color: var(--brand-600);
             text-decoration: none;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .back-link:hover {
             text-decoration: underline;
+            text-underline-offset: 3px;
         }
 
         .back-link svg {
@@ -304,13 +538,26 @@
             height: 16px;
         }
 
-        /* Row for two inputs */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        /* =================================================================
+           11. TELA ESTREITA
+           ================================================================= */
+        @media (max-width: 480px) {
+            .login-card { padding: 24px 20px; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .login-title { font-size: 26px; }
         }
     </style>
+
+    <script>
+        // O ornamento unico do sistema. --luz sai da hora solar local e e
+        // definida UMA vez, antes do primeiro paint, para o fio nunca
+        // piscar. Nao depende de dado nenhum, entao nunca quebra.
+        (function () {
+            var h = new Date().getHours();
+            var luz = Math.max(0, Math.round(100 * Math.sin(Math.PI * (h - 6) / 12)));
+            document.documentElement.style.setProperty('--luz', luz + '%');
+        })();
+    </script>
 </head>
 <body>
     <div class="login-container">
@@ -319,28 +566,29 @@
             <div class="login-form" id="loginForm">
                 <div class="login-header">
                     <div class="login-logo">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 18a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1zM4.22 4.22a1 1 0 0 1 1.42 0l.7.7a1 1 0 0 1-1.41 1.42l-.71-.7a1 1 0 0 1 0-1.42zm14.14 14.14a1 1 0 0 1 1.42 0l.7.7a1 1 0 0 1-1.41 1.42l-.71-.7a1 1 0 0 1 0-1.42zM2 12a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2H3a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2h-1a1 1 0 0 1-1-1zM4.22 19.78a1 1 0 0 1 0-1.42l.7-.7a1 1 0 0 1 1.42 1.41l-.7.71a1 1 0 0 1-1.42 0zm14.14-14.14a1 1 0 0 1 0-1.42l.7-.7a1 1 0 0 1 1.42 1.41l-.7.71a1 1 0 0 1-1.42 0z"/>
-                        </svg>
+                        <i class="fas fa-sun" aria-hidden="true"></i>
                     </div>
                     <h1 class="login-title">CRM Solar</h1>
+                    <!-- Horizonte sob o lockup: o unico lugar onde o
+                         ornamento aparece nesta pagina. -->
+                    <div class="fio-horizonte" aria-hidden="true"></div>
                     <p class="login-subtitle">Entre na sua conta para continuar</p>
                 </div>
 
-                <div class="alert alert-error" id="loginAlert"></div>
+                <div class="alert alert-error" id="loginAlert" role="alert"></div>
 
                 <form onsubmit="handleLogin(event)">
                     <div class="form-group">
-                        <label class="form-label">E-mail</label>
-                        <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
+                        <label class="form-label" for="loginEmail">E-mail</label>
+                        <input type="email" class="form-input" id="loginEmail" placeholder="voce@empresa.com" autocomplete="username" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Senha</label>
+                        <label class="form-label" for="loginPassword">Senha</label>
                         <div class="password-wrapper">
-                            <input type="password" class="form-input" id="loginPassword" placeholder="Sua senha" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Sua senha" autocomplete="current-password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')" aria-label="Mostrar ou ocultar a senha">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                     <circle cx="12" cy="12" r="3"/>
                                 </svg>
@@ -365,7 +613,7 @@
             <!-- Register Form -->
             <div class="register-form" id="registerForm">
                 <a href="#" class="back-link" onclick="showLoginForm()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
                     Voltar ao login
@@ -376,21 +624,21 @@
                     <p class="login-subtitle">Cadastre sua empresa e comece a usar</p>
                 </div>
 
-                <div class="alert" id="registerAlert"></div>
+                <div class="alert" id="registerAlert" role="alert"></div>
 
                 <form onsubmit="handleRegister(event)">
                     <div class="form-group">
-                        <label class="form-label">Nome da Empresa</label>
+                        <label class="form-label" for="registerEmpresa">Nome da Empresa</label>
                         <input type="text" class="form-input" id="registerEmpresa" placeholder="Minha Empresa Solar" required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Seu Nome</label>
+                            <label class="form-label" for="registerNome">Seu Nome</label>
                             <input type="text" class="form-input" id="registerNome" placeholder="João Silva" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Cargo</label>
+                            <label class="form-label" for="registerCargo">Cargo</label>
                             <select class="form-input" id="registerCargo">
                                 <option value="admin">Administrador</option>
                                 <option value="gerente">Gerente</option>
@@ -400,21 +648,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">E-mail</label>
-                        <input type="email" class="form-input" id="registerEmail" placeholder="seu@email.com" required>
+                        <label class="form-label" for="registerEmail">E-mail</label>
+                        <input type="email" class="form-input" id="registerEmail" placeholder="voce@empresa.com" autocomplete="email" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Telefone</label>
-                        <input type="tel" class="form-input" id="registerTelefone" placeholder="(11) 99999-9999">
+                        <label class="form-label" for="registerTelefone">Telefone</label>
+                        <input type="tel" class="form-input" id="registerTelefone" placeholder="(11) 99999-9999" autocomplete="tel">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Senha</label>
+                        <label class="form-label" for="registerPassword">Senha</label>
                         <div class="password-wrapper">
-                            <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
-                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+                            <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')" aria-label="Mostrar ou ocultar a senha">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                     <circle cx="12" cy="12" r="3"/>
                                 </svg>
@@ -423,8 +671,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Confirmar Senha</label>
-                        <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Repita a senha" required>
+                        <label class="form-label" for="registerPasswordConfirm">Confirmar Senha</label>
+                        <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Repita a senha" autocomplete="new-password" required>
                         <p class="form-error" id="passwordError">As senhas não conferem</p>
                     </div>
 
@@ -437,7 +685,7 @@
             <!-- Forgot Password Form -->
             <div class="forgot-form" id="forgotForm">
                 <a href="#" class="back-link" onclick="showLoginForm()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
                     Voltar ao login
@@ -448,12 +696,12 @@
                     <p class="login-subtitle">Digite seu e-mail para receber o link de recuperação</p>
                 </div>
 
-                <div class="alert" id="forgotAlert"></div>
+                <div class="alert" id="forgotAlert" role="alert"></div>
 
                 <form onsubmit="handleForgotPassword(event)">
                     <div class="form-group">
-                        <label class="form-label">E-mail</label>
-                        <input type="email" class="form-input" id="forgotEmail" placeholder="seu@email.com" required>
+                        <label class="form-label" for="forgotEmail">E-mail</label>
+                        <input type="email" class="form-input" id="forgotEmail" placeholder="voce@empresa.com" autocomplete="email" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary" id="forgotBtn">

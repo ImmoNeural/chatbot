@@ -1,4 +1,4 @@
-// Interactive Chat Widget for n8n - Versão v238 Sunbotic Theme
+// Interactive Chat Widget for n8n - Versão v238 - sistema de design "Papel e Mesa"
 (function() {
     // Remove widget anterior se existir (força atualização de cores)
     const oldWidget = document.querySelector('.chat-assist-widget');
@@ -11,51 +11,95 @@
     window.N8nChatWidgetV238 = true;
     window.N8nChatWidgetLoaded = true;
 
-    // Load font resource - using Poppins for a fresh look
+    // Inter (texto) + Atkinson Hyperlegible (numeros de decisao) num unico
+    // request: duas families no mesmo css2 evitam dois round-trips no site
+    // do cliente, que e onde o widget roda.
     const fontElement = document.createElement('link');
     fontElement.rel = 'stylesheet';
-    fontElement.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap';
+    fontElement.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap';
     document.head.appendChild(fontElement);
 
-    // Apply widget styles with a modern design approach - Sunbotic Theme
+    // Apply widget styles - sistema "Papel e Mesa", registro externo
     const widgetStyles = document.createElement('style');
+    // O bloco de limpeza no topo procura style[data-chat-widget]; sem este
+    // atributo o <style> antigo nunca saia do head e as regras se acumulavam
+    // a cada recarga do widget.
+    widgetStyles.setAttribute('data-chat-widget', 'v238');
     widgetStyles.textContent = `
         .chat-assist-widget {
-            --chat-color-primary: #06a288;
-            --chat-color-secondary: #075f6e;
-            --chat-color-tertiary: #bdfbff;
-            --chat-color-light: #e0f7f5;
-            --chat-color-surface: #ffffff;
-            --chat-color-text: #1f2937;
-            --chat-color-text-light: #6b7280;
-            --chat-color-border: #e5e7eb;
-            --chat-button-primary: #bdfbff;
-            --chat-button-secondary: #2d3748;
-            --chat-bubble-bg: #ffffff;
-            --chat-bubble-text: #202c3c;
-            --chat-avatar-primary: #06a288;
-            --chat-avatar-secondary: #075f6e;
-            --chat-shadow-sm: 0 1px 3px rgba(6, 162, 136, 0.1);
-            --chat-shadow-md: 0 4px 6px rgba(6, 162, 136, 0.15);
-            --chat-shadow-lg: 0 10px 15px rgba(6, 162, 136, 0.2);
-            --chat-radius-sm: 8px;
-            --chat-radius-md: 12px;
-            --chat-radius-lg: 20px;
+            /* Escala de marca: a matiz antiga (#06a288) reprovava em contraste
+               com texto branco. Esta preserva a matiz e passa o piso. */
+            --brand-300: #8FC9C1;
+            --brand-400: #5FAEA4;
+            --brand-500: #3B9287;
+            --brand-600: #297A72;
+            --brand-700: #1A5952;
+
+            /* Tinta: nenhum token de texto abaixo de 4,5:1 em nenhuma
+               superficie do widget, inclusive placeholder e timestamp. */
+            --ink-1: #16211F;
+            --ink-2: #3D4744;
+            --ink-3: #5A6764;
+
+            --paper: #FBFAF7;
+            --card: #FFFFFF;
+            --sunken: #F4F1EA;
+            --rule: #D9D3C6;
+
+            --ok: #1B7A4B;
+            --atencao: #9A6209;
+            --grave: #B3421C;
+            --critico: #A3231F;
+            --info: #1F5F8B;
+
+            --fonte-texto: 'Inter', system-ui, sans-serif;
+            --fonte-numero: 'Atkinson Hyperlegible', 'Inter', sans-serif;
+
+            /* Ponte com o contrato externo: window.ChatWidgetConfig injeta
+               --chat-widget-* por setProperty. O token do spec entra como
+               fallback, entao o widget nasce correto sem config nenhuma. */
+            --chat-color-primary: var(--chat-widget-primary, var(--brand-600));
+            --chat-color-secondary: var(--chat-widget-secondary, var(--brand-700));
+            --chat-color-tertiary: var(--brand-300);
+            --chat-color-light: var(--sunken);
+            --chat-color-surface: var(--chat-widget-surface, var(--card));
+            --chat-color-text: var(--chat-widget-text, var(--ink-1));
+            --chat-color-text-light: var(--ink-3);
+            --chat-color-border: var(--rule);
+            --chat-button-primary: var(--chat-widget-button-primary, var(--brand-600));
+            --chat-button-secondary: var(--chat-widget-button-secondary, var(--brand-700));
+            --chat-bubble-bg: var(--chat-widget-bubble-bg, var(--card));
+            --chat-bubble-text: var(--chat-widget-bubble-text, var(--ink-1));
+            --chat-avatar-primary: var(--chat-widget-avatar-primary, var(--brand-600));
+            --chat-avatar-secondary: var(--chat-widget-avatar-secondary, var(--brand-700));
+            --chat-widget-primarybubble: var(--brand-600);
+            --chat-widget-secondarybubble: var(--brand-700);
+
+            /* Raio: 6px nos controles, 10px nos cards do registro externo. */
+            --chat-radius-sm: 6px;
+            --chat-radius-md: 6px;
+            --chat-radius-lg: 10px;
             --chat-radius-full: 9999px;
             --chat-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--fonte-texto);
         }
 
         .chat-assist-widget .chat-window {
             position: fixed;
-            bottom: 90px;
+            bottom: 88px;
             z-index: 10000;
             width: 416px !important;
-            height: 520px !important;
+            max-width: calc(100vw - 32px) !important;
+            /* Altura com teto em vez de fixa: a altura travada estourava a
+               viewport em notebook baixo e em celular na horizontal. A 1a
+               declaracao e o fallback de quem nao tem dvh. */
+            height: min(640px, calc(100vh - 108px)) !important;
+            height: min(640px, calc(100dvh - 108px)) !important;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
-            box-shadow: var(--chat-shadow-lg);
-            border: 1px solid var(--chat-color-light);
+            /* Elevacao por fio de 2px: 1px a 1,2:1 desaparece em monitor
+               descalibrado, que e o hardware real deste publico. */
+            border: 2px solid var(--rule);
             overflow: hidden;
             display: none;
             flex-direction: column;
@@ -84,9 +128,10 @@
             align-items: center;
             gap: 12px;
             background: linear-gradient(135deg, var(--chat-color-primary) 0%, var(--chat-color-secondary) 100%);
-            color: white;
+            color: #ffffff;
             position: relative;
             flex-shrink: 0;
+            border-bottom: 2px solid var(--brand-700);
         }
 
         .chat-assist-widget .chat-header-logo {
@@ -94,14 +139,14 @@
             height: 64px;
             border-radius: var(--chat-radius-sm);
             object-fit: contain;
-            background: white;
-            padding: 1px;
+            background: var(--card);
+            padding: 2px;
         }
 
         .chat-assist-widget .chat-header-title {
             font-size: 16px;
             font-weight: 600;
-            color: white;
+            color: #ffffff;
         }
 
         .chat-assist-widget .chat-close-btn {
@@ -109,23 +154,28 @@
             right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
+            /* Chip solido: o branco sobre vidro translucido media 3,46:1. */
+            background: var(--brand-700);
+            /* rgba(255,255,255,0.45) media 2,99:1 e nao servia de segunda pista
+               (o piso de indicador e 3:1). Solido mede 8,09:1. */
+            border: 2px solid var(--ink-sobre-marca-2, #CFE3DF);
+            color: #ffffff;
             cursor: pointer;
-            padding: 4px;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: var(--chat-transition);
             font-size: 18px;
+            line-height: 1;
             border-radius: var(--chat-radius-full);
             width: 28px;
             height: 28px;
         }
 
         .chat-assist-widget .chat-close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--ink-1);
+            border-color: #ffffff;
             transform: translateY(-50%) scale(1.1);
         }
 
@@ -140,23 +190,18 @@
             display: flex;
         }
 
-        .chat-assist-widget {
-            --chat-widget-primarybubble: #3498db;
-            --chat-widget-secondarybubble: #2980b9;
-        }
-
         .chat-assist-widget .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 20px 10px;
-            background: #f9fafb;
+            padding: 20px 12px;
+            background: var(--paper);
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
         .chat-assist-widget .chat-messages::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         .chat-assist-widget .chat-messages::-webkit-scrollbar-track {
@@ -164,13 +209,13 @@
         }
 
         .chat-assist-widget .chat-messages::-webkit-scrollbar-thumb {
-            background-color: rgba(16, 185, 129, 0.3);
+            background-color: var(--brand-500);
             border-radius: var(--chat-radius-full);
         }
 
         .chat-assist-widget .file-name {
             font-size: 12px;
-            color: #ffffff;
+            color: var(--ink-2);
             margin-top: 4px;
             white-space: nowrap;
             overflow: hidden;
@@ -178,15 +223,63 @@
             max-width: 200px;
         }
 
+        /* Linha de apoio (ex.: "Formato: (XX) XXXXX-XXXX"). Metadado tambem
+           obedece ao piso de 4,5:1 - nada de cinza apagado. */
+        .chat-assist-widget .chat-hint {
+            font-size: 12px;
+            line-height: 1.45;
+            color: var(--ink-3);
+        }
+
+        /* Todo numero que vira decisao (consumo, economia, contagem) em
+           Atkinson tabular: 1/l/I e 0/O inequivocos, digito alinhado. */
+        .chat-assist-widget .chat-figure {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: var(--ink-1);
+        }
+
+        .chat-assist-widget .chat-bubble .chat-figure-strong {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--brand-700);
+        }
+
+        /* Status sempre com icone + palavra: a cor e reforco, nunca o recado. */
+        .chat-assist-widget .chat-status {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--ink-1);
+        }
+
+        .chat-assist-widget .chat-status-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: var(--chat-radius-sm);
+            border: 2px solid currentColor;
+            flex-shrink: 0;
+        }
+
+        .chat-assist-widget .chat-status-erro .chat-status-label { color: var(--grave); }
+        .chat-assist-widget .chat-status-ok .chat-status-label { color: var(--ok); }
+        .chat-assist-widget .chat-status-info .chat-status-label { color: var(--info); }
+
         .chat-assist-widget .chat-bubble {
-            max-width: calc(100% - 40px);
-            padding: 12px 16px;
-            margin: 0;
-            border-radius: var(--chat-radius-md);
             max-width: 95%;
+            padding: 14px 16px;
+            margin: 0;
+            border-radius: var(--chat-radius-lg);
             word-wrap: break-word;
             font-size: 13px;
-            line-height: 1.2;
+            line-height: 1.5;
             position: relative;
             display: block;
             align-items: flex-start;
@@ -195,20 +288,24 @@
         }
 
         .chat-assist-widget .chat-bubble.user-bubble {
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
+            color: #ffffff;
             align-self: flex-end;
+            border: 2px solid var(--brand-700);
             border-bottom-right-radius: 4px;
-            box-shadow: var(--chat-shadow-sm);
+        }
+
+        .chat-assist-widget .chat-bubble.user-bubble .chat-figure,
+        .chat-assist-widget .chat-bubble.user-bubble .chat-hint {
+            color: #ffffff;
         }
 
         .chat-assist-widget .chat-bubble.bot-bubble {
-            background: #ffffff;
-            color: #202c3c;
+            background: var(--chat-bubble-bg);
+            color: var(--chat-bubble-text);
             align-self: flex-start;
+            border: 2px solid var(--rule);
             border-bottom-left-radius: 4px;
-            box-shadow: var(--chat-shadow-sm);
-            border: 1px solid var(--chat-color-light);
         }
 
         .chat-assist-widget .message-icon {
@@ -217,13 +314,15 @@
             border-radius: 50%;
             flex-shrink: 0;
             margin-top: 4px;
+            border: 2px solid var(--rule);
+            background: var(--card);
         }
 
         .chat-assist-widget .bot-avatar {
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%);
+            background: linear-gradient(135deg, var(--chat-avatar-primary) 0%, var(--chat-avatar-secondary) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -234,14 +333,17 @@
         .chat-assist-widget .bot-avatar svg {
             width: 16px;
             height: 16px;
-            fill: white;
+            fill: #ffffff;
         }
 
+        /* Sem opacidade: opacidade apaga texto e e o caminho mais curto
+           para reprovar o piso de contraste. */
         .chat-assist-widget .timestamp {
             display: block;
             font-size: 10px;
-            color: var(--chat-color-text-light);
-            opacity: 0.7;
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            color: var(--ink-3);
             margin-top: 4px;
         }
 
@@ -249,7 +351,7 @@
             display: flex;
             align-items: flex-start;
             gap: 8px;
-            margin-bottom: 26px;
+            margin-bottom: 20px;
             width: 100%;
         }
 
@@ -282,21 +384,19 @@
             align-items: center;
             gap: 4px;
             padding: 14px 18px;
-            background: white;
-            border-radius: var(--chat-radius-md);
+            background: var(--card);
+            border-radius: var(--chat-radius-lg);
             border-bottom-left-radius: 4px;
             max-width: 80px;
             align-self: flex-start;
-            box-shadow: var(--chat-shadow-sm);
-            border: 1px solid var(--chat-color-light);
+            border: 2px solid var(--rule);
         }
 
         .chat-assist-widget .typing-dot {
             width: 8px;
             height: 8px;
-            background: var(--chat-color-primary);
+            background: var(--brand-500);
             border-radius: var(--chat-radius-full);
-            opacity: 0.7;
             animation: typingAnimation 1.4s infinite ease-in-out;
         }
 
@@ -313,7 +413,7 @@
             padding: 12px;
             flex-shrink: 0;
             background: var(--chat-color-surface);
-            border-top: 1px solid var(--chat-color-light);
+            border-top: 2px solid var(--rule);
             display: flex;
             gap: 10px;
             align-items: center;
@@ -335,15 +435,19 @@
             justify-content: center;
             width: 48px;
             height: 48px;
-            background: var(--chat-color-light);
+            background: var(--sunken);
+            color: var(--ink-2);
+            border: 2px solid var(--rule);
             border-radius: var(--chat-radius-md);
             cursor: pointer;
             transition: var(--chat-transition);
+            box-sizing: border-box;
         }
 
         .chat-assist-widget .file-upload-label:hover {
-            background: var(--chat-color-primary);
-            color: white;
+            background: var(--brand-600);
+            border-color: var(--brand-700);
+            color: #ffffff;
         }
 
         .chat-assist-widget .file-upload-label svg {
@@ -353,8 +457,8 @@
 
         .chat-assist-widget .chat-textarea {
             flex: 1;
-            padding: 14px 16px;
-            border: 1px solid var(--chat-color-light);
+            padding: 12px 14px;
+            border: 2px solid var(--rule);
             border-radius: var(--chat-radius-md);
             background: var(--chat-color-surface);
             color: var(--chat-color-text);
@@ -370,38 +474,41 @@
 
         .chat-assist-widget .chat-textarea:focus {
             outline: none;
-            border-color: var(--chat-color-primary);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            border-color: var(--brand-600);
+            box-shadow: 0 0 0 3px rgba(41, 122, 114, 0.28);
         }
 
+        /* Placeholder tambem passa o piso: 5,23:1 sobre a superficie branca. */
         .chat-assist-widget .chat-textarea::placeholder {
-            color: var(--chat-color-text-light);
+            color: var(--ink-3);
+            opacity: 1;
         }
 
-	    .chat-assist-widget .chat-submit {
+        .chat-assist-widget .chat-submit {
             width: 48px;
             height: 48px;
-            align-items: center;
-            background-color: var(--chat-color-light);
-		      border: 1px solid var(--chat-color-border);
+            background-color: var(--chat-button-primary);
+            border: 2px solid var(--brand-700);
             border-radius: var(--chat-radius-md);
-            color: gray;
+            color: #ffffff;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
+            box-sizing: border-box;
+            transition: var(--chat-transition);
         }
 
         .chat-assist-widget .chat-submit:hover {
-          background: var(--chat-color-primary);
-          color: white;
-          fill: none;
+            background-color: var(--brand-700);
+            color: #ffffff;
         }
 
         .chat-assist-widget .chat-submit svg {
-          width: 22px;
-          height: 22px;
-          display: block;
+            width: 22px;
+            height: 22px;
+            display: block;
         }
 
         .chat-assist-widget .chat-launcher {
@@ -410,8 +517,8 @@
             height: 56px;
             border-radius: var(--chat-radius-full);
             background: linear-gradient(135deg, var(--chat-color-primary) 0%, var(--chat-color-secondary) 100%);
-            color: white;
-            border: none;
+            color: #ffffff;
+            border: 2px solid var(--brand-700);
             cursor: pointer;
             z-index: 999;
             transition: var(--chat-transition);
@@ -419,6 +526,7 @@
             align-items: center;
             padding: 0 20px 0 16px;
             gap: 8px;
+            font-family: var(--fonte-texto);
         }
 
         .chat-assist-widget .chat-launcher.right-side {
@@ -430,8 +538,8 @@
         }
 
         .chat-assist-widget .chat-launcher:hover {
+            background: var(--brand-700);
             transform: scale(1.05);
-            box-shadow: var(--chat-shadow-lg);
         }
 
         .chat-assist-widget .chat-launcher svg {
@@ -449,32 +557,36 @@
             padding: 10px;
             text-align: center;
             background: var(--chat-color-surface);
-            border-top: 1px solid var(--chat-color-light);
+            border-top: 2px solid var(--rule);
             flex-shrink: 0;
         }
 
         .chat-assist-widget .chat-footer-link {
-            color: var(--chat-color-primary);
+            color: var(--brand-600);
             text-decoration: none;
             font-size: 12px;
-            opacity: 0.8;
             transition: var(--chat-transition);
             font-family: inherit;
         }
 
         .chat-assist-widget .chat-footer-link:hover {
-            opacity: 1;
+            color: var(--brand-700);
+            text-decoration: underline;
         }
 
         .chat-assist-widget .chat-link {
-            color: var(--chat-color-primary);
+            color: var(--brand-600);
             text-decoration: underline;
             word-break: break-all;
             transition: var(--chat-transition);
         }
 
         .chat-assist-widget .chat-link:hover {
-            color: var(--chat-color-secondary);
+            color: var(--brand-700);
+        }
+
+        .chat-assist-widget .chat-bubble.user-bubble .chat-link {
+            color: #ffffff;
         }
 
         .chat-assist-widget .chat-image {
@@ -482,7 +594,7 @@
             border-radius: var(--chat-radius-sm);
             margin-top: 8px;
             display: block;
-            box-shadow: var(--chat-shadow-sm);
+            border: 2px solid var(--rule);
         }
 
         .chat-assist-widget .image-container {
@@ -493,57 +605,88 @@
 
         .chat-assist-widget .image-caption {
             font-size: 12px;
-            color: var(--chat-color-text-light);
+            color: var(--ink-3);
             text-align: center;
         }
 
         .action-buttons-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
+        /* Base = acao secundaria. Papel, nao matiz: um primario cheio por
+           bloco e os demais em papel com fio de 2px. */
         .action-button {
-            flex: 1 1 calc(50% - 3px);
-            min-width: 80px;
-            padding: 6px 8px;
-            border: none;
-            border-radius: 6px;
+            flex: 1 1 calc(50% - 4px);
+            min-width: 96px;
+            padding: 8px 10px;
+            background: var(--card);
+            color: var(--ink-1);
+            border: 2px solid var(--rule);
+            border-radius: var(--chat-radius-md);
             cursor: pointer;
+            font-family: var(--fonte-texto);
             font-weight: 500;
-            font-size: 11px;
+            font-size: 12px;
+            line-height: 1.3;
+            text-align: center;
             transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .action-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.12);
-            filter: brightness(1.05);
+            border-color: var(--brand-600);
+            background: var(--sunken);
         }
 
-        .blue-button {
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
-            color: white !important;
+        /* Desabilitado por borda tracejada + cursor + rotulo, nunca por
+           opacidade: o texto continua legivel. */
+        .action-button:disabled,
+        .action-button[disabled] {
+            border-style: dashed !important;
+            border-color: var(--ink-3) !important;
+            background: var(--sunken) !important;
+            color: var(--ink-2) !important;
+            cursor: not-allowed !important;
+            transform: none !important;
         }
 
-        .green-button {
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
-            color: white !important;
-        }
-
-        .orange-button {
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
-            color: white !important;
-        }
-
+        /* As quatro classes de cor vem de template string e tem de continuar
+           existindo; o que muda e o significado: as tres secundarias deixam
+           de gritar matiz propria. */
+        .green-button,
+        .orange-button,
         .yellow-button {
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%) !important;
-            color: white !important;
+            background: var(--card) !important;
+            color: var(--ink-1) !important;
+            border-color: var(--rule) !important;
+        }
+
+        .green-button:hover,
+        .orange-button:hover,
+        .yellow-button:hover {
+            background: var(--sunken) !important;
+            border-color: var(--brand-600) !important;
+        }
+
+        /* Primario: a acao que o negocio quer. .schedule-btn tem (0,2,0) e
+           vence o .green-button (0,1,0) que ele carrega junto. */
+        .blue-button,
+        .action-button.schedule-btn {
+            background: var(--brand-600) !important;
+            color: #ffffff !important;
+            border-color: var(--brand-700) !important;
+            font-weight: 600 !important;
+        }
+
+        .blue-button:hover,
+        .action-button.schedule-btn:hover {
+            background: var(--brand-700) !important;
+            border-color: var(--ink-1) !important;
         }
 
         .dynamic-buttons-container {
@@ -555,64 +698,94 @@
         }
 
         .dynamic-button {
-            padding: 7px 9px;
-            border: 1px solid var(--chat-color-light);
-            border-radius: 6px;
-            background-color: #f3f4f6;
-            color: var(--chat-color-text);
+            padding: 8px 10px;
+            border: 2px solid var(--rule);
+            border-radius: var(--chat-radius-md);
+            background-color: var(--card);
+            color: var(--ink-1);
             cursor: pointer;
+            font-family: var(--fonte-texto);
             font-weight: 400;
             font-size: 13px;
+            line-height: 1.3;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             text-align: left;
             flex: 0 0 48%;
             box-sizing: border-box;
         }
 
         .dynamic-button:hover {
-            background-color: var(--chat-color-primary);
-            border-color: var(--chat-color-primary);
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: var(--brand-600);
+            border-color: var(--brand-700);
+            color: #ffffff;
+        }
+
+        /* Opcao de consumo e de contagem de pessoas: numero e decisao, entao
+           entra em Atkinson tabular com digito alinhado. */
+        .dynamic-button[data-kwh],
+        .dynamic-button[data-family] {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
         }
 
         .solar-panel-image {
             max-width: 100%;
             border-radius: var(--chat-radius-sm);
             margin: 12px 0;
-            box-shadow: var(--chat-shadow-md);
+            border: 2px solid var(--rule);
         }
 
         @media (max-width: 480px) {
             .chat-assist-widget .chat-window {
-                width: 95vw !important;
-                max-width: 260px !important;
+                /* O teto antigo de 260px deixava a janela mais estreita que o
+                   proprio teclado do celular. */
+                width: calc(100vw - 24px) !important;
+                max-width: 420px !important;
                 padding: 0 !important;
-                height: 60vh !important;
-                bottom: 10px !important;
+                height: min(560px, calc(100vh - 104px)) !important;
+                height: min(560px, calc(100dvh - 104px)) !important;
+                bottom: 84px !important;
                 left: 50% !important;
+                right: auto !important;
                 transform: translateX(-50%) !important;
-                border-radius: 12px !important;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                overflow: hidden;
+                border-radius: var(--chat-radius-lg) !important;
+            }
+
+            .chat-assist-widget .chat-header-logo {
+                width: 96px;
+                height: 48px;
             }
         }
 
         @media (min-width: 481px) {
             .chat-assist-widget .chat-window {
                 width: 416px !important;
-                max-width: 450px !important;
-                height: 520px !important;
+                max-width: calc(100vw - 32px) !important;
+                height: min(640px, calc(100vh - 108px)) !important;
+                height: min(640px, calc(100dvh - 108px)) !important;
                 top: auto !important;
                 left: auto !important;
-                bottom: 80px !important;
+                bottom: 88px !important;
                 right: 20px !important;
                 transform: none !important;
-                border-radius: 12px !important;
-                box-shadow: 0 5px 30px rgba(0,0,0,0.15);
+                border-radius: var(--chat-radius-lg) !important;
             }
+        }
+
+        /* Teclado fisico: foco visivel e requisito, nao enfeite. */
+        .chat-assist-widget button:focus-visible,
+        .chat-assist-widget a:focus-visible,
+        .action-button:focus-visible,
+        .dynamic-button:focus-visible {
+            outline: 2px solid var(--brand-700);
+            outline-offset: 2px;
+        }
+
+        /* O botao de fechar e o unico controle que vive sobre a faixa de marca,
+           e seu proprio fundo e --brand-700: o anel media 1,00:1, ou seja,
+           invisivel. Branco sobre --brand-700 mede 8,09:1. */
+        .chat-assist-widget .chat-close-btn:focus-visible {
+            outline-color: #ffffff;
         }
     `;
     document.head.appendChild(widgetStyles);
@@ -627,20 +800,23 @@
             responseTimeText: 'Responde em segundos',
             poweredBy: { text: 'Powered by Neureka AI', link: 'https://neureka-ai.com' }
         },
+        // A forma deste objeto e contrato externo (window.ChatWidgetConfig) e
+        // nao muda; o que muda sao os defaults, que agora sao os tokens do
+        // sistema. A paleta antiga reprovava o piso de contraste.
         style: {
-            primaryColor: '#06a288',
-            secondaryColor: '#075f6e',
+            primaryColor: '#297A72',
+            secondaryColor: '#1A5952',
             position: 'right',
-            backgroundColor: '#ffffff',
-            fontColor: '#1f2937'
+            backgroundColor: '#FFFFFF',
+            fontColor: '#16211F'
         },
         customStyles: {
-            buttonPrimary: '#bdfbff',
-            buttonSecondary: '#2d3748',
-            bubbleBackground: '#ffffff',
-            bubbleText: '#202c3c',
-            avatarPrimary: '#06a288',
-            avatarSecondary: '#075f6e'
+            buttonPrimary: '#297A72',
+            buttonSecondary: '#1A5952',
+            bubbleBackground: '#FFFFFF',
+            bubbleText: '#16211F',
+            avatarPrimary: '#297A72',
+            avatarSecondary: '#1A5952'
         },
         suggestedQuestions: []
     };
@@ -901,7 +1077,7 @@
         // Mostra mensagem confirmando
         addBotMessage(`
             <p>📅 <strong>O calendário foi aberto em uma nova janela!</strong></p>
-            <p style="font-size: 12px; color: #6b7280;">Escolha o melhor horário para sua reunião com nosso especialista.</p>
+            <p class="chat-hint">Escolha o melhor horário para sua reunião com nosso especialista.</p>
         `);
     };
 
@@ -967,7 +1143,7 @@
             addBotMessage(`
                 <p>Ótimo! Vou fazer algumas perguntas rápidas para entender melhor sua necessidade. ☀️</p>
                 <p><strong>Primeiro, qual é o seu e-mail?</strong></p>
-                <p style="font-size: 12px; color: #6b7280;">Digite seu e-mail no campo abaixo 👇</p>
+                <p class="chat-hint">Digite seu e-mail no campo abaixo 👇</p>
             `, true, emailImage);
 
             messageTextarea.placeholder = "exemplo@email.com";
@@ -983,7 +1159,7 @@
             addBotMessage(`
                 <p>Perfeito! Agora me informe seu telefone com DDD.</p>
                 <p><strong>Qual é o seu telefone?</strong></p>
-                <p style="font-size: 12px; color: #6b7280;">Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX</p>
+                <p class="chat-hint">Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX</p>
             `, true, phoneImage);
 
             messageTextarea.placeholder = "(11) 91234-5678";
@@ -1060,7 +1236,7 @@
 
             const messageContainer = addBotMessage(`
                 <p><strong>Qual é o consumo mensal de energia elétrica da sua casa?</strong></p>
-                <p style="font-size: 12px; color: #6b7280;">Você pode verificar essa informação na sua conta de luz (em kWh)</p>
+                <p class="chat-hint">Você pode verificar essa informação na sua conta de luz (em kWh)</p>
                 <div class="dynamic-buttons-container">
                     ${buttonHTML}
                 </div>
@@ -1083,7 +1259,7 @@
         setTimeout(() => {
             const messageContainer = addBotMessage(`
                 <p><strong>Que tipo de telhado você tem?</strong></p>
-                <p style="font-size: 12px; color: #6b7280;">Escolha o tipo mais próximo do seu:</p>
+                <p class="chat-hint">Escolha o tipo mais próximo do seu:</p>
                 <div class="dynamic-buttons-container">
                     <button class="dynamic-button" data-roof="Cerâmica/Telha">🏠 Cerâmica/Telha</button>
                     <button class="dynamic-button" data-roof="Fibrocimento">🏭 Fibrocimento</button>
@@ -1117,14 +1293,14 @@
                 ${botAvatarHTML}
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
-                        <img src="${savingsImage}" style="width: 100%; border-radius: 10px; margin-bottom: 10px;" alt="Economia">
+                        <img src="${savingsImage}" class="solar-panel-image" style="width: 100%;" alt="Economia">
                         <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
                         <p>📧 E-mail: ${qualificationData.email}<br>
-                        📱 Telefone: ${qualificationData.phone}<br>
-                        👥 Pessoas na casa: ${qualificationData.familySize}<br>
-                        ⚡ Consumo mensal: ${qualificationData.kwhConsumption}<br>
+                        📱 Telefone: <span class="chat-figure">${qualificationData.phone}</span><br>
+                        👥 Pessoas na casa: <span class="chat-figure">${qualificationData.familySize}</span><br>
+                        ⚡ Consumo mensal: <span class="chat-figure">${qualificationData.kwhConsumption}</span><br>
                         🏠 Tipo de telhado: ${qualificationData.roofType}</p>
-                        <p>💰 <strong>Você tem potencial de reduzir até 90% do valor da sua conta de luz!</strong></p>
+                        <p>💰 <strong>Você tem potencial de reduzir até <span class="chat-figure-strong">90%</span> do valor da sua conta de luz!</strong></p>
                         <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
                         <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
                         <div class="action-buttons-container" style="margin-top: 15px;">
@@ -1142,7 +1318,9 @@
             const scheduleBtn = messageContainer.querySelector('.schedule-btn');
             scheduleBtn.addEventListener('click', () => {
                 scheduleBtn.disabled = true;
-                scheduleBtn.style.opacity = '0.5';
+                // Opacidade apagaria o texto; o estado vira rotulo legivel e
+                // a borda tracejada do CSS carrega o resto do recado.
+                scheduleBtn.textContent = '📅 Agendamento aberto';
 
                 setTimeout(() => {
                     addBotMessage(`
@@ -1222,7 +1400,7 @@
                 setTimeout(() => {
                     addBotMessage(`
                         <p>❌ E-mail inválido! Por favor, digite um e-mail válido.</p>
-                        <p style="font-size: 12px; color: #6b7280;">Exemplo: seunome@email.com</p>
+                        <p class="chat-hint">Exemplo: seunome@email.com</p>
                     `);
                 }, 300);
                 messageTextarea.value = '';
@@ -1242,7 +1420,7 @@
                 setTimeout(() => {
                     addBotMessage(`
                         <p>❌ Telefone inválido! Por favor, digite no formato correto.</p>
-                        <p style="font-size: 12px; color: #6b7280;">Exemplo: (11) 91234-5678 ou (11) 1234-5678</p>
+                        <p class="chat-hint">Exemplo: (11) 91234-5678 ou (11) 1234-5678</p>
                     `);
                 }, 300);
                 messageTextarea.value = '';
@@ -1326,7 +1504,7 @@
             // Display error message in chat
             const errorMessage = document.createElement('div');
             errorMessage.className = 'message-container bot-message';
-            errorMessage.innerHTML = `<p class="chat-bubble bot-bubble">Desculpe, ocorreu um erro. Tente novamente.</p>`;
+            errorMessage.innerHTML = `<p class="chat-bubble bot-bubble"><span class="chat-status chat-status-erro"><span class="chat-status-label">⚠ Erro</span><span>Desculpe, ocorreu um erro. Tente novamente.</span></span></p>`;
             messagesContainer.appendChild(errorMessage);
         } finally {
             isWaitingForResponse = false;

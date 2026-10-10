@@ -3,202 +3,1005 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proposta Comercial - Energia Solar</title>
+    <title>Proposta Comercial — Sistema de Energia Solar Fotovoltaica</title>
+    <meta name="description" content="Documento de proposta para instalação de sistema de energia solar fotovoltaica: potência, módulos, investimento total, economia mensal e prazo de retorno.">
+    <meta name="theme-color" content="#FBFAF7">
+
+    <!-- Open Graph. Este link chega ao cliente quase sempre colado no
+         WhatsApp: sem estas tags ele ve uma URL crua com token, que parece
+         golpe e nao se abre. Nao existe og:image porque o projeto nao tem
+         nenhum arquivo de imagem para apontar — inventar URL deixaria o
+         preview pior do que sem imagem. -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Proposta Comercial — Energia Solar Fotovoltaica">
+    <meta property="og:description" content="Sua proposta de sistema fotovoltaico: potência, investimento total, economia mensal estimada e prazo de retorno. Abra para ver os valores e aceitar.">
+    <meta property="og:site_name" content="Proposta de Energia Solar">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Proposta Comercial — Energia Solar Fotovoltaica">
+    <meta name="twitter:description" content="Sua proposta de sistema fotovoltaico: potência, investimento total, economia mensal estimada e prazo de retorno.">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Tipografia do sistema. 'Inter' estava declarada aqui desde o inicio e
+         nunca era carregada. Fraunces so aparece em figura de display >= 24px
+         e Atkinson Hyperlegible carrega todo numero que vira decisao. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,400..700&display=swap">
+
     <style>
+        /* =================================================================
+           TOKENS — "Papel e Mesa", registro EXTERNO
+           Mesmos tokens do CRM e do login. O que muda aqui e a escala de
+           espacamento e a densidade, nunca a identidade: quem abre esta
+           pagina esta decidindo gastar dezenas de milhares de reais e
+           densidade, nesta superficie, parece desleixo.
+           ================================================================= */
+        :root {
+            --brand-300: #8FC9C1;
+            --brand-400: #5FAEA4;
+            --brand-500: #3B9287;   /* ornamento, bordas — NAO para texto */
+            --brand-600: #297A72;   /* texto, links, botoes — 5,10:1 em branco */
+            --brand-700: #1A5952;   /* superficie escura, enfase — 8,09:1 */
+
+            /* Nenhum destes fica abaixo de 4,5:1 na pior superficie usada
+               nesta pagina. Nao existe tom mais fraco disponivel — e por isso
+               que rotulo e metadado nao tem como reprovar aqui. */
+            --ink-1: #16211F;       /* 14,64:1 */
+            --ink-2: #3D4744;       /*  8,53:1 */
+            --ink-3: #5A6764;       /*  5,23:1 — rotulos, prazos, nota de pe */
+
+            --ink-sobre-marca:   #FFFFFF;   /* 8,09:1 sobre --brand-700 */
+            --ink-sobre-marca-2: #CFE3DF;   /* 6,06:1 — secundario, sem opacidade */
+
+            --paper:  #FBFAF7;
+            --card:   #FFFFFF;
+            --sunken: #F4F1EA;
+            --rule:   #D9D3C6;      /* fio estrutural — 2px, nunca 1px */
+
+            /* Status — reservados. Usados como FUNDO com branco em cima,
+               que e o par medido. */
+            --ok:      #1B7A4B;
+            --atencao: #9A6209;
+            --grave:   #B3421C;
+            --critico: #A3231F;
+            --info:    #1F5F8B;
+
+            --fonte-texto:  'Inter', system-ui, -apple-system, sans-serif;
+            --fonte-numero: 'Atkinson Hyperlegible', 'Inter', sans-serif;
+            --fonte-titulo: 'Fraunces', Georgia, serif;   /* SOMENTE >= 24px */
+
+            /* Escala calma do registro externo */
+            --pad-card:  32px;
+            --pad-campo: 18px;
+            --gap-secao: 48px;
+
+            --raio: 10px;
+
+            /* Brilho do fio ambar. Sobrescrito no carregamento pela hora
+               solar local. */
+            --luz: 72%;
+        }
+
+        /* =================================================================
+           BASE
+           ================================================================= */
+        * { box-sizing: border-box; }
+
+        html { -webkit-text-size-adjust: 100%; }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: var(--fonte-texto);
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--ink-1);
+            background: var(--paper);
+            -webkit-font-smoothing: antialiased;
         }
 
-        .proposal-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        /* Fallback local para .hidden. O Tailwind vem de CDN; se ele atrasar
+           ou falhar, a proposta nao pode aparecer por cima do "Carregando".
+           A alternancia desta pagina inteira depende desta regra. */
+        .hidden { display: none !important; }
+
+        /* Toda figura que vira decisao — kWp, modulos, economia, payback,
+           prazo de garantia — em Atkinson tabular. O 1/l/I e o 0/O
+           inequivocos sao o que impede ler 1.084 como 1.O84. */
+        .num {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
         }
 
-        .spec-item {
-            border-left: 4px solid #309086;
-            padding-left: 16px;
-            margin-bottom: 16px;
+        .rotulo {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+
+        a {
+            color: var(--brand-600);
+            font-weight: 600;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 2px;
+        }
+
+        a:hover { color: var(--brand-700); }
+
+        :focus-visible {
+            outline: 2px solid var(--brand-600);
+            outline-offset: 2px;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
-        .fade-in {
-            animation: fadeIn 0.6s ease;
+        .fade-in { animation: fadeIn 0.4s ease; }
+
+        @keyframes girar { to { transform: rotate(360deg); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in { animation: none; }
+            .estado__spinner { animation-duration: 2s; }
         }
 
-        .solar-badge {
-            background: linear-gradient(135deg, #309086 0%, #267269 100%);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
+        /* =================================================================
+           O ORNAMENTO UNICO: A LINHA DO HORIZONTE
+           Fio ambar de 2px cujo brilho acompanha a hora solar local. Nesta
+           pagina aparece UMA vez, na aresta do masthead — a mesma aresta da
+           topbar do CRM e do lockup do login. E o que faz o cliente
+           reconhecer a mesma marca no link do WhatsApp e no sistema, em vez
+           das duas identidades que conviviam antes.
+           ================================================================= */
+        .fio-horizonte {
+            height: 2px;
+            border: 0;
+            margin: 0;
+            background: linear-gradient(90deg,
+                var(--atencao) 0%,
+                hsl(38 95% calc(32% + var(--luz) * 0.34)) 50%,
+                var(--atencao) 100%);
+        }
+
+        /* =================================================================
+           MASTHEAD — papel timbrado
+           ================================================================= */
+        .masthead { background: var(--card); }
+
+        .masthead__inner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .masthead__marca {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--brand-600);
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+        }
+
+        .masthead__titulo {
+            margin: 0;
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            /* O piso de 25px nao e estetico: e o maior corpo em que
+               "Proposta Comercial" ainda cabe em uma linha num aparelho de
+               320px. Nunca abaixo do piso de 24px da serifada. */
+            font-size: clamp(25px, 5.4vw, 34px);
             font-weight: 600;
-            display: inline-block;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+            color: var(--ink-1);
+        }
+
+        .masthead__sub {
+            margin: 4px 0 0;
+            font-size: 14px;
+            color: var(--ink-2);
+        }
+
+        /* =================================================================
+           A FOLHA
+           ================================================================= */
+        .folha {
+            width: 100%;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+            flex: 1 0 auto;
+        }
+
+        .doc {
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            padding: 16px;
+        }
+
+        /* Cabecalho do documento: numero e selo. */
+        .doc__topo {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--rule);
+        }
+
+        #numero-proposta {
+            margin: 4px 0 0;
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--ink-1);
+        }
+
+        .selo {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-sobre-marca);
+            background: var(--brand-700);
+            border: 2px solid var(--brand-700);
+            border-radius: 999px;
+        }
+
+        /* =================================================================
+           CLAUSULAS
+           Secao numerada 01–05: um documento se le por clausula, e o numeral
+           sobrevive a acromatopsia e a impressao em preto e branco.
+           ================================================================= */
+        .secao { margin-top: var(--gap-secao); }
+
+        .secao__titulo {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin: 0 0 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--rule);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: var(--ink-2);
+        }
+
+        .secao__num {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0;
+            color: var(--brand-600);
+        }
+
+        /* --- 01 Especificacoes ------------------------------------------- */
+        .especs {
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2px;
+            background: var(--rule);     /* o gap virou fio: 2px, nao sombra */
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            overflow: hidden;
+        }
+
+        .espec {
+            background: var(--card);
+            padding: var(--pad-campo);
+        }
+
+        .espec dt { margin: 0; }
+
+        .espec dd {
+            margin: 6px 0 0;
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--ink-1);
+            /* Marca de modulo e tipo de inversor vem do banco e podem ser
+               uma palavra unica muito longa. */
+            overflow-wrap: break-word;
+        }
+
+        .espec dd.texto {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* --- 02 Investimento --------------------------------------------- */
+        .preco {
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            padding: 24px 14px;
+            text-align: center;
+        }
+
+        .preco__valor {
+            margin: 10px 0 0;
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-variant-numeric: tabular-nums;
+            /* O coeficiente de vw e medido, nao escolhido: "R$ 1.250.000,00"
+               em Fraunces ocupa ~8,2em, e um aparelho de 320px entrega 220px
+               uteis dentro deste painel. Acima disso o valor vazava da folha
+               e a pagina ganhava rolagem horizontal. */
+            font-size: clamp(30px, 8.5vw, 68px);
+            font-weight: 600;
+            line-height: 1.02;
+            letter-spacing: -0.02em;
+            color: var(--ink-1);
+        }
+
+        .preco__desconto {
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--ink-2);
+        }
+
+        .preco__desconto p { margin: 0; }
+
+        /* Riscado em CSS proprio: nao pode depender da classe utilitaria do
+           CDN, porque o desconto e justamente a informacao que o cliente
+           confere duas vezes. */
+        .preco__de { text-decoration: line-through; }
+
+        .preco__corte {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid var(--rule);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            text-align: left;
+        }
+
+        .figura {
+            margin: 6px 0 0;
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: clamp(20px, 5.5vw, 24px);
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--ink-1);
+        }
+
+        /* --- 03 Retorno estimado ----------------------------------------- */
+        /* As tres caixas eram verde-azul-roxo, uma matiz por caixa. Nao sao
+           uma serie: sao tres fatos independentes. Tratamento identico, e a
+           palavra carrega o sentido. */
+        .retorno {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .retorno__item {
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            padding: var(--pad-campo);
+        }
+
+        .retorno__item i {
+            font-size: 20px;
+            color: var(--brand-600);
+        }
+
+        .retorno__item h4 {
+            margin: 10px 0 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink-2);
+        }
+
+        /* --- 04 Garantias ------------------------------------------------ */
+        .garantias {
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2px;
+            background: var(--rule);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            overflow: hidden;
+        }
+
+        .garantia {
+            background: var(--card);
+            padding: 14px var(--pad-campo);
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .garantia dt {
+            margin: 0;
+            font-size: 15px;
+            color: var(--ink-2);
+        }
+
+        .garantia dd {
+            margin: 0;
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--ink-1);
+            white-space: nowrap;
+        }
+
+        /* --- 05 Validade e contato --------------------------------------- */
+        .prazo {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: var(--pad-campo);
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-left: 6px solid var(--atencao);
+            border-radius: var(--raio);
+            color: var(--ink-1);
+        }
+
+        .prazo i {
+            margin-top: 3px;
+            font-size: 18px;
+            color: var(--atencao);
+        }
+
+        .prazo p { margin: 0; }
+        .prazo p + p { margin-top: 4px; color: var(--ink-2); font-size: 14px; }
+
+        #validade-dias {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+        }
+
+        .contato {
+            margin-top: 16px;
+            padding: var(--pad-campo);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+        }
+
+        .contato p { margin: 0; }
+        .contato p + p { margin-top: 6px; }
+
+        /* =================================================================
+           ACOES
+           ================================================================= */
+        .acoes {
+            margin-top: 28px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .botao {
+            min-height: 58px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            font-family: var(--fonte-texto);
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: var(--raio);
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .botao i { font-size: 19px; }
+
+        .botao--aceitar {
+            color: var(--ink-sobre-marca);
+            background: var(--brand-600);
+            border-color: var(--brand-600);
+        }
+
+        .botao--aceitar:hover {
+            background: var(--brand-700);
+            border-color: var(--brand-700);
+        }
+
+        .botao--pdf {
+            color: var(--ink-1);
+            background: var(--card);
+            border-color: var(--rule);
+        }
+
+        .botao--pdf:hover { background: var(--sunken); border-color: var(--ink-3); }
+        .botao--pdf i { color: var(--brand-600); }
+
+        /* =================================================================
+           ESTADOS — carregando e erro
+           Status com icone + palavra, nunca so por cor.
+           ================================================================= */
+        .estado {
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            padding: 48px 22px;
+            text-align: center;
+        }
+
+        .estado__spinner {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto;
+            border: 3px solid var(--brand-300);
+            border-top-color: var(--brand-600);
+            border-radius: 50%;
+            animation: girar 0.9s linear infinite;
+        }
+
+        .estado__titulo {
+            margin: 14px 0 8px;
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--ink-1);
+        }
+
+        .estado__texto {
+            margin: 10px 0 0;
+            color: var(--ink-2);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 999px;
+            border: 2px solid transparent;
+        }
+
+        .chip--critico {
+            color: #fff;
+            background: var(--critico);      /* 7,45:1 com branco */
+            border-color: var(--critico);
+        }
+
+        /* =================================================================
+           PE DA PAGINA
+           ================================================================= */
+        .rodape {
+            flex: 0 0 auto;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 16px 40px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--ink-3);
+            text-align: center;
+        }
+
+        .rodape p { margin: 0; }
+        .rodape p + p { margin-top: 6px; }
+
+        /* Bloco de aceite: existe so no papel. Na tela o aceite e um botao;
+           impresso, o documento precisa de onde assinar. */
+        .so-impressao { display: none; }
+
+        /* =================================================================
+           TELA MAIOR
+           A maioria abre no celular, entao o layout de uma coluna e o padrao
+           e as grades de duas colunas sao o caso excepcional.
+           ================================================================= */
+        @media (min-width: 640px) {
+            .masthead__inner { padding: 24px 32px; gap: 16px; }
+            .masthead__marca { width: 52px; height: 52px; }
+            .folha { padding: 32px 32px 64px; }
+            .doc { padding: var(--pad-card); }
+            .especs { grid-template-columns: 1fr 1fr; }
+            .preco { padding: 40px 32px; }
+            .preco__corte { grid-template-columns: 1fr 1fr; gap: 32px; }
+            .retorno { grid-template-columns: repeat(3, 1fr); }
+            .garantias { grid-template-columns: repeat(3, 1fr); }
+            .garantia { display: block; }
+            .garantia dd { margin-top: 6px; }
+            .acoes { grid-template-columns: 1fr 1fr; }
+            .rodape { padding: 0 32px 48px; }
+        }
+
+        /* =================================================================
+           IMPRESSAO
+           O cliente imprime ou salva este documento em PDF para levar a
+           decisao a quem assina com ele. Ate aqui saia um layout de tela:
+           botao, sombra, fundo colorido, quebra no meio do preco. Esta
+           secao faz sair papel — preto no branco, clausula inteira por
+           pagina, e espaco de assinatura.
+           ================================================================= */
+        @media print {
+            @page { size: A4; margin: 16mm 14mm; }
+
+            /* Reescrever os tokens vale mais do que reescrever as regras:
+               tudo o que o CSS acima pinta de papel e tinta passa a sair em
+               preto no branco de uma vez. */
+            :root {
+                --paper:  #fff;
+                --card:   #fff;
+                --sunken: #fff;
+                --rule:   #000;
+                --ink-1:  #000;
+                --ink-2:  #000;
+                --ink-3:  #333;
+                --brand-600: #000;
+                --brand-700: #000;
+                --brand-300: #000;
+                --atencao: #000;
+                --critico: #000;
+                --ink-sobre-marca: #000;
+                --pad-card:  0;
+                --pad-campo: 4mm;
+                --gap-secao: 9mm;
+                --raio: 0;
+            }
+
+            html, body {
+                background: #fff;
+                color: #000;
+                font-size: 10.5pt;
+                line-height: 1.45;
+                display: block;
+            }
+
+            /* Nada de botao, nada de spinner, nada de widget de chat no
+               papel: no PDF eles sao ruido que ninguem pode clicar. */
+            .acoes,
+            .estado__spinner,
+            .chat-assist-widget,
+            #loading { display: none !important; }
+
+            .masthead__inner,
+            .folha,
+            .rodape {
+                max-width: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .masthead__inner { padding-bottom: 3mm; }
+
+            /* Borda imprime sempre; fundo depende de opcao do navegador.
+               O horizonte vira fio preto para nao desaparecer. */
+            .fio-horizonte {
+                height: 0;
+                background: none;
+                border-top: 2px solid #000;
+            }
+
+            .doc {
+                border: 0;
+                border-radius: 0;
+                padding: 0;
+            }
+
+            .doc__topo { padding: 4mm 0; }
+
+            .especs,
+            .garantias {
+                gap: 0;
+                background: none;
+                border: 1.5pt solid #000;
+            }
+
+            /* No papel o gap de 2px nao existe mais: quem separa celula de
+               celula e o fio, senao as especificacoes encostam. */
+            .espec,
+            .garantia {
+                border-bottom: 1pt solid #000;
+                border-right: 1pt solid #000;
+            }
+            .espec dd { font-size: 15pt; }
+            .espec dd.texto { font-size: 12pt; }
+
+            .preco { border: 1.5pt solid #000; padding: 6mm 4mm; }
+            .preco__valor { font-size: 34pt; }
+            .figura { font-size: 15pt; }
+
+            .retorno__item,
+            .prazo,
+            .contato { border: 1pt solid #000; }
+
+            .prazo { border-left: 2.5pt solid #000; }
+
+            .selo,
+            .chip {
+                background: none;
+                color: #000;
+                border: 1.5pt solid #000;
+            }
+
+            /* Quebras controladas: clausula nao parte no meio, titulo nao
+               fica orfao no pe da pagina e o preco nunca racha. */
+            .secao,
+            .preco,
+            .espec,
+            .garantia,
+            .retorno__item,
+            .doc__topo,
+            .assinatura { break-inside: avoid; page-break-inside: avoid; }
+
+            .secao__titulo { break-after: avoid; page-break-after: avoid; }
+
+            /* O aceite entra so no papel. */
+            .so-impressao { display: block; }
+
+            .assinaturas {
+                margin-top: 12mm;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .assinatura { margin-top: 14mm; }
+
+            .assinatura__linha {
+                display: block;
+                height: 0;
+                border-top: 1pt solid #000;
+                max-width: 95mm;
+            }
+
+            .assinatura p {
+                margin: 2mm 0 0;
+                font-size: 9pt;
+                color: #000;
+            }
+
+            .rodape {
+                margin-top: 8mm;
+                padding-top: 3mm;
+                border-top: 1pt solid #000;
+                font-size: 8.5pt;
+                text-align: left;
+            }
+
+            a { color: #000; text-decoration: underline; }
+
+            .fade-in { animation: none; }
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-8 fade-in">
-            <div class="inline-block bg-white rounded-full p-4 mb-4 shadow-lg">
-                <i class="fas fa-solar-panel text-5xl text-[#309086]"></i>
+    <!-- Masthead -->
+    <header class="masthead">
+        <div class="masthead__inner">
+            <span class="masthead__marca" aria-hidden="true"><i class="fas fa-solar-panel"></i></span>
+            <div>
+                <h1 class="masthead__titulo">Proposta Comercial</h1>
+                <p class="masthead__sub">Sistema de Energia Solar Fotovoltaica</p>
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Proposta Comercial</h1>
-            <p class="text-white text-lg opacity-90">Sistema de Energia Solar Fotovoltaica</p>
         </div>
+        <div class="fio-horizonte" aria-hidden="true"></div>
+    </header>
+
+    <main class="folha">
 
         <!-- Loading -->
-        <div id="loading" class="proposal-card p-12 text-center fade-in">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#309086] border-t-transparent"></div>
-            <p class="text-gray-600 mt-4">Carregando proposta...</p>
+        <div id="loading" class="estado fade-in" role="status" aria-live="polite">
+            <div class="estado__spinner" aria-hidden="true"></div>
+            <p class="estado__texto">Carregando proposta...</p>
         </div>
 
         <!-- Error -->
-        <div id="error" class="proposal-card p-12 text-center hidden fade-in">
-            <i class="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Proposta não encontrada</h2>
-            <p class="text-gray-600">O link pode estar inválido ou expirado.</p>
-            <p class="text-gray-600 mt-4">Entre em contato conosco para mais informações.</p>
+        <div id="error" class="estado hidden fade-in" role="alert">
+            <p class="chip chip--critico"><i class="fas fa-exclamation-circle" aria-hidden="true"></i>Link inválido</p>
+            <h2 class="estado__titulo">Proposta não encontrada</h2>
+            <p class="estado__texto">O link pode estar incompleto ou já ter expirado.</p>
+            <p class="estado__texto">Fale com quem enviou a proposta ou entre em contato:
+                <a href="tel:+5511999999999">+55 11 99999-9999</a></p>
         </div>
 
         <!-- Proposta -->
         <div id="proposta-container" class="hidden">
-            <!-- Card Principal -->
-            <div class="proposal-card p-8 mb-6 fade-in">
-                <div class="flex items-center justify-between mb-6 pb-6 border-b">
+
+            <article class="doc fade-in">
+
+                <header class="doc__topo">
                     <div>
-                        <p class="text-gray-600 text-sm font-medium">Proposta Nº</p>
-                        <h2 class="text-3xl font-bold text-gray-800" id="numero-proposta">---</h2>
+                        <p class="rotulo">Proposta Nº</p>
+                        <h2 id="numero-proposta">---</h2>
                     </div>
-                    <span class="solar-badge">
-                        <i class="fas fa-leaf mr-2"></i>Energia Limpa
-                    </span>
-                </div>
+                    <span class="selo"><i class="fas fa-leaf" aria-hidden="true"></i>Energia Limpa</span>
+                </header>
 
-                <div class="grid md:grid-cols-2 gap-6 mb-8">
-                    <div class="spec-item">
-                        <p class="text-gray-600 text-sm font-medium mb-1">Potência Total</p>
-                        <p class="text-3xl font-bold text-[#309086]" id="potencia">0 kWp</p>
-                    </div>
-                    <div class="spec-item">
-                        <p class="text-gray-600 text-sm font-medium mb-1">Número de Módulos</p>
-                        <p class="text-3xl font-bold text-[#309086]" id="num-modulos">0</p>
-                    </div>
-                    <div class="spec-item">
-                        <p class="text-gray-600 text-sm font-medium mb-1">Marca dos Módulos</p>
-                        <p class="text-xl font-semibold text-gray-800" id="marca-modulos">---</p>
-                    </div>
-                    <div class="spec-item">
-                        <p class="text-gray-600 text-sm font-medium mb-1">Tipo de Inversor</p>
-                        <p class="text-xl font-semibold text-gray-800" id="tipo-inversor">---</p>
-                    </div>
-                </div>
+                <!-- 01 Especificações -->
+                <section class="secao">
+                    <h3 class="secao__titulo"><span class="secao__num">01</span>Especificações do sistema</h3>
+                    <dl class="especs">
+                        <div class="espec">
+                            <dt class="rotulo">Potência total</dt>
+                            <dd class="num" id="potencia">0 kWp</dd>
+                        </div>
+                        <div class="espec">
+                            <dt class="rotulo">Módulos fotovoltaicos</dt>
+                            <dd class="num" id="num-modulos">0</dd>
+                        </div>
+                        <div class="espec">
+                            <dt class="rotulo">Marca dos módulos</dt>
+                            <dd class="texto" id="marca-modulos">---</dd>
+                        </div>
+                        <div class="espec">
+                            <dt class="rotulo">Tipo de inversor</dt>
+                            <dd class="texto" id="tipo-inversor">---</dd>
+                        </div>
+                    </dl>
+                </section>
 
-                <!-- Valor -->
-                <div class="bg-gradient-to-r from-[#309086] to-[#267269] rounded-2xl p-8 text-white text-center mb-6">
-                    <p class="text-sm font-medium mb-2 opacity-90">Investimento Total</p>
-                    <div class="flex items-center justify-center gap-4">
-                        <p class="text-5xl md:text-6xl font-bold" id="valor-final">R$ 0,00</p>
-                    </div>
-                    <div id="desconto-container" class="hidden mt-4">
-                        <p class="text-sm opacity-90">
-                            De <span class="line-through" id="valor-original">R$ 0,00</span>
-                            com <span class="font-bold" id="desconto-percent">0%</span> de desconto
-                        </p>
-                    </div>
-                    <div class="mt-6 pt-6 border-t border-white/30 grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p class="opacity-75">Economia Mensal</p>
-                            <p class="text-2xl font-bold mt-1" id="economia-mensal">R$ 0,00</p>
-                        </div>
-                        <div>
-                            <p class="opacity-75">Payback</p>
-                            <p class="text-2xl font-bold mt-1"><span id="payback-meses">0</span> meses</p>
-                        </div>
-                    </div>
-                </div>
+                <!-- 02 Investimento -->
+                <section class="secao">
+                    <h3 class="secao__titulo"><span class="secao__num">02</span>Investimento</h3>
+                    <div class="preco">
+                        <p class="rotulo">Investimento total</p>
+                        <p class="preco__valor" id="valor-final">R$ 0,00</p>
 
-                <!-- Benefícios -->
-                <div class="grid md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-teal-50 rounded-xl p-4 text-center">
-                        <i class="fas fa-piggy-bank text-3xl text-[#309086] mb-2"></i>
-                        <p class="font-bold text-gray-800">Economia em 25 anos</p>
-                        <p class="text-2xl font-bold text-[#309086] mt-2" id="economia-25anos">R$ 0,00</p>
-                    </div>
-                    <div class="bg-blue-50 rounded-xl p-4 text-center">
-                        <i class="fas fa-chart-line text-3xl text-blue-600 mb-2"></i>
-                        <p class="font-bold text-gray-800">Valorização do Imóvel</p>
-                        <p class="text-2xl font-bold text-blue-600 mt-2">+20%</p>
-                    </div>
-                    <div class="bg-purple-50 rounded-xl p-4 text-center">
-                        <i class="fas fa-leaf text-3xl text-purple-600 mb-2"></i>
-                        <p class="font-bold text-gray-800">CO₂ Evitado/Ano</p>
-                        <p class="text-2xl font-bold text-purple-600 mt-2" id="co2-evitado">0 ton</p>
-                    </div>
-                </div>
+                        <div id="desconto-container" class="hidden preco__desconto">
+                            <p>De <span class="preco__de num" id="valor-original">R$ 0,00</span>
+                               com <span class="num" id="desconto-percent">0%</span> de desconto</p>
+                        </div>
 
-                <!-- Garantias -->
-                <div class="bg-gray-50 rounded-xl p-6">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fas fa-shield-alt text-[#309086]"></i>
-                        Garantias Incluídas
-                    </h3>
-                    <div class="grid md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                            <p class="text-gray-600">Módulos Solares</p>
-                            <p class="font-bold text-gray-800">25 anos</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Inversor</p>
-                            <p class="font-bold text-gray-800">5 anos</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-600">Instalação</p>
-                            <p class="font-bold text-gray-800">2 anos</p>
+                        <div class="preco__corte">
+                            <div>
+                                <p class="rotulo">Economia mensal prevista</p>
+                                <p class="figura" id="economia-mensal">R$ 0,00</p>
+                            </div>
+                            <div>
+                                <p class="rotulo">Retorno do investimento</p>
+                                <p class="figura"><span id="payback-meses">0</span> meses</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
+
+                <!-- 03 Retorno estimado -->
+                <section class="secao">
+                    <h3 class="secao__titulo"><span class="secao__num">03</span>Retorno estimado</h3>
+                    <div class="retorno">
+                        <div class="retorno__item">
+                            <i class="fas fa-piggy-bank" aria-hidden="true"></i>
+                            <h4>Economia em 25 anos</h4>
+                            <p class="figura" id="economia-25anos">R$ 0,00</p>
+                        </div>
+                        <div class="retorno__item">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                            <h4>Valorização do imóvel</h4>
+                            <p class="figura num">+20%</p>
+                        </div>
+                        <div class="retorno__item">
+                            <i class="fas fa-leaf" aria-hidden="true"></i>
+                            <h4>CO₂ evitado por ano</h4>
+                            <p class="figura" id="co2-evitado">0 ton</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 04 Garantias -->
+                <section class="secao">
+                    <h3 class="secao__titulo"><span class="secao__num">04</span>Garantias incluídas</h3>
+                    <dl class="garantias">
+                        <div class="garantia">
+                            <dt>Módulos solares</dt>
+                            <dd class="num">25 anos</dd>
+                        </div>
+                        <div class="garantia">
+                            <dt>Inversor</dt>
+                            <dd class="num">5 anos</dd>
+                        </div>
+                        <div class="garantia">
+                            <dt>Instalação</dt>
+                            <dd class="num">2 anos</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <!-- 05 Validade e contato -->
+                <section class="secao">
+                    <h3 class="secao__titulo"><span class="secao__num">05</span>Validade e contato</h3>
+                    <div class="prazo">
+                        <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                        <div>
+                            <p><strong>Proposta válida por <span id="validade-dias">15</span> dias</strong>
+                               a partir do envio.</p>
+                            <p>Depois desse prazo os valores podem mudar por variação de câmbio
+                               e de disponibilidade de equipamento.</p>
+                        </div>
+                    </div>
+                    <div class="contato">
+                        <p><i class="fas fa-phone" aria-hidden="true"></i>
+                           Dúvidas sobre esta proposta:
+                           <a href="tel:+5511999999999">+55 11 99999-9999</a></p>
+                        <p class="rotulo">Atendimento de segunda a sexta, das 8h às 18h</p>
+                    </div>
+                </section>
+
+                <!-- Aceite — só no papel -->
+                <section class="secao so-impressao assinaturas">
+                    <h3 class="secao__titulo"><span class="secao__num">06</span>Aceite</h3>
+                    <div class="assinatura">
+                        <span class="assinatura__linha" aria-hidden="true"></span>
+                        <p>Cliente — nome completo e CPF/CNPJ</p>
+                    </div>
+                    <div class="assinatura">
+                        <span class="assinatura__linha" aria-hidden="true"></span>
+                        <p>Local e data</p>
+                    </div>
+                </section>
+
+            </article>
 
             <!-- Ações -->
-            <div class="grid md:grid-cols-2 gap-4 mb-6">
-                <button onclick="aceitarProposta()" class="bg-[#309086] hover:bg-[#267269] text-white font-bold py-4 px-6 rounded-xl shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
-                    <i class="fas fa-check-circle text-2xl"></i>
-                    <span class="text-lg">Aceitar Proposta</span>
+            <div class="acoes">
+                <button type="button" onclick="aceitarProposta()" class="botao botao--aceitar">
+                    <i class="fas fa-check-circle" aria-hidden="true"></i>
+                    <span>Aceitar proposta</span>
                 </button>
-                <button onclick="baixarPDF()" class="bg-white hover:bg-gray-50 text-gray-800 font-bold py-4 px-6 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                    <i class="fas fa-download text-2xl text-blue-600"></i>
-                    <span class="text-lg">Baixar PDF</span>
+                <button type="button" onclick="baixarPDF()" class="botao botao--pdf">
+                    <i class="fas fa-download" aria-hidden="true"></i>
+                    <span>Baixar PDF</span>
                 </button>
             </div>
 
-            <!-- Info adicional -->
-            <div class="proposal-card p-6 text-center text-gray-600 text-sm">
-                <p><i class="fas fa-clock mr-2"></i>Proposta válida por <span id="validade-dias" class="font-bold">15</span> dias</p>
-                <p class="mt-2"><i class="fas fa-phone mr-2"></i>Dúvidas? Entre em contato: <a href="tel:+5511999999999" class="text-[#309086] font-bold">+55 11 99999-9999</a></p>
-            </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="rodape">
+        <p>Documento gerado pelo sistema de propostas da integradora.</p>
+        <p>Valores de economia e de retorno são estimativas calculadas sobre o consumo
+           informado e a tarifa vigente na data da proposta.</p>
+    </footer>
 
     <script>
+        // O ornamento unico do sistema. --luz sai da hora solar local: o fio
+        // ambar do masthead acende de manha, queima ao meio-dia e apaga a
+        // noite. Nao depende de dado nenhum, entao nunca quebra — e e o que
+        // liga esta pagina ao login e ao CRM.
+        (function () {
+            var h = new Date().getHours();
+            var luz = Math.max(0, Math.round(100 * Math.sin(Math.PI * (h - 6) / 12)));
+            document.documentElement.style.setProperty('--luz', luz + '%');
+        })();
+
         // Configuração Supabase
         const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8';

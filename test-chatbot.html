@@ -3,58 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teste Chatbot - Sunbotic Energia Solar</title>
+    <title>Teste do Widget - Sunbotic Energia Solar</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,400..700&display=swap">
+
+    <!-- Font Awesome 6.4: status e lista de recursos usam icone + palavra -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+        /* Sistema de design "Papel e Mesa" - registro EXTERNO.
+           Mesmos tokens do CRM; o que muda e a escala: card de 32px,
+           gap de secao de 48px, raio de 10px. */
+        :root {
+            --brand-300: #8FC9C1;
+            --brand-400: #5FAEA4;
+            --brand-500: #3B9287;
+            --brand-600: #297A72;
+            --brand-700: #1A5952;
+
+            --ink-1: #16211F;
+            --ink-2: #3D4744;
+            --ink-3: #5A6764;
+
+            --paper: #FBFAF7;
+            --card: #FFFFFF;
+            --sunken: #F4F1EA;
+            --rule: #D9D3C6;
+
+            --ok: #1B7A4B;
+            --atencao: #9A6209;
+            --grave: #B3421C;
+            --critico: #A3231F;
+            --info: #1F5F8B;
+
+            --fonte-texto: 'Inter', system-ui, sans-serif;
+            --fonte-numero: 'Atkinson Hyperlegible', 'Inter', sans-serif;
+            --fonte-titulo: 'Fraunces', Georgia, serif;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: var(--fonte-texto);
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #06a288 0%, #075f6e 100%);
-            min-height: 100vh;
+            /* Respiro a direita e embaixo para o launcher do widget nao
+               cobrir conteudo no celular. */
+            padding: 48px 20px 120px;
+            background: var(--paper);
+            color: var(--ink-1);
+            line-height: 1.55;
             display: flex;
-            align-items: center;
             justify-content: center;
         }
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 600px;
-        }
-        h1 {
-            color: #06a288;
-            margin-bottom: 20px;
-        }
-        p {
-            color: #666;
-            line-height: 1.6;
-        }
-        .info {
-            background: #e0f7f5;
-            padding: 20px;
+
+        .folha {
+            background: var(--card);
+            /* Elevacao por fio de 2px: 1px a 1,2:1 desaparece em monitor
+               descalibrado com sol na janela. */
+            border: 2px solid var(--rule);
             border-radius: 10px;
-            margin-top: 20px;
-            border-left: 4px solid #06a288;
+            padding: 32px;
+            max-width: 640px;
+            width: 100%;
+            /* Gap de secao do registro calmo. */
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        .lockup {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .lockup-marca {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            align-self: flex-start;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--brand-700);
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-radius: 6px;
+            padding: 4px 10px;
+        }
+
+        /* A serifada e faca: Fraunces SOMENTE em figura de display >= 24px. */
+        h1 {
+            font-family: var(--fonte-titulo);
+            font-size: 30px;
+            line-height: 1.2;
+            font-weight: 600;
+            color: var(--brand-700);
+            margin: 0;
+        }
+
+        .subtitulo {
+            margin: 0;
+            color: var(--ink-2);
+            max-width: 52ch;
+        }
+
+        h2 {
+            font-family: var(--fonte-texto);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin: 0 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--rule);
+        }
+
+        p { margin: 0 0 12px; }
+        p:last-child { margin-bottom: 0; }
+
+        /* Status sempre com icone + palavra: a cor e reforco, nunca o recado. */
+        .status {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-left-width: 6px;
+            border-radius: 6px;
+            padding: 14px 16px;
+        }
+
+        .status i { margin-top: 3px; }
+
+        .status-palavra {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .status-texto { color: var(--ink-1); }
+
+        .status-ok { border-left-color: var(--ok); }
+        .status-ok i, .status-ok .status-palavra { color: var(--ok); }
+
+        .status-falha { border-left-color: var(--grave); }
+        .status-falha i, .status-falha .status-palavra { color: var(--grave); }
+
+        .status-info { border-left-color: var(--info); }
+        .status-info i, .status-info .status-palavra { color: var(--info); }
+
+        .recursos {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .recursos li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .recursos i {
+            color: var(--brand-600);
+            width: 20px;
+            text-align: center;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .recursos strong { display: block; }
+
+        .recursos span {
+            color: var(--ink-2);
+            font-size: 14px;
+        }
+
+        /* Ficha tecnica: toda coluna numerica em Atkinson tabular, alinhada
+           a direita e no digito. */
+        .ficha {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ficha th,
+        .ficha td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid var(--rule);
+        }
+
+        .ficha th {
+            background: var(--sunken);
+            color: var(--ink-3);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .ficha td:first-child { color: var(--ink-2); }
+
+        .ficha .num,
+        .ficha th.num {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            color: var(--ink-1);
+            font-weight: 700;
+        }
+
+        .ficha tr:last-child th,
+        .ficha tr:last-child td { border-bottom: none; }
+
+        code {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: 13px;
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-radius: 6px;
+            padding: 1px 6px;
+            color: var(--ink-1);
+            word-break: break-all;
+        }
+
+        .rodape {
+            font-size: 13px;
+            color: var(--ink-3);
+            border-top: 2px solid var(--rule);
+            padding-top: 16px;
+        }
+
+        @media (max-width: 520px) {
+            body { padding: 24px 12px 120px; }
+            .folha { padding: 20px; gap: 32px; }
+            h1 { font-size: 26px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌞 Sunbotic - Energia Solar</h1>
-        <p>Bem-vindo à página de teste do chatbot!</p>
-        <p>O botão do chat deve aparecer no canto inferior direito da tela.</p>
-        <div class="info">
-            <strong>💡 Funcionalidades:</strong>
-            <ul style="text-align: left; margin-top: 10px;">
-                <li>Funil de qualificação com 5 etapas</li>
-                <li>Imagens de painéis solares</li>
-                <li>Cálculo de potencial de economia</li>
-                <li>Agendamento integrado</li>
+    <main class="folha">
+        <header class="lockup">
+            <span class="lockup-marca"><i class="fas fa-sun" aria-hidden="true"></i> Sunbotic Energia Solar</span>
+            <h1>Página de teste do assistente</h1>
+            <p class="subtitulo">
+                Ambiente de demonstração do widget de atendimento. O botão
+                <strong>Ajuda?</strong> aparece no canto inferior direito da tela.
+            </p>
+        </header>
+
+        <section>
+            <h2>Estado do widget</h2>
+            <!-- Preenchido pelo script no fim da pagina: le as flags do
+                 widget, nunca as define. -->
+            <div id="status-widget" class="status status-info">
+                <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+                <span><span class="status-palavra">Verificando</span>
+                <span class="status-texto">— aguardando a carga do script do widget.</span></span>
+            </div>
+        </section>
+
+        <section>
+            <h2>O que dá para testar</h2>
+            <ul class="recursos">
+                <li>
+                    <i class="fas fa-filter" aria-hidden="true"></i>
+                    <div>
+                        <strong>Funil de qualificação em 5 etapas</strong>
+                        <span>E-mail, telefone, pessoas na casa, consumo em kWh e tipo de telhado.</span>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-solar-panel" aria-hidden="true"></i>
+                    <div>
+                        <strong>Apoio visual a cada pergunta</strong>
+                        <span>Imagens de referência de painéis, conta de luz e telhados.</span>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-chart-line" aria-hidden="true"></i>
+                    <div>
+                        <strong>Leitura do potencial de economia</strong>
+                        <span>Resumo das respostas em figuras tabulares, com o percentual em destaque.</span>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                    <div>
+                        <strong>Agendamento e atendimento humano</strong>
+                        <span>Abertura do calendário e encaminhamento para o WhatsApp da equipe.</span>
+                    </div>
+                </li>
+                <li>
+                    <i class="fas fa-database" aria-hidden="true"></i>
+                    <div>
+                        <strong>Gravação do lead no CRM</strong>
+                        <span>O lead nasce dentro da empresa configurada abaixo, como exige o RLS.</span>
+                    </div>
+                </li>
             </ul>
-        </div>
-    </div>
+        </section>
+
+        <section>
+            <h2>Ficha técnica desta página</h2>
+            <table class="ficha">
+                <thead>
+                    <tr>
+                        <th scope="col">Item</th>
+                        <th scope="col" class="num">Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Versão do widget</td>
+                        <td class="num">238</td>
+                    </tr>
+                    <tr>
+                        <td>Etapas do funil</td>
+                        <td class="num">5</td>
+                    </tr>
+                    <tr>
+                        <td>Campos gravados por lead</td>
+                        <td class="num">7</td>
+                    </tr>
+                    <tr>
+                        <td>Tópicos de dúvida disponíveis</td>
+                        <td class="num">22</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin-top:16px">
+                Empresa de teste: <code>a0000000-0000-0000-0000-000000000001</code>
+            </p>
+        </section>
+
+        <footer class="rodape">
+            Página de demonstração interna. Nenhum dado digitado aqui vale como
+            lead real — ainda assim, o envio chega ao banco da empresa de teste.
+        </footer>
+    </main>
 
     <!-- Configuração do Chatbot Sunbotic -->
     <script>
@@ -69,7 +365,35 @@
         };
     </script>
 
-    <!-- Carrega o Chatbot v238 com tema Sunbotic (cache-busting) -->
-    <script src="./chat/chat-widget-pastro-v238.js?v=20231216"></script>
+    <!-- Carrega o Chatbot v238 (cache-busting). Aponta para a copia de crm/,
+         que e a unica que repassa o empresa_id configurado acima no POST do
+         lead; sem ela o RLS recusa o INSERT. -->
+    <script src="./crm/chat-widget-pastro-v238.js?v=20231216"></script>
+
+    <script>
+        // O widget e um IIFE sincrono: quando esta linha roda, as flags ja
+        // existem. Estado por icone + palavra, nunca so por cor.
+        (function () {
+            const alvo = document.getElementById('status-widget');
+            const carregado = window.N8nChatWidgetV238 === true
+                && window.N8nChatWidgetLoaded === true
+                && document.querySelector('.chat-assist-widget') !== null;
+
+            if (carregado) {
+                alvo.className = 'status status-ok';
+                alvo.innerHTML = '<i class="fas fa-circle-check" aria-hidden="true"></i>'
+                    + '<span><span class="status-palavra">Carregado</span> '
+                    + '<span class="status-texto">— o widget v238 está na página. '
+                    + 'Clique em <strong>Ajuda?</strong> no canto inferior direito.</span></span>';
+            } else {
+                alvo.className = 'status status-falha';
+                alvo.innerHTML = '<i class="fas fa-triangle-exclamation" aria-hidden="true"></i>'
+                    + '<span><span class="status-palavra">Falha</span> '
+                    + '<span class="status-texto">— o script do widget não carregou. '
+                    + 'Confira o caminho <code>./crm/chat-widget-pastro-v238.js</code> '
+                    + 'e o console do navegador.</span></span>';
+            }
+        })();
+    </script>
 </body>
 </html>

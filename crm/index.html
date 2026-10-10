@@ -20,360 +20,1398 @@
     <!-- SortableJS para Drag & Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
+    <!-- Tipografia. 'Inter' estava declarada no CSS desde o inicio e nunca
+         era carregada: metade da identidade do produto nao existia de fato.
+         Atkinson Hyperlegible carrega todo numero que vira decisao e Fraunces
+         so aparece em figura de display >= 24px. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Fraunces:opsz,wght@9..144,400..700&display=swap">
+
     <style>
+        /* =================================================================
+           1. TOKENS — "Papel e Mesa"
+           Declarados UMA vez, por papel. O resto do CSS escreve contra o
+           papel, nunca contra o hex: trocar a marca passa a ser trocar
+           cinco linhas aqui.
+           ================================================================= */
         :root {
-            --primary: #309086;
-            --secondary: #267269;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-            --dark: #1f2937;
+            /* Marca. O #309086 antigo reprovava (3,85:1 com texto branco):
+               todo botao primario do CRM estava abaixo do minimo legivel.
+               A escala preserva a matiz e corrige o contraste. */
+            --brand-300: #8FC9C1;   /* fundos suaves, preenchimento de grafico */
+            --brand-400: #5FAEA4;
+            --brand-500: #3B9287;   /* ornamento, bordas — NAO para texto */
+            --brand-600: #297A72;   /* texto, links, botoes — 5,10:1 em branco */
+            --brand-700: #1A5952;   /* hover, enfase, superficie escura — 8,09:1 */
+
+            /* Tinta. Piso estrutural: nenhum destes fica abaixo de 4,5:1 na
+               PIOR superficie do sistema (--sunken). Nao existe tom mais
+               fraco disponivel — e por isso que metadado e placeholder nao
+               tem como reprovar aqui. */
+            --ink-1: #16211F;       /* 14,64:1 */
+            --ink-2: #3D4744;       /*  8,53:1 */
+            --ink-3: #5A6764;       /*  5,23:1 — rotulos, th, timestamps */
+
+            /* Tinta sobre superficie escura de marca (--brand-700) */
+            --ink-sobre-marca: #FFFFFF;   /* 8,09:1 */
+            --ink-sobre-marca-2: #CFE3DF; /* 6,06:1 — secundario, sem opacidade */
+
+            /* Superficies */
+            --paper:  #FBFAF7;      /* fundo de pagina (registro externo) */
+            --card:   #FFFFFF;
+            --sunken: #F4F1EA;      /* th, faixas alternadas, areas recuadas */
+            --rule:   #D9D3C6;      /* fios estruturais — 2px, nunca 1px */
+
+            /* Status — reservados, nunca reutilizados como serie.
+               Usados como FUNDO com texto branco em cima (par medido). */
+            --ok:      #1B7A4B;     /* 5,34:1 com branco */
+            --atencao: #9A6209;     /* 5,09:1 */
+            --grave:   #B3421C;     /* 5,66:1 */
+            --critico: #A3231F;     /* 7,45:1 */
+            --info:    #1F5F8B;     /* 6,84:1 */
+
+            /* Rampa ordinal do funil: uma matiz so, luminancia monotonica
+               (0.515 > 0.354 > 0.232 > 0.156 > 0.080). A ordem continua
+               legivel sem enxergar cor nenhuma. Nunca arco-iris. */
+            --funil-1: #8FC9C1;
+            --funil-2: #5FAEA4;
+            --funil-3: #3B9287;
+            --funil-4: #297A72;
+            --funil-5: #1A5952;
+
+            /* Tipografia */
+            --fonte-texto:  'Inter', system-ui, -apple-system, sans-serif;
+            --fonte-numero: 'Atkinson Hyperlegible', 'Inter', sans-serif;
+            --fonte-titulo: 'Fraunces', Georgia, serif;   /* SOMENTE >= 24px */
+
+            /* Espacamento — registro INTERNO (denso): o vendedor varre 200
+               leads por dia e arejado aqui custa linhas por tela. */
+            --linha:      32px;
+            --cel-y:      8px;
+            --cel-x:      12px;
+            --pad-card:   16px;
+            --gap-secao:  20px;
+
+            /* Espacamento — registro EXTERNO (calmo): quem assina R$ 50 mil
+               quer respiro e registro de documento. */
+            --pad-card-fora:  32px;
+            --pad-campo-fora: 18px;
+            --gap-secao-fora: 48px;
+
+            /* Raio e altura da fita */
+            --raio:      6px;
+            --raio-fora: 10px;
+            --fita-h:    28px;
+
+            /* Ornamento unico: brilho do fio ambar. Sobrescrito no
+               carregamento pela hora solar local. */
+            --luz: 72%;
         }
+
+        /* =================================================================
+           2. BASE
+           ================================================================= */
+        * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f9fafb;
+            font-family: var(--fonte-texto);
+            background: var(--paper);
+            color: var(--ink-1);
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
         }
 
+        /* Toda figura que vira decisao: Atkinson tabular. O 1/l/I e o 0/O
+           inequivocos sao o que impede ler 1.084 como 1.O84 em celula densa. */
+        .num,
+        .fita__valor,
+        .kanban-count,
+        .kanban-soma,
+        input[type="number"],
+        input[type="date"],
+        input[type="time"] {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        /* A serifada e faca: so em figura de display. Nunca em rotulo,
+           nunca em celula. */
+        .figura-display {
+            font-family: var(--fonte-titulo);
+            font-variant-numeric: tabular-nums;
+            font-optical-sizing: auto;
+            font-size: 28px;
+            line-height: 1.1;
+            font-weight: 600;
+            color: var(--ink-1);
+        }
+
+        a { color: var(--brand-600); }
+
+        /* Foco visivel em tudo. 2px, como todo fio do sistema. */
+        :focus-visible {
+            outline: 2px solid var(--brand-600);
+            outline-offset: 2px;
+        }
+
+        /* O anel cai FORA do elemento por causa do outline-offset, entao sobre a
+           sidebar e o topo do painel de lead ele pousa em --brand-700 e mede
+           1,59:1 — as 8 primeiras paradas de Tab do CRM ficavam sem indicacao
+           visivel. Superficie escura ganha seu proprio anel: branco sobre
+           --brand-700 mede 8,09:1. */
+        .sidebar :focus-visible,
+        .modal-topo :focus-visible {
+            outline-color: var(--ink-sobre-marca);
+        }
+
+        /* Desabilitado se expressa por borda tracejada + cursor + rotulo.
+           Nunca por opacidade: opacidade apaga texto e e o caminho mais
+           curto para reprovar o piso de 4,5:1. */
+        #crmApp button:disabled,
+        #crmApp input:disabled,
+        #crmApp select:disabled,
+        #crmApp textarea:disabled,
+        #loginScreen button:disabled,
+        #loginScreen input:disabled {
+            opacity: 1;
+            border: 2px dashed var(--rule);
+            background: var(--sunken);
+            color: var(--ink-2);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #crmApp button:disabled::after {
+            content: ' · indisponível';
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--ink-2);
+        }
+
+        /* =================================================================
+           3. O ORNAMENTO UNICO: A LINHA DO HORIZONTE
+           Um fio ambar de 2px cujo brilho acompanha a hora solar local.
+           Aparece em exatamente dois lugares nesta pagina — sob a topbar e
+           sob o lockup do login — e em nenhum outro. Significa a hora em que
+           o sistema gera energia, custa um new Date() e nunca quebra.
+           ================================================================= */
+        .fio-horizonte {
+            height: 2px;
+            border: 0;
+            margin: 0;
+            flex: 0 0 auto;
+            background: linear-gradient(90deg,
+                var(--atencao) 0%,
+                hsl(38 95% calc(32% + var(--luz) * 0.34)) 50%,
+                var(--atencao) 100%);
+        }
+
+        /* =================================================================
+           4. REGISTRO EXTERNO — TELA DE LOGIN
+           Calmo, arejado, papel. Primeira coisa que a pessoa ve.
+           A especificidade de id vence os utilitarios do Tailwind sem
+           precisar tocar no markup nem usar !important.
+           ================================================================= */
+        #loginScreen {
+            background: var(--paper);
+            /* Horizonte de fundo: duas faixas de papel, nada de gradiente
+               de marca. O ornamento carrega a identidade, nao o fundo. */
+            background-image: linear-gradient(180deg, var(--sunken) 0%, var(--paper) 42%);
+        }
+
+        #loginScreen > div {
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio-fora);
+            box-shadow: none;             /* elevacao por fio, nao por sombra */
+            padding: var(--pad-card-fora);
+            max-width: 27rem;
+        }
+
+        .login-lockup {
+            text-align: center;
+            margin-bottom: var(--pad-campo-fora);
+        }
+
+        .login-lockup i {
+            font-size: 30px;
+            color: var(--brand-600);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .login-lockup h1 {
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-size: 30px;
+            font-weight: 600;
+            line-height: 1.15;
+            color: var(--ink-1);
+            margin: 0 0 12px;
+        }
+
+        .login-lockup .fio-horizonte { margin: 0 auto 12px; width: 120px; }
+
+        .login-lockup p {
+            font-size: 14px;
+            color: var(--ink-3);
+            margin: 0;
+        }
+
+        #loginScreen label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 6px;
+        }
+
+        #loginScreen .campo-fora { margin-bottom: var(--pad-campo-fora); }
+
+        #loginScreen input[type="email"],
+        #loginScreen input[type="password"] {
+            width: 100%;
+            padding: 12px var(--pad-campo-fora);
+            font-family: var(--fonte-texto);
+            font-size: 15px;
+            color: var(--ink-1);
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+        }
+
+        #loginScreen input::placeholder { color: var(--ink-3); opacity: 1; }
+
+        #loginScreen input:focus {
+            outline: none;
+            border-color: var(--brand-600);
+            box-shadow: inset 0 0 0 1px var(--brand-600);
+        }
+
+        /* O crm-v2.js sobrescreve o innerHTML deste botao (spinner + texto)
+           e depois restaura para 'Entrar'. Por isso o botao nao depende de
+           nenhum filho: toda a aparencia vem do proprio elemento. */
+        #loginButton {
+            width: 100%;
+            padding: 13px 20px;
+            font-family: var(--fonte-texto);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink-sobre-marca);
+            background: var(--brand-600);
+            border: 2px solid var(--brand-600);
+            border-radius: var(--raio);
+            cursor: pointer;
+        }
+
+        #loginButton:hover { background: var(--brand-700); border-color: var(--brand-700); }
+
+        #loginButton:disabled {
+            background: var(--sunken);
+            color: var(--ink-2);
+            cursor: progress;       /* o rotulo vem do JS: "Entrando..." */
+        }
+
+        #loginError {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            margin-bottom: var(--pad-campo-fora);
+            background: var(--card);
+            border: 2px solid var(--critico);
+            border-left-width: 6px;
+            border-radius: var(--raio);
+        }
+
+        #loginError::before {
+            content: '\f06a';       /* fa-circle-exclamation: erro nunca so por cor */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--critico);
+            flex: 0 0 auto;
+            line-height: 1.4;
+        }
+
+        #loginErrorMessage { font-size: 14px; color: var(--ink-1); margin: 0; }
+
+        #loginScreen .login-secundario {
+            display: block;
+            width: 100%;
+            margin-top: var(--pad-campo-fora);
+            padding: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--brand-600);
+            background: none;
+            border: 0;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        #loginScreen .login-secundario:hover { color: var(--brand-700); }
+
+        /* =================================================================
+           5. SHELL — SIDEBAR, TOPBAR, FITA DE OPERACAO
+           ================================================================= */
         .sidebar {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            background: var(--brand-700);
+            color: var(--ink-sobre-marca);
+            border-right: 2px solid var(--brand-700);
+            box-shadow: none;
         }
 
-        .module-card {
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(0,0,0,0.03);
+        .sidebar-lockup h1 {
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-size: 24px;          /* piso da serifada */
+            font-weight: 600;
+            line-height: 1.1;
+            margin: 0;
         }
 
-        .module-card:hover {
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+        .sidebar-lockup p { font-size: 12px; color: var(--ink-sobre-marca-2); margin: 2px 0 0; }
+
+        .nav-link {
+            color: var(--ink-sobre-marca);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--raio);
+            border-left: 2px solid transparent;
         }
 
-        .kpi-card {
+        /* (0,2,0) vence o bg-white/20 (0,1,0) que o JS adiciona junto de
+           .active. A variante :hover existe porque o Tailwind do CDN injeta
+           o stylesheet em runtime e pode cair depois deste bloco. */
+        .nav-link.active,
+        .nav-link.active:hover {
+            background: var(--paper);
+            color: var(--brand-700);
+            border-left-color: var(--atencao);
+            font-weight: 600;
+        }
+
+        .sidebar-rodape {
+            border-top: 2px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .sidebar-rodape #user-name { font-size: 13px; font-weight: 600; color: var(--ink-sobre-marca); }
+        .sidebar-rodape #user-role { font-size: 12px; color: var(--ink-sobre-marca-2); }
+
+        .sidebar-avatar {
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--ink-sobre-marca-2);
+            border-radius: 50%;
+            flex: 0 0 auto;
+        }
+
+        /* Topbar + fita viajam juntas: uma unica regiao sticky evita
+           calcular o offset da fita a partir da altura da topbar. */
+        .barra-superior {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: var(--card);
+            border-bottom: 2px solid var(--rule);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px var(--gap-secao);
+        }
+
+        #module-title {
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-size: 26px;          /* acima do piso de 24px da serifada */
+            font-weight: 600;
+            line-height: 1.15;
+            color: var(--ink-1);
+            margin: 0;
+        }
+
+        #module-subtitle {
+            font-size: 13px;
+            color: var(--ink-3);
+            margin: 2px 0 0;
+        }
+
+        .botao-icone {
             position: relative;
-            overflow: hidden;
+            width: 38px; height: 38px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            color: var(--ink-2);
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            cursor: pointer;
         }
+
+        .botao-icone:hover { background: var(--sunken); color: var(--ink-1); }
+
+        #notificacoes-badge {
+            position: absolute;
+            top: -7px; right: -7px;
+            min-width: 18px; height: 18px;
+            padding: 0 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--ink-sobre-marca);
+            background: var(--critico);
+            border-radius: 9px;
+        }
+
+        #notificacoes-dropdown {
+            width: 24rem;
+            max-height: 24rem;
+            overflow-y: auto;
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            box-shadow: none;
+        }
+
+        #notificacoes-dropdown .dropdown-topo {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            padding: 10px var(--cel-x);
+            background: var(--sunken);
+            border-bottom: 2px solid var(--rule);
+        }
+
+        #notificacoes-dropdown .dropdown-topo h3 { font-size: 13px; font-weight: 700; color: var(--ink-1); margin: 0; }
+
+        /* --- Fita de operacao -------------------------------------------
+           Troca o toast "Dados carregados com sucesso!" (que disparava a
+           cada refresh de 30s, 8 horas por dia) por informacao sempre
+           presente. Faixa de 28px, inteira em figuras tabulares. O toast
+           fica so para erro e para acao do usuario. --------------------- */
+        .fita {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            height: var(--fita-h);
+            padding: 0 var(--gap-secao);
+            overflow: hidden;
+            background: var(--sunken);
+            border-top: 2px solid var(--rule);
+            white-space: nowrap;
+        }
+
+        .fita__item {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .fita__item + .fita__item::before {
+            content: '·';
+            color: var(--ink-3);
+            margin: 0 10px;
+        }
+
+        .fita__rotulo {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+
+        .fita__valor {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink-1);
+        }
+
+        /* O JS promove o valor quando ele exige acao. Cor + nada mais seria
+           status so por cor: o rotulo ao lado ja carrega a palavra. */
+        .fita__valor--atencao { color: var(--atencao); }
+        .fita__valor--critico { color: var(--critico); }
+
+        /* Quando o refresh chega, uma regua de 2px varre a fita. O
+           crm-v2.js liga a varredura pela classe .fita-varrendo; a
+           .sincronizando fica como apelido para quem chamar pelo nome
+           antigo. */
+        .fita__regua {
+            position: absolute;
+            left: 0; bottom: 0;
+            width: 100%; height: 2px;
+            background: var(--brand-600);
+            transform: translateX(-100%);
+        }
+
+        .fita.fita-varrendo .fita__regua,
+        .fita.sincronizando .fita__regua { animation: varrerFita 0.9s ease-in-out; }
+
+        @keyframes varrerFita {
+            from { transform: translateX(-100%); }
+            to   { transform: translateX(100%); }
+        }
+
+        .conteudo { padding: var(--gap-secao); }
+
+        /* =================================================================
+           6. REGISTRO INTERNO — DENSIDADE
+           Meta: 24 linhas por tela em 1080p, contra as ~11 de antes.
+           ================================================================= */
+        .tabela { width: 100%; border-collapse: separate; border-spacing: 0; }
+
+        .tabela thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 6px var(--cel-x);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-align: left;
+            color: var(--ink-3);
+            background: var(--sunken);
+            border-bottom: 2px solid var(--rule);
+            white-space: nowrap;
+        }
+
+        .tabela tbody tr { height: var(--linha); }
+
+        /* Separador por sombra interna, nao por borda: borda de 1px entra na
+           caixa da celula e empurra a linha para 33px. */
+        .tabela tbody tr + tr td { box-shadow: inset 0 1px 0 var(--rule); }
+
+        .tabela tbody tr:hover td { background: var(--sunken); }
+
+        /* Vence o px-6 py-4 que o template do crm-v2.js injeta: (0,1,1)
+           supera (0,1,0) sem !important. Sem isto a linha nasce com 56px e
+           a tela perde 40% das linhas. */
+        .tabela tbody td {
+            height: var(--linha);
+            padding: var(--cel-y) var(--cel-x);
+            font-size: 13px;
+            /* 14px, nao 16px: o strut da linha de texto soma o descendente
+               embaixo do filho inline-block (badge, regua) e a celula
+               estourava para 37px. Com strut de 14px e filho centralizado,
+               a caixa de conteudo fecha exatamente em 16px. */
+            line-height: 14px;
+            color: var(--ink-1);
+            vertical-align: middle;
+            background: var(--card);
+        }
+
+        .tabela tbody td p { margin: 0; }
+
+        .tabela tbody td > span,
+        .tabela tbody td > div,
+        .tabela tbody td > button,
+        .tabela tbody td > a,
+        .tabela tbody td > i { vertical-align: middle; }
+
+        /* A linha de 32px e contrato, nao sugestao: com 8px+8px de padding,
+           a caixa de conteudo tem de fechar em 16px. Tudo que o template do
+           crm-v2.js costuma por na celula — badge, utilitario de tamanho,
+           botao de acao — e trazido para essa caixa. */
+        .tabela tbody td .badge {
+            padding: 0 6px;
+            font-size: 11px;
+            line-height: 16px;
+        }
+
+        .tabela tbody td.text-sm,
+        .tabela tbody td.text-xs,
+        .tabela tbody td .text-sm,
+        .tabela tbody td .text-xs { font-size: 11px; line-height: 13px; }
+
+        .tabela tbody td button,
+        .tabela tbody td a,
+        .tabela tbody td i { line-height: 16px; vertical-align: middle; }
+
+        /* A celula de identidade e a excecao declarada: empilha nome +
+           e-mail em 2px de padding, 15px + 13px de entrelinha = 32px. */
+        .tabela tbody td:first-child { padding-top: 2px; padding-bottom: 2px; }
+        .tabela tbody td .font-semibold { font-size: 12.5px; line-height: 15px; }
+
+        /* O avatar de 40px e a barra de 8px do template tambem estouram a
+           linha. Mesma tecnica de especificidade. */
+        .tabela tbody td .w-10.h-10 {
+            width: 22px; height: 22px;
+            font-size: 11px; line-height: 22px;
+            margin-right: 8px;
+        }
+
+        .tabela tbody td .h-2 { height: 6px; }
+
+        /* Toda coluna numerica: Atkinson tabular, alinhada a direita,
+           alinhada no digito. Marcada por classe no th E por posicao, para
+           o alinhamento sobreviver a mudanca de template no JS. */
+        .tabela th.num, .tabela td.num { text-align: right; }
+
+        #tabela-leads tbody td:nth-child(3),
+        #tabela-leads tbody td:nth-child(4),
+        #tabela-instalados tbody td:nth-child(4),
+        #tabela-instalados tbody td:nth-child(5),
+        #tabela-instalados tbody td:nth-child(6) {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        #tabela-instalados tbody td:nth-child(2),
+        #tabela-instalados tbody td:nth-child(3) {
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* A coluna de score hospeda a regua, nao um numero cru. */
+        #tabela-leads tbody td:nth-child(4) { text-align: left; }
+
+        .tabela-rolagem {
+            max-height: calc(100vh - 210px);
+            overflow: auto;
+        }
+
+        /* Afordancia de ordenacao em Score, Consumo e Valor. O estado vem do
+           aria-sort que o JS escreve; sem ele o th fica neutro. */
+        .tabela th[data-ordenavel] { cursor: pointer; }
+        .tabela th[data-ordenavel]:hover { color: var(--ink-1); background: var(--rule); }
+        .tabela th[data-ordenavel]::after { content: ' \2195'; color: var(--ink-3); }
+        .tabela th[aria-sort="ascending"]::after  { content: ' \2191'; color: var(--brand-600); }
+        .tabela th[aria-sort="descending"]::after { content: ' \2193'; color: var(--brand-600); }
+
+        /* A regua de lead score (120px, tique de 1px nos 50 pontos, faixa
+           por PALAVRA e denominador explicito) e montada e estilizada pelo
+           crm-v2.js, nas classes .regua / .regua-trilha / .regua-preenche /
+           .regua-tique / .regua-valor / .regua-faixa. Nao duplicamos aqui:
+           o componente tem um dono so. A celula que a hospeda esta logo
+           acima, em #tabela-leads tbody td:nth-child(4). */
+
+        /* =================================================================
+           7. CLASSES MONTADAS EM RUNTIME
+           Sao concatenadas por template string no crm-v2.js. Se nao
+           existirem aqui, o elemento aparece sem estilo.
+           ================================================================= */
+
+        /* --- Badge: fundo de status + texto branco. O par e medido e o
+               icone vem na frente, porque status nunca e so cor. ---------- */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 8px;
+            font-family: var(--fonte-texto);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            line-height: 16px;
+            color: var(--ink-sobre-marca);
+            border: 0;
+            border-radius: 3px;
+            white-space: nowrap;
+            box-shadow: none;
+        }
+
+        .badge i { font-size: 10px; }
+
+        .badge-success { background: var(--ok); }
+        .badge-warning { background: var(--atencao); }
+        .badge-danger  { background: var(--grave); }
+        .badge-info    { background: var(--info); }
+        .badge-gray    { background: var(--ink-2); }
+
+        /* --- Cards: elevacao por fio de 2px, nunca por sombra difusa ----- */
+        /* O seletor repete a classe para somar (0,2,0) e vencer o p-6 (24px) que
+           ainda vem dos templates do JS. Sem isto conviviam tres densidades no
+           mesmo registro denso — 24px no Dashboard e em Propostas, 16px em
+           Instalados e Tarefas, 12px em Leads — e o Dashboard misturava os dois
+           registros na mesma tela. */
+        .module-card, [class].module-card {
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            box-shadow: none;
+            padding: var(--pad-card);
+        }
+
+        .module-card:hover { box-shadow: none; transform: none; }
+
+        .kpi-card { position: relative; overflow: hidden; }
 
         .kpi-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--brand-500);
         }
 
-        .kanban-column {
-            border-radius: 12px;
-            min-height: 500px;
-            padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .kanban-column:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
-        }
-
-        .kanban-card {
-            background: white;
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 12px;
-            cursor: grab;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .kanban-card:active {
-            cursor: grabbing;
-        }
-
-        .kanban-card:hover {
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-            transform: translateY(-3px) scale(1.01);
-            border-left-width: 5px;
-        }
-
-        .kanban-card.inactive {
-            border-left-color: var(--danger);
-            opacity: 0.85;
-        }
-
-        .timeline-item {
-            position: relative;
-            padding-left: 40px;
-            padding-bottom: 20px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: 10px;
-            top: 30px;
-            bottom: -10px;
-            width: 2px;
-            background: #e5e7eb;
-        }
-
-        .timeline-item:last-child::before {
-            display: none;
-        }
-
-        .timeline-icon {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 14px;
-            border-radius: 14px;
-            font-size: 12px;
+        /* Figura de KPI: display >= 24px, unico lugar interno onde a
+           serifada entra. O crm-v2.js marca a figura com .num-display e a
+           estiliza no proprio arquivo; esta regra e so a rede de
+           seguranca para o
+           template antigo (p.text-3xl). NAO usar .kpi-figura: no
+           crm-v2.js esse nome e o circulo do icone, nao o numero. */
+        .kpi-card p.text-3xl {
+            font-family: var(--fonte-titulo);
+            font-optical-sizing: auto;
+            font-variant-numeric: tabular-nums;
+            font-size: 28px;
             font-weight: 600;
-            letter-spacing: 0.3px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            transition: all 0.2s ease;
+            line-height: 1.1;
+            color: var(--ink-1);
         }
 
-        .badge:hover {
-            transform: scale(1.05);
-        }
+        .kpi-card .text-sm { font-size: 12px; }
 
-        .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .badge-warning { background: #fed7aa; color: #92400e; border: 1px solid #fbbf24; }
-        .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .badge-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
-        .badge-gray { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
-
+        /* --- Abas. ARMADILHA: o showTab faz
+               event.target.classList.add('active'). Se um .tab-button ganhar
+               filho (<span>, <i>), o event.target vira o filho e o estado
+               ativo vai para o elemento errado. Por isso todo .tab-button
+               desta pagina tem APENAS texto. ------------------------------ */
         .tab-button {
-            padding: 12px 24px;
-            border-bottom: 3px solid transparent;
+            padding: 7px 14px;
+            font-family: var(--fonte-texto);
+            font-size: 13px;
             font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #6b7280;
-        }
-
-        .tab-button:hover {
-            color: var(--primary);
-            background: rgba(48, 144, 134, 0.05);
-        }
-
-        .tab-button.active {
-            border-bottom-color: var(--primary);
-            color: var(--primary);
-            background: rgba(48, 144, 134, 0.08);
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border: none;
+            color: var(--ink-3);
+            background: var(--card);
+            border: 0;
+            border-bottom: 2px solid transparent;
             cursor: pointer;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .tab-button:hover { color: var(--ink-1); background: var(--sunken); }
+
+        .tab-button.active,
+        .tab-button.active:hover {
+            color: var(--ink-1);
+            background: var(--sunken);
+            border-bottom-color: var(--brand-600);
         }
 
-        .btn:active {
-            transform: translateY(0);
+        .tab-content { display: block; }
+
+        /* --- Kanban -----------------------------------------------------
+           As cinco colunas sao visualmente IDENTICAS. A identidade vem do
+           numeral 01-05; a rampa ordinal entra como fio de 3px e apenas
+           REFORCA a ordem. Sobrevive a acromatopsia. ------------------- */
+        .kanban-column {
+            padding: var(--pad-card);
+            min-height: 420px;
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            box-shadow: none;
         }
+
+        .kanban-column:hover { box-shadow: none; }
+
+        .kanban-topo {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--rule);
+        }
+
+        .kanban-ordinal {
+            flex: 0 0 auto;
+            min-width: 26px;
+            padding-bottom: 3px;
+            font-family: var(--fonte-numero);
+            font-variant-numeric: tabular-nums;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink-1);
+            text-align: center;
+            border-bottom: 3px solid var(--rule);
+        }
+
+        /* A rampa so pinta o fio — nunca texto, porque #3B9287 nao atinge
+           4,5:1 com tinta nem com branco em cima. */
+        .kanban-column[data-etapa="levantamento"] .kanban-ordinal { border-bottom-color: var(--funil-1); }
+        .kanban-column[data-etapa="simulacao"]    .kanban-ordinal { border-bottom-color: var(--funil-2); }
+        .kanban-column[data-etapa="proposta"]     .kanban-ordinal { border-bottom-color: var(--funil-3); }
+        .kanban-column[data-etapa="negociacao"]   .kanban-ordinal { border-bottom-color: var(--funil-4); }
+        .kanban-column[data-etapa="fechamento"]   .kanban-ordinal { border-bottom-color: var(--funil-5); }
+
+        .kanban-titulo {
+            flex: 1 1 auto;
+            min-width: 0;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--ink-2);
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Valor somado da raia. Nasce vazia e so ocupa espaco quando o JS
+           escreve o total: travessao permanente faria o vendedor acreditar
+           que a soma e zero. */
+        .kanban-soma {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--ink-2);
+        }
+
+        .kanban-soma:empty { display: none; }
+
+        /* A soma estava DENTRO do h3, que trunca com overflow:hidden — e
+           overflow do pai sempre vence o do filho, entao ela era cortada em
+           'clip', no meio do digito: a 1024px as cinco raias liam 'R$ 70.',
+           'R$ 1.2', 'R$ 95.'. Dinheiro cortado sem reticencia e pior do que
+           dinheiro ausente, porque parece um numero inteiro. Agora e irma do
+           h3 e ocupa a segunda linha inteira do cabecalho. */
+        .kanban-soma {
+            flex: 1 0 100%;
+            white-space: nowrap;
+        }
+
+        /* Cabecalho do card: sem este contrato o grupo da direita (chip de
+           status + estrela) nao encolhe e o titulo nao cede, entao os dois
+           saiam para fora do card e, nas colunas da direita, para fora da
+           pagina — 43px de estouro e rolagem horizontal a 1440px. */
+        /* flex-basis de 60% em vez de min-width:0 puro: com largura minima
+           zero o titulo encolhia ate uma letra por linha ("F/a/z/e/n/d/a" na
+           vertical) em vez de empurrar o chip para a linha de baixo. Agora o
+           titulo exige 60% e quem cede e o grupo de acoes. */
+        .kanban-card .kanban-card-titulo {
+            flex: 1 1 60%;
+            min-width: 0;
+        }
+        .kanban-card .kanban-card-titulo h4 {
+            overflow-wrap: break-word;
+        }
+        .kanban-card .kanban-card-acoes {
+            flex: 0 1 auto;
+            min-width: 0;
+        }
+
+        /* Valor e consumo: justify-between nao separa nada quando os dois lados
+           somam mais que a largura do card — eles simplesmente encostam e se
+           leem como um numero so ("R$ 1.250.000,0018500 kWh"). Gap garante a
+           folga e a quebra manda o consumo para baixo quando nao cabe. */
+        .kanban-card .kanban-card-valor {
+            flex-wrap: wrap;
+            gap: 4px 10px;
+        }
+        .kanban-card .kanban-card-valor > span { white-space: nowrap; }
+
+        /* Quando o chip de status mais a estrela nao cabem ao lado do nome, o
+           grupo inteiro desce para a propria linha. Antes ele nao encolhia nem
+           quebrava: empurrava chip e estrela para fora do card e, nas colunas da
+           direita, para fora da pagina (44px de estouro e rolagem a 1280px). */
+        .kanban-card > div:has(> .kanban-card-acoes) {
+            flex-wrap: wrap;
+        }
+
+        .kanban-count {
+            flex: 0 0 auto;
+            font-size: 11px;
+            padding: 1px 7px;
+            line-height: 16px;
+        }
+
+        .kanban-cards { min-height: 72px; }
+
+        .kanban-card {
+            position: relative;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            box-shadow: none;
+            cursor: grab;
+        }
+
+        .kanban-card:active { cursor: grabbing; }
+        .kanban-card:hover { border-color: var(--brand-500); box-shadow: none; transform: none; }
+
+        /* --- "Queimado de sol" ------------------------------------------
+           Antes: .kanban-card.inactive { opacity: .85 } — o card que o
+           vendedor mais precisa tocar era o mais apagado da coluna, e isso
+           custa negocios. Agora opacity volta a 1 e o card recebe um banho
+           quente de cima para baixo que aprofunda em tres degraus, com
+           regua ambar de 2px no topo. A metafora e literal: o tempo parado
+           desbota o card ao sol.
+
+           O gancho e o atributo data-dias-faixa que o crm-v2.js emite
+           (14|30|60); .inactive continua atendida como caminho legado.
+           Card com menos de 14 dias nao recebe atributo e fica limpo.
+
+           O degrau mais fundo para em 19% de alfa porque acima disso o
+           --ink-3 sobre o banho cai de 4,61:1 para menos de 4,5:1, e o
+           piso do sistema nao admite excecao nem para metadado.
+           -------------------------------------------------------------- */
+        .kanban-card[data-dias-faixa],
+        .kanban-card.inactive {
+            opacity: 1;
+            border-top: 2px solid var(--atencao);
+            background-image: linear-gradient(180deg,
+                rgba(154, 98, 9, 0.07) 0%,
+                rgba(154, 98, 9, 0) 70%);
+        }
+
+        .kanban-card[data-dias-faixa="14"] {
+            background-image: linear-gradient(180deg,
+                rgba(154, 98, 9, 0.07) 0%,
+                rgba(154, 98, 9, 0) 70%);
+        }
+
+        .kanban-card[data-dias-faixa="30"] {
+            background-image: linear-gradient(180deg,
+                rgba(154, 98, 9, 0.13) 0%,
+                rgba(154, 98, 9, 0) 70%);
+        }
+
+        .kanban-card[data-dias-faixa="60"] {
+            background-image: linear-gradient(180deg,
+                rgba(154, 98, 9, 0.19) 0%,
+                rgba(154, 98, 9, 0) 70%);
+        }
+
+        /* O chip de aviso ("13 dias sem contato") e o sistema .chip/.chip-*
+           sao emitidos e estilizados pelo crm-v2.js, que entra como
+           primeiro no de <head> justamente para ceder a este arquivo em
+           caso de empate. Nao redefinimos aqui para nao criar duas fontes
+           de verdade para o mesmo componente.
+
+           Drop zone que sobrevive ao innerHTML: o conteudo de .kanban-cards
+           vem do JS, entao markup decorativo colocado no HTML e apagado. */
+        .kanban-cards:empty::before {
+            content: 'Arraste um card para cá';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 72px;
+            padding: 8px;
+            font-size: 12px;
+            text-align: center;
+            color: var(--ink-3);
+            background: var(--sunken);
+            border: 2px dashed var(--rule);
+            border-radius: var(--raio);
+        }
+
+        /* Sortable exige que estas duas existam. Sem opacidade: o fantasma
+           continua legivel no lugar onde o card vai cair. */
+        /* Precisa de (0,2,0) para empatar com .kanban-card[data-dias-faixa]:
+           com so (0,1,0) o background-color trocava mas o background-image do
+           banho continuava, compondo ambar sobre --sunken e derrubando 16 pares
+           abaixo de 4,5:1 no card arrastado. */
+        .kanban-card.sortable-ghost {
+            opacity: 1;
+            background: var(--sunken);
+            background-image: none;
+            outline: 2px dashed var(--brand-500);
+            outline-offset: -2px;
+        }
+
+        /* Mesma amarra de especificidade do fantasma: o card que viaja sob o
+           cursor sai do banho para nao arrastar o ambar junto. */
+        .kanban-card.sortable-drag {
+            opacity: 1;
+            background: var(--card);
+            background-image: none;
+            border-color: var(--brand-600);
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* --- Animacao de entrada de modulo ------------------------------ */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { animation: slideIn 0.3s ease; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in { animation: none; }
+            .fita.fita-varrendo .fita__regua,
+            .fita.sincronizando .fita__regua { animation: none; }
+        }
+
+        /* =================================================================
+           8. FORMULARIOS, BOTOES, MODAIS (registro interno)
+           ================================================================= */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            font-family: var(--fonte-texto);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-1);
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            box-shadow: none;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: var(--sunken); transform: none; box-shadow: none; }
+        .btn:active { transform: none; }
 
         .btn-primary {
-            background: linear-gradient(135deg, #309086 0%, #267269 100%);
-            color: white;
+            color: var(--ink-sobre-marca);
+            background: var(--brand-600);
+            border-color: var(--brand-600);
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #267269 0%, #1e5a52 100%);
+        .btn-primary:hover { background: var(--brand-700); border-color: var(--brand-700); }
+
+        .btn-perigo {
+            color: var(--ink-sobre-marca);
+            background: var(--critico);
+            border-color: var(--critico);
         }
 
-        .modal-overlay {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+        .btn-perigo:hover { background: var(--grave); border-color: var(--grave); }
+
+        .campo {
+            padding: 6px 10px;
+            font-family: var(--fonte-texto);
+            font-size: 13px;
+            color: var(--ink-1);
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
         }
 
-        .progress-ring {
-            transform: rotate(-90deg);
+        .campo::placeholder { color: var(--ink-3); opacity: 1; }
+        .campo:focus { outline: none; border-color: var(--brand-600); }
+
+        .rotulo {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 4px;
         }
 
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
+        .ajuda { font-size: 11px; color: var(--ink-3); }
+
+        .modal-overlay { background: rgba(22, 33, 31, 0.55); }
+
+        .modal-painel {
+            background: var(--card);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            box-shadow: none;
         }
 
-        /* Drag and drop styles */
-        .sortable-ghost {
-            opacity: 0.4;
+        .modal-topo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: var(--cel-y) var(--pad-card);
+            color: var(--ink-sobre-marca);
+            background: var(--brand-700);
         }
 
-        .sortable-drag {
-            opacity: 0.8;
-            transform: rotate(5deg);
+        .modal-topo h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
         }
 
-        /* Painel Lateral 30% - Estilos compactos */
+        .modal-topo .botao-fechar {
+            width: 28px; height: 28px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            color: var(--ink-sobre-marca);
+            background: none;
+            border: 2px solid var(--ink-sobre-marca-2);
+            border-radius: var(--raio);
+            cursor: pointer;
+        }
+
+        .modal-topo .botao-fechar:hover { background: rgba(255, 255, 255, 0.16); }
+
+        .secao-recuada {
+            padding: var(--pad-card);
+            background: var(--sunken);
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+        }
+
+        .aviso-info {
+            padding: 10px var(--cel-x);
+            background: var(--card);
+            border: 2px solid var(--info);
+            border-left-width: 6px;
+            border-radius: var(--raio);
+        }
+
+        .aviso-info h5 { font-size: 13px; font-weight: 700; color: var(--ink-1); margin: 0 0 4px; }
+        .aviso-info p  { font-size: 12px; color: var(--ink-2); margin: 0; }
+
+        /* Painel lateral de lead: 30% fixo, registro interno */
         #leadModal {
-            font-size: 0.875rem;
+            font-size: 13px;
+            background: var(--card);
+            border-left: 2px solid var(--rule);
+            box-shadow: none;
         }
 
-        #leadModal h1 { font-size: 1.25rem; }
-        #leadModal h2 { font-size: 1.125rem; }
-        #leadModal h3 { font-size: 1rem; }
-        #leadModal h4 { font-size: 0.9375rem; }
-        #leadModal h5 { font-size: 0.875rem; }
-        #leadModal p { font-size: 0.8125rem; }
-        #leadModal small { font-size: 0.75rem; }
-
-        #leadModal button {
-            font-size: 0.8125rem;
-            padding: 0.375rem 0.75rem;
-        }
+        #leadModal h4 { font-size: 13px; }
+        #leadModal p  { font-size: 12px; }
+        #leadModal .badge { font-size: 10px; }
 
         #leadModal input,
         #leadModal select,
         #leadModal textarea {
-            font-size: 0.8125rem;
-            padding: 0.375rem 0.5rem;
+            font-size: 12px;
+            padding: 5px 8px;
+            border: 2px solid var(--rule);
+            border-radius: var(--raio);
+            color: var(--ink-1);
+            background: var(--card);
         }
 
-        #leadModal .tab-button {
-            padding: 0.5rem 1rem;
-            font-size: 0.8125rem;
+        #leadModal .tab-button { padding: 6px 12px; font-size: 12px; }
+
+        #modal-tabs-container {
+            display: flex;
+            background: var(--card);
+            border-bottom: 2px solid var(--rule);
         }
 
-        #leadModal label {
-            font-size: 0.75rem;
-            margin-bottom: 0.25rem;
+        /* Timeline */
+        .timeline-item { position: relative; padding-left: 36px; padding-bottom: 16px; }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 13px; top: 28px; bottom: -4px;
+            width: 2px;
+            background: var(--rule);
         }
 
-        #leadModal .badge {
-            font-size: 0.6875rem;
-            padding: 0.125rem 0.5rem;
+        .timeline-item:last-child::before { display: none; }
+
+        .timeline-icon {
+            position: absolute;
+            left: 0; top: 0;
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            border-radius: 50%;
+            box-shadow: none;
         }
 
-        /* Responsive */
+        .status-dot {
+            width: 8px; height: 8px;
+            display: inline-block;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        /* Cabecalho de coluna de tarefas: icone + palavra, nunca so cor. */
+        .coluna-tarefas-titulo {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--ink-2);
+            margin: 0 0 10px;
+            padding-bottom: 7px;
+            border-bottom: 2px solid var(--rule);
+        }
+
+        .coluna-tarefas-titulo i { font-size: 12px; }
+        .i-atrasadas { color: var(--critico); }
+        .i-hoje      { color: var(--atencao); }
+        .i-proximas  { color: var(--info); }
+
+        /* Cartela de numero isolado (modulo Instalados) */
+        .cartela-numero { padding: var(--pad-card); text-align: center; }
+        .cartela-numero .rotulo { margin: 6px 0 0; }
+
+        /* =================================================================
+           9. PONTE COM O TAILWIND
+           O crm-v2.js monta classes utilitarias por template string, e
+           varias delas reprovam o piso de 4,5:1 (text-gray-400 da 2,6:1) ou
+           trazem matiz de fora do sistema. Aqui elas sao remapeadas para os
+           tokens. O seletor [class].x tem especificidade (0,2,0) e vence o
+           utilitario (0,1,0) sem !important e sem depender da ordem em que
+           o CDN injeta o stylesheet. Alcanca tambem o toast, que o JS
+           pendura direto no <body>.
+           ================================================================= */
+        [class].text-gray-300,
+        [class].text-gray-400,
+        [class].text-gray-500 { color: var(--ink-3); }
+        [class].text-gray-600 { color: var(--ink-2); }
+        [class].text-gray-700,
+        [class].text-gray-800,
+        [class].text-gray-900 { color: var(--ink-1); }
+
+        [class].text-green-500,  [class].text-green-600,  [class].text-green-700  { color: var(--ok); }
+        [class].text-yellow-400, [class].text-yellow-500, [class].text-yellow-600 { color: var(--atencao); }
+        [class].text-orange-500, [class].text-orange-600, [class].text-amber-600  { color: var(--atencao); }
+        [class].text-red-500,    [class].text-red-600,    [class].text-red-700    { color: var(--critico); }
+        /* Violeta e azul sao a mesma cor para ~8% dos homens: roxo colapsa
+           em --info em vez de virar a sexta matiz de um arco-iris. */
+        [class].text-blue-500,   [class].text-blue-600,   [class].text-blue-700,
+        [class].text-purple-500, [class].text-purple-600, [class].text-indigo-600 { color: var(--info); }
+        [class].text-teal-600,   [class].text-teal-700 { color: var(--brand-600); }
+        [class].text-white { color: var(--ink-sobre-marca); }
+
+        [class].bg-green-500,  [class].bg-green-600  { background-color: var(--ok); }
+        [class].bg-yellow-500, [class].bg-yellow-400 { background-color: var(--atencao); }
+        [class].bg-orange-500 { background-color: var(--atencao); }
+        [class].bg-red-500,    [class].bg-red-600    { background-color: var(--critico); }
+        [class].bg-blue-500,   [class].bg-blue-600,
+        [class].bg-purple-500, [class].bg-indigo-500 { background-color: var(--info); }
+        [class].bg-gray-50,    [class].bg-gray-100   { background-color: var(--sunken); }
+        [class].bg-white { background-color: var(--card); }
+
+        [class].border-green-500  { border-color: var(--ok); }
+        [class].border-yellow-500 { border-color: var(--atencao); }
+        [class].border-red-500    { border-color: var(--critico); }
+        [class].border-blue-500   { border-color: var(--info); }
+
+        /* Opacidade em texto apaga tinta e e o caminho mais curto para
+           reprovar o piso. Neutralizada onde o JS a injeta. */
+        [class].opacity-70,
+        [class].opacity-80,
+        [class].opacity-90 { opacity: 1; }
+
+        /* Fios estruturais do Tailwind sao de 1px e desaparecem em monitor
+           TN descalibrado com sol na janela, que e o hardware real deste
+           publico. Estrutura usa 2px. */
+        [class].border,
+        [class].border-b,
+        [class].border-t { border-color: var(--rule); }
+
+        [class].rounded-lg, [class].rounded-xl, [class].rounded-2xl { border-radius: var(--raio); }
+
+        /* =================================================================
+           10. :has() E DROP ZONE
+           O widget de chat e para o cliente, nao para a tela de login. Com
+           :has() ele desaparece enquanto o portao de autenticacao esta
+           visivel, com zero JS. A especificidade (1,2,1) vence a folha que
+           o widget injeta em runtime.
+           ================================================================= */
+        body:has(#loginScreen:not(.hidden)) .chat-assist-widget { display: none; }
+
+        /* =================================================================
+           11. SCROLLBAR E RESPONSIVO
+           ================================================================= */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--sunken); }
+        ::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+
         @media (max-width: 768px) {
             .sidebar {
-                transform: translateX(-100%);
                 position: fixed;
                 z-index: 100;
+                transform: translateX(-100%);
                 transition: transform 0.3s;
             }
 
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
+            .sidebar.mobile-open { transform: translateX(0); }
+
+            /* A serifada tem piso de 24px. Abaixo disso ela sai de cena e o
+               titulo volta para a fonte de texto. */
+            #module-title { font-size: 20px; font-family: var(--fonte-texto); }
+
+            .topbar { padding: 10px 16px; padding-left: 64px; }
+            .fita { padding: 0 16px; overflow-x: auto; }
+            .conteudo { padding: 16px; }
+            #leadModal { width: 100% !important; }
+            .tabela-rolagem { max-height: none; }
         }
 
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: slideIn 0.3s ease;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Fallback local para .hidden. O Tailwind vem de CDN; se ela
+        /* Fallback local para .hidden. O Tailwind vem de CDN; se ele
            demorar ou falhar, sem isto o #crmApp aparece por tras da tela
            de login. Os dados seguem protegidos pelo RLS (sem sessao o
-           banco nao devolve nada), mas a interface nao deve vazar. */
+           banco nao devolve nada), mas a interface nao deve vazar.
+           NAO REMOVER, NAO ENFRAQUECER. */
         .hidden { display: none !important; }
     </style>
+
+    <script>
+        // O ornamento unico do sistema. --luz sai da hora solar local e e
+        // definida UMA vez, antes do primeiro paint, para o fio nunca
+        // piscar. Nao depende de dado nenhum, entao nunca quebra.
+        (function () {
+            var h = new Date().getHours();
+            var luz = Math.max(0, Math.round(100 * Math.sin(Math.PI * (h - 6) / 12)));
+            document.documentElement.style.setProperty('--luz', luz + '%');
+        })();
+    </script>
 </head>
-<body class="bg-gray-50">
+<body>
 
     <!-- =================================================================
-         TELA DE LOGIN
+         TELA DE LOGIN — registro EXTERNO (calmo, arejado, papel)
          O CRM le leads, propostas e dados de clientes. Essas tabelas estao
          protegidas por RLS e so respondem a um usuario autenticado, por
          isso o login e obrigatorio. Ver crm/migrations/SECURITY_lockdown_rls.sql
          ================================================================= -->
-    <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center p-4"
-         style="background: linear-gradient(135deg, #309086 0%, #1b5f58 100%);">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-            <div class="text-center mb-8">
-                <i class="fas fa-sun text-5xl mb-3" style="color:#309086"></i>
-                <h1 class="text-2xl font-bold text-gray-800">CRM Solar</h1>
-                <p class="text-sm text-gray-500 mt-1">Entre para acessar seus leads</p>
+    <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="w-full">
+            <div class="login-lockup">
+                <i class="fas fa-sun" aria-hidden="true"></i>
+                <h1>CRM Solar</h1>
+                <!-- Horizonte sob o lockup: um dos dois unicos lugares
+                     onde o ornamento aparece nesta pagina. -->
+                <div class="fio-horizonte" aria-hidden="true"></div>
+                <p>Entre para acessar seus leads</p>
             </div>
 
             <form onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                <div class="campo-fora">
+                    <label for="loginEmail">E-mail</label>
                     <input id="loginEmail" type="email" required autocomplete="username"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                           style="--tw-ring-color:#309086" placeholder="voce@empresa.com">
+                           placeholder="voce@empresa.com">
                 </div>
 
-                <div class="mb-4">
-                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <div class="campo-fora">
+                    <label for="loginPassword">Senha</label>
                     <input id="loginPassword" type="password" required autocomplete="current-password"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                           style="--tw-ring-color:#309086" placeholder="••••••••">
+                           placeholder="Sua senha">
                 </div>
 
-                <div id="loginError" class="hidden mb-4 p-3 rounded-lg bg-red-50 border border-red-200">
-                    <p id="loginErrorMessage" class="text-sm text-red-700"></p>
+                <div id="loginError" class="hidden" role="alert">
+                    <p id="loginErrorMessage"></p>
                 </div>
 
-                <button id="loginButton" type="submit"
-                        class="w-full text-white font-semibold py-2.5 rounded-lg transition hover:opacity-90"
-                        style="background:#309086">Entrar</button>
+                <button id="loginButton" type="submit">Entrar</button>
             </form>
 
-            <button type="button" onclick="handleForgotPassword(event)"
-                    class="w-full text-center text-sm text-gray-500 hover:text-gray-700 mt-4">
+            <button type="button" class="login-secundario" onclick="handleForgotPassword(event)">
                 Esqueci minha senha
             </button>
         </div>
@@ -383,197 +1421,242 @@
     <div id="crmApp" class="hidden">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-64 text-white z-50">
-        <div class="p-6">
-            <div class="flex items-center gap-3 mb-8">
-                <i class="fas fa-sun text-3xl"></i>
+    <aside id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-64 z-50">
+        <div class="p-4">
+            <div class="sidebar-lockup flex items-center gap-3 mb-6">
+                <i class="fas fa-sun text-2xl" aria-hidden="true"></i>
                 <div>
-                    <h1 class="text-xl font-bold">CRM Solar</h1>
-                    <p class="text-xs opacity-80">Funil Completo</p>
+                    <h1>CRM Solar</h1>
+                    <p>Funil Completo</p>
                 </div>
             </div>
 
-            <nav class="space-y-2">
-                <a href="#" onclick="showModule('dashboard')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition active">
-                    <i class="fas fa-chart-line w-5"></i>
+            <nav class="space-y-1">
+                <a href="#" onclick="showModule('dashboard')" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition active">
+                    <i class="fas fa-chart-line w-5" aria-hidden="true"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="showModule('kanban')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                    <i class="fas fa-columns w-5"></i>
+                <a href="#" onclick="showModule('kanban')" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition">
+                    <i class="fas fa-columns w-5" aria-hidden="true"></i>
                     <span>Kanban</span>
                 </a>
-                <a href="#" onclick="showModule('leads')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                    <i class="fas fa-users w-5"></i>
+                <a href="#" onclick="showModule('leads')" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition">
+                    <i class="fas fa-users w-5" aria-hidden="true"></i>
                     <span>Leads</span>
                 </a>
-                <a href="#" onclick="showModule('propostas')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                    <i class="fas fa-file-invoice w-5"></i>
+                <a href="#" onclick="showModule('propostas')" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition">
+                    <i class="fas fa-file-invoice w-5" aria-hidden="true"></i>
                     <span>Propostas</span>
                 </a>
-                <a href="#" onclick="showModule('instalados')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                    <i class="fas fa-check-circle w-5"></i>
+                <a href="#" onclick="showModule('instalados')" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition">
+                    <i class="fas fa-check-circle w-5" aria-hidden="true"></i>
                     <span>Instalados</span>
                 </a>
-                <a href="#" onclick="showModule('tarefas')" class="nav-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                    <i class="fas fa-tasks w-5"></i>
+                <a href="#" onclick="showModule('tarefas')" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition">
+                    <i class="fas fa-tasks w-5" aria-hidden="true"></i>
                     <span>Tarefas</span>
-                    <span id="tarefas-badge" class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full hidden"></span>
+                    <span id="tarefas-badge" class="badge badge-danger ml-auto hidden"></span>
                 </a>
 
-                <div class="mt-6 pt-6 border-t border-white/20">
-                    <a href="#" onclick="handleLogout()" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition text-white/80 hover:text-white">
-                        <i class="fas fa-sign-out-alt w-5"></i>
+                <div class="mt-5 pt-5" style="border-top: 2px solid rgba(255,255,255,0.18);">
+                    <a href="#" onclick="handleLogout()" class="nav-link flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition">
+                        <i class="fas fa-sign-out-alt w-5" aria-hidden="true"></i>
                         <span>Sair</span>
                     </a>
                 </div>
             </nav>
         </div>
 
-        <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10">
+        <div class="sidebar-rodape absolute bottom-0 left-0 right-0 p-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user"></i>
+                <div class="sidebar-avatar">
+                    <i class="fas fa-user" aria-hidden="true"></i>
                 </div>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm" id="user-name">Usuário</p>
-                    <p class="text-xs opacity-70" id="user-role">Vendedor</p>
+                <div class="flex-1 min-w-0">
+                    <p id="user-name">Usuário</p>
+                    <p id="user-role">Vendedor</p>
                 </div>
-                <button onclick="logout()" class="hover:bg-white/10 p-2 rounded">
-                    <i class="fas fa-sign-out-alt"></i>
+                <button onclick="logout()" class="botao-fechar" title="Sair"
+                        style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-sobre-marca);background:none;border:2px solid var(--ink-sobre-marca-2);border-radius:var(--raio);cursor:pointer;">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
     </aside>
 
     <!-- Mobile Menu Toggle -->
-    <button onclick="toggleSidebar()" class="md:hidden fixed top-4 left-4 z-50 text-white p-3 rounded-lg shadow-lg" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-        <i class="fas fa-bars"></i>
+    <button onclick="toggleSidebar()" class="md:hidden fixed top-3 left-3 z-50 botao-icone" title="Menu">
+        <i class="fas fa-bars" aria-hidden="true"></i>
     </button>
 
     <!-- Main Content -->
-    <main class="md:ml-64 p-4 md:p-8">
+    <main class="md:ml-64">
 
-        <!-- Header -->
-        <header class="mb-8 flex justify-between items-center">
-            <div>
-                <h2 id="module-title" class="text-3xl font-bold text-gray-800">Dashboard Executivo</h2>
-                <p id="module-subtitle" class="text-gray-600 mt-1">Visão geral do funil de vendas</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <!-- Ícone de Notificações -->
-                <div class="relative">
-                    <button onclick="toggleNotificacoes()" class="relative p-3 rounded-lg hover:bg-gray-100 transition" title="Notificações">
-                        <i class="fas fa-bell text-2xl text-gray-700"></i>
-                        <span id="notificacoes-badge" class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
-                    </button>
+        <!-- Topbar + fita de operacao viajam juntas como uma unica
+             regiao sticky. -->
+        <div class="barra-superior">
+            <header class="topbar">
+                <div class="min-w-0">
+                    <h2 id="module-title">Dashboard Executivo</h2>
+                    <p id="module-subtitle">Visão geral do funil de vendas</p>
+                </div>
+                <div class="flex items-center gap-2 flex-none">
+                    <!-- Notificações -->
+                    <div class="relative">
+                        <button onclick="toggleNotificacoes()" class="botao-icone" title="Notificações">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            <span id="notificacoes-badge" class="hidden">0</span>
+                        </button>
 
-                    <!-- Dropdown de Notificações -->
-                    <div id="notificacoes-dropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
-                        <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                            <h3 class="font-bold text-gray-800">Notificações</h3>
-                            <button onclick="marcarTodasLidas()" class="text-sm text-teal-600 hover:text-teal-700">Marcar todas como lidas</button>
-                        </div>
-                        <div id="notificacoes-container" class="divide-y divide-gray-100">
-                            <!-- Notificações serão inseridas aqui -->
+                        <div id="notificacoes-dropdown" class="hidden absolute right-0 mt-2 z-50">
+                            <div class="dropdown-topo">
+                                <h3>Notificações</h3>
+                                <button onclick="marcarTodasLidas()" class="btn" style="padding:3px 8px;font-size:11px;">Marcar todas como lidas</button>
+                            </div>
+                            <div id="notificacoes-container">
+                                <!-- Notificações serão inseridas aqui -->
+                            </div>
                         </div>
                     </div>
+
+                    <button onclick="refreshData()" class="btn btn-primary">
+                        <i class="fas fa-sync-alt" id="refresh-icon" aria-hidden="true"></i>
+                        <span>Atualizar</span>
+                    </button>
                 </div>
+            </header>
 
-                <button onclick="refreshData()" class="text-white px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='linear-gradient(135deg, #309086 0%, #267269 100%)'">
-                    <i class="fas fa-sync-alt" id="refresh-icon"></i>
-                    <span>Atualizar</span>
-                </button>
+            <!-- Horizonte sob a topbar: o segundo e ultimo lugar onde o
+                 ornamento aparece nesta pagina. -->
+            <div class="fio-horizonte" aria-hidden="true"></div>
+
+            <!-- FITA DE OPERACAO. Substitui o toast "Dados carregados com
+                 sucesso!" que disparava a cada refresh de 30s. Os ids abaixo
+                 sao preenchidos pelo crm-v2.js; .fita.sincronizando dispara a
+                 varredura de 2px quando um refresh chega. -->
+            <div id="fita" class="fita">
+                <div class="fita__item">
+                    <span class="fita__rotulo">Pipeline</span>
+                    <span class="fita__valor" id="fita-pipeline">—</span>
+                </div>
+                <div class="fita__item">
+                    <span class="fita__rotulo">Ativos</span>
+                    <span class="fita__valor" id="fita-ativos">—</span>
+                </div>
+                <div class="fita__item">
+                    <span class="fita__rotulo">Parados</span>
+                    <span class="fita__valor" id="fita-parados">—</span>
+                </div>
+                <div class="fita__item">
+                    <span class="fita__rotulo">Atrasadas</span>
+                    <span class="fita__valor" id="fita-atrasadas">—</span>
+                </div>
+                <div class="fita__item">
+                    <span class="fita__rotulo">Sync</span>
+                    <span class="fita__valor" id="fita-sync">00:00</span>
+                </div>
+                <span class="fita__regua" id="fita-regua" aria-hidden="true"></span>
             </div>
-        </header>
+        </div>
 
-        <!-- Dashboard Module -->
+        <div class="conteudo">
+
+        <!-- =============================================================
+             MODULO 1 — DASHBOARD
+             ATENCAO: crm-v2.js faz querySelector('#module-dashboard .grid')
+             e pega o PRIMEIRO descendente com classe 'grid'. O contêiner de
+             KPIs abaixo precisa continuar sendo o primeiro.
+             ============================================================= -->
         <div id="module-dashboard" class="module">
-            <!-- KPIs -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- KPIs — PRIMEIRO .grid do modulo. Nao inserir nada com
+                 classe 'grid' acima desta div. -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
                 <!-- KPI Cards serão inseridos aqui via JS -->
             </div>
 
             <!-- Gráficos -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div class="module-card p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Funil de Vendas</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+                <div class="module-card p-4">
+                    <h3 class="rotulo">Funil de Vendas</h3>
                     <canvas id="funnelChart"></canvas>
                 </div>
-                <div class="module-card p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Conversão por Mês</h3>
+                <div class="module-card p-4">
+                    <h3 class="rotulo">Conversão por Mês</h3>
                     <canvas id="conversionChart"></canvas>
                 </div>
             </div>
 
             <!-- Leads Recentes -->
-            <div class="module-card p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Leads Recentes (Chatbot)</h3>
-                <div id="recent-leads" class="space-y-3">
+            <div class="module-card p-4">
+                <h3 class="rotulo">Leads Recentes (Chatbot)</h3>
+                <div id="recent-leads" class="space-y-2">
                     <!-- Leads inseridos via JS -->
                 </div>
             </div>
         </div>
 
-        <!-- Kanban Module -->
+        <!-- =============================================================
+             MODULO 2 — KANBAN
+             Ancestralidade exigida pelo Sortable:
+             .kanban-column[data-etapa] > .kanban-cards[data-etapa] >
+             .kanban-card[data-id]. Nenhum wrapper intermediario.
+             O cabecalho e IRMAO de .kanban-cards, nunca pai.
+             ============================================================= -->
         <div id="module-kanban" class="module hidden">
-            <div class="mb-4 flex gap-2 overflow-x-auto pb-2">
+            <!-- Os .tab-button tem APENAS texto: o filtro usa
+                 event.target.classList.add('active'). -->
+            <div class="mb-3 flex gap-1 overflow-x-auto pb-1">
                 <button class="tab-button active" onclick="filterKanban('todos')">Todos</button>
                 <button class="tab-button" onclick="filterKanban('residencial')">Residencial</button>
                 <button class="tab-button" onclick="filterKanban('empresarial')">Empresarial</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" id="kanban-board">
-                <!-- Colunas do Kanban com cores profissionais -->
-                <div class="kanban-column" data-etapa="levantamento" style="background: linear-gradient(135deg, #e0f2f1 0%, #f1f8f7 100%); border-top: 3px solid #26a69a;">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-clipboard-list text-teal-600"></i>
-                            <span>Levantamento</span>
-                        </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3" id="kanban-board">
+                <div class="kanban-column" data-etapa="levantamento">
+                    <div class="kanban-topo">
+                        <span class="kanban-ordinal">01</span>
+                        <h3 class="kanban-titulo">Levantamento</h3>
+                        <span class="kanban-soma" data-etapa="levantamento"></span>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="levantamento"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="simulacao" style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border-top: 3px solid #66bb6a;">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-calculator text-green-600"></i>
-                            <span>Simulação</span>
-                        </h3>
+                <div class="kanban-column" data-etapa="simulacao">
+                    <div class="kanban-topo">
+                        <span class="kanban-ordinal">02</span>
+                        <h3 class="kanban-titulo">Simulação</h3>
+                        <span class="kanban-soma" data-etapa="simulacao"></span>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="simulacao"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="proposta" style="background: linear-gradient(135deg, #e3f2fd 0%, #f1f7fc 100%); border-top: 3px solid #42a5f5;">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-file-invoice-dollar text-blue-600"></i>
-                            <span>Proposta</span>
-                        </h3>
+                <div class="kanban-column" data-etapa="proposta">
+                    <div class="kanban-topo">
+                        <span class="kanban-ordinal">03</span>
+                        <h3 class="kanban-titulo">Proposta</h3>
+                        <span class="kanban-soma" data-etapa="proposta"></span>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="proposta"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="negociacao" style="background: linear-gradient(135deg, #fff3e0 0%, #fef8f1 100%); border-top: 3px solid #ffa726;">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-handshake text-orange-600"></i>
-                            <span>Negociação</span>
-                        </h3>
+                <div class="kanban-column" data-etapa="negociacao">
+                    <div class="kanban-topo">
+                        <span class="kanban-ordinal">04</span>
+                        <h3 class="kanban-titulo">Negociação</h3>
+                        <span class="kanban-soma" data-etapa="negociacao"></span>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="negociacao"></div>
                 </div>
 
-                <div class="kanban-column" data-etapa="fechamento" style="background: linear-gradient(135deg, #e8eaf6 0%, #f3f4f8 100%); border-top: 3px solid #5c6bc0;">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-check-circle text-indigo-600"></i>
-                            <span>Fechamento</span>
-                        </h3>
+                <div class="kanban-column" data-etapa="fechamento">
+                    <div class="kanban-topo">
+                        <span class="kanban-ordinal">05</span>
+                        <h3 class="kanban-titulo">Fechamento</h3>
+                        <span class="kanban-soma" data-etapa="fechamento"></span>
                         <span class="badge badge-gray kanban-count">0</span>
                     </div>
                     <div class="kanban-cards" data-etapa="fechamento"></div>
@@ -581,87 +1664,91 @@
             </div>
         </div>
 
-        <!-- Leads Module -->
+        <!-- =============================================================
+             MODULO 3 — LEADS (tabela densa, 32px por linha)
+             ============================================================= -->
         <div id="module-leads" class="module hidden">
-            <!-- Filtros e Busca -->
-            <div class="module-card p-4 mb-4 flex flex-wrap gap-4">
-                <input type="text" id="lead-search" placeholder="Buscar por nome, email..." class="px-4 py-2 border rounded-lg flex-1 min-w-[200px]">
-                <select id="lead-status-filter" class="px-4 py-2 border rounded-lg">
+            <div class="module-card p-3 mb-3 flex flex-wrap gap-2 items-center">
+                <input type="text" id="lead-search" placeholder="Buscar por nome, email..." class="campo flex-1 min-w-[200px]">
+                <select id="lead-status-filter" class="campo">
                     <option value="">Todos Status</option>
                     <option value="novo">Novo</option>
                     <option value="qualificado">Qualificado</option>
                     <option value="em_nutricao">Em Nutrição</option>
                     <option value="nao_qualificado">Não Qualificado</option>
                 </select>
-                <select id="lead-type-filter" class="px-4 py-2 border rounded-lg">
+                <select id="lead-type-filter" class="campo">
                     <option value="">Todos Tipos</option>
                     <option value="residencial">Residencial</option>
                     <option value="empresarial">Empresarial</option>
                 </select>
-                <button onclick="exportLeads()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                    <i class="fas fa-download mr-2"></i>Exportar
+                <button onclick="exportLeads()" class="btn">
+                    <i class="fas fa-download" aria-hidden="true"></i>Exportar
                 </button>
-                <button onclick="showNewLeadModal()" class="text-white px-4 py-2 rounded-lg" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
-                    <i class="fas fa-plus mr-2"></i>Novo Lead
+                <button onclick="showNewLeadModal()" class="btn btn-primary">
+                    <i class="fas fa-plus" aria-hidden="true"></i>Novo Lead
                 </button>
             </div>
 
-            <!-- Tabela de Leads -->
-            <div class="module-card overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b">
+            <div class="module-card tabela-rolagem">
+                <table class="tabela" id="tabela-leads">
+                    <thead>
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            <th>Lead</th>
+                            <th>Tipo</th>
+                            <th class="num" data-ordenavel="consumo">Consumo</th>
+                            <th data-ordenavel="score">Score</th>
+                            <th>Status</th>
+                            <th>Vendedor</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="leads-table-body" class="bg-white divide-y divide-gray-200">
+                    <tbody id="leads-table-body">
                         <!-- Leads inseridos via JS -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Propostas Module -->
+        <!-- =============================================================
+             MODULO 4 — PROPOSTAS
+             ============================================================= -->
         <div id="module-propostas" class="module hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="propostas-grid">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="propostas-grid">
                 <!-- Propostas inseridas via JS -->
             </div>
         </div>
 
-        <!-- Instalados Module -->
+        <!-- =============================================================
+             MODULO 5 — INSTALADOS
+             ============================================================= -->
         <div id="module-instalados" class="module hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div class="module-card p-6 text-center">
-                    <div class="text-4xl font-bold text-green-600" id="total-instalados">0</div>
-                    <div class="text-gray-600 mt-2">Sistemas Instalados</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                <div class="module-card cartela-numero">
+                    <div class="figura-display" id="total-instalados">0</div>
+                    <p class="rotulo">Sistemas Instalados</p>
                 </div>
-                <div class="module-card p-6 text-center">
-                    <div class="text-4xl font-bold text-blue-600" id="potencia-total">0 kWp</div>
-                    <div class="text-gray-600 mt-2">Potência Total</div>
+                <div class="module-card cartela-numero">
+                    <div class="figura-display" id="potencia-total">0 kWp</div>
+                    <p class="rotulo">Potência Total</p>
                 </div>
-                <div class="module-card p-6 text-center">
-                    <div class="text-4xl font-bold text-purple-600" id="nps-medio">0</div>
-                    <div class="text-gray-600 mt-2">NPS Médio</div>
+                <div class="module-card cartela-numero">
+                    <div class="figura-display" id="nps-medio">0</div>
+                    <p class="rotulo">NPS Médio</p>
                 </div>
             </div>
 
-            <div class="module-card overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b">
+            <div class="module-card tabela-rolagem">
+                <table class="tabela" id="tabela-instalados">
+                    <thead>
                         <tr>
-                            <th class="px-6 py-3 text-left">Cliente</th>
-                            <th class="px-6 py-3 text-left">Contrato</th>
-                            <th class="px-6 py-3 text-left">Instalação</th>
-                            <th class="px-6 py-3 text-left">Potência</th>
-                            <th class="px-6 py-3 text-left">Valor</th>
-                            <th class="px-6 py-3 text-left">NPS</th>
-                            <th class="px-6 py-3 text-left">Ações</th>
+                            <th>Cliente</th>
+                            <th>Contrato</th>
+                            <th>Instalação</th>
+                            <th class="num">Potência</th>
+                            <th class="num" data-ordenavel="valor">Valor</th>
+                            <th class="num">NPS</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="instalados-table-body">
@@ -671,91 +1758,100 @@
             </div>
         </div>
 
-        <!-- Tarefas Module -->
+        <!-- =============================================================
+             MODULO 6 — TAREFAS
+             Cabecalho de cada raia com icone + palavra: status nunca so
+             por cor.
+             ============================================================= -->
         <div id="module-tarefas" class="module hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Tarefas</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="rotulo" style="margin:0;">Fila de execução</h3>
                 <button onclick="novaTarefa()" class="btn btn-primary">
-                    <i class="fas fa-plus mr-2"></i>Nova Tarefa
+                    <i class="fas fa-plus" aria-hidden="true"></i>Nova Tarefa
                 </button>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="module-card p-6">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="status-dot bg-red-500"></span>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div class="module-card p-4">
+                    <h3 class="coluna-tarefas-titulo">
+                        <i class="fas fa-triangle-exclamation i-atrasadas" aria-hidden="true"></i>
                         Atrasadas
                     </h3>
-                    <div id="tarefas-atrasadas" class="space-y-3"></div>
+                    <div id="tarefas-atrasadas" class="space-y-2"></div>
                 </div>
-                <div class="module-card p-6">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="status-dot bg-yellow-500"></span>
+                <div class="module-card p-4">
+                    <h3 class="coluna-tarefas-titulo">
+                        <i class="fas fa-clock i-hoje" aria-hidden="true"></i>
                         Hoje
                     </h3>
-                    <div id="tarefas-hoje" class="space-y-3"></div>
+                    <div id="tarefas-hoje" class="space-y-2"></div>
                 </div>
-                <div class="module-card p-6">
-                    <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="status-dot bg-blue-500"></span>
+                <div class="module-card p-4">
+                    <h3 class="coluna-tarefas-titulo">
+                        <i class="fas fa-calendar-days i-proximas" aria-hidden="true"></i>
                         Próximas
                     </h3>
-                    <div id="tarefas-proximas" class="space-y-3"></div>
+                    <div id="tarefas-proximas" class="space-y-2"></div>
                 </div>
             </div>
         </div>
 
+        </div> <!-- Fim de .conteudo -->
     </main>
 
     <!-- Overlay escuro -->
-    <div id="leadModalOverlay" class="fixed inset-0 z-40 hidden bg-black bg-opacity-30 backdrop-blur-sm transition-opacity duration-300 opacity-0" onclick="closeLeadModal()"></div>
+    <div id="leadModalOverlay" class="fixed inset-0 z-40 hidden modal-overlay transition-opacity duration-300 opacity-0" onclick="closeLeadModal()"></div>
 
     <!-- Painel Lateral: Detalhes do Lead (30% fixo) -->
-    <div id="leadModal" class="fixed inset-y-0 right-0 z-50 hidden bg-white shadow-2xl border-l-4 border-teal-600 transition-all duration-300 ease-out transform translate-x-full" style="width: 30%;">
+    <div id="leadModal" class="fixed inset-y-0 right-0 z-50 hidden transition-all duration-300 ease-out transform translate-x-full" style="width: 30%;">
         <div class="h-full flex flex-col overflow-hidden">
-            <div class="text-white p-3 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
+            <div class="modal-topo">
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-bold truncate" id="modal-lead-name">Nome do Lead</h3>
-                    <p class="opacity-90 text-xs truncate" id="modal-lead-email">email@example.com</p>
+                    <h3 class="truncate" id="modal-lead-name">Nome do Lead</h3>
+                    <p class="truncate" id="modal-lead-email" style="font-size:12px;color:var(--ink-sobre-marca-2);margin:2px 0 0;">email@example.com</p>
                 </div>
-                <div class="flex gap-1 ml-2">
-                    <button onclick="toggleEditLead()" id="btn-edit-lead" class="text-white hover:bg-white/20 px-2 py-1 rounded text-xs transition">
-                        <i class="fas fa-edit mr-1"></i>Editar
+                <div class="flex gap-2 ml-2 flex-none">
+                    <button onclick="toggleEditLead()" id="btn-edit-lead" class="botao-fechar" style="width:auto;padding:0 8px;gap:5px;">
+                        <i class="fas fa-edit" aria-hidden="true"></i>Editar
                     </button>
-                    <button onclick="closeLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                        <i class="fas fa-times text-2xl"></i>
+                    <button onclick="closeLeadModal()" class="botao-fechar" title="Fechar">
+                        <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
 
-            <div id="modal-tabs-container" class="flex border-b">
+            <!-- ARMADILHA DAS ABAS: showTab faz
+                 event.target.classList.add('active'). Estes botoes nao podem
+                 ganhar filhos (<span>, <i>) ou o estado ativo vai para o
+                 elemento errado. -->
+            <div id="modal-tabs-container">
                 <button class="tab-button active" onclick="showTab('info')">Informações</button>
                 <button class="tab-button" onclick="showTab('timeline')">Timeline</button>
                 <button id="tab-btn-dynamic" class="tab-button" onclick="showTab('qualificacao')">Qualificação</button>
             </div>
 
-            <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+            <div class="p-4 overflow-y-auto flex-1">
                 <!-- Tab: Informações -->
                 <div id="tab-info" class="tab-content">
-                    <div class="grid grid-cols-2 gap-4" id="lead-info-grid">
+                    <div class="grid grid-cols-2 gap-3" id="lead-info-grid">
                         <!-- Preenchido via JS -->
                     </div>
                 </div>
 
                 <!-- Tab: Timeline -->
                 <div id="tab-timeline" class="tab-content hidden">
-                    <div class="mb-4">
-                        <button id="btn-show-interaction-form" onclick="showAddInteractionForm()" class="text-white px-4 py-2 rounded-lg" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
-                            <i class="fas fa-plus mr-2"></i>Nova Interação
+                    <div class="mb-3">
+                        <button id="btn-show-interaction-form" onclick="showAddInteractionForm()" class="btn btn-primary">
+                            <i class="fas fa-plus" aria-hidden="true"></i>Nova Interação
                         </button>
                     </div>
 
                     <!-- Form Nova Interação -->
-                    <div id="interaction-form" class="hidden mb-6 p-4 bg-gray-50 rounded-lg border">
-                        <h4 class="font-bold mb-3">Adicionar Interação</h4>
+                    <div id="interaction-form" class="hidden mb-4 secao-recuada">
+                        <h4 class="rotulo">Adicionar Interação</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                             <div>
-                                <label class="block text-sm font-medium mb-1">Tipo *</label>
-                                <select id="new-interaction-type" class="w-full border rounded px-3 py-2">
+                                <label class="rotulo" for="new-interaction-type">Tipo *</label>
+                                <select id="new-interaction-type" class="campo w-full">
                                     <option value="chamada">Ligação</option>
                                     <option value="email">Email</option>
                                     <option value="whatsapp">WhatsApp</option>
@@ -764,34 +1860,34 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-1">Título *</label>
-                                <input type="text" id="new-interaction-title" class="w-full border rounded px-3 py-2" placeholder="Ex: Primeira ligação">
+                                <label class="rotulo" for="new-interaction-title">Título *</label>
+                                <input type="text" id="new-interaction-title" class="campo w-full" placeholder="Ex: Primeira ligação">
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="block text-sm font-medium mb-1">Descrição</label>
-                            <textarea id="new-interaction-desc" rows="3" class="w-full border rounded px-3 py-2" placeholder="Detalhes da interação..."></textarea>
+                            <label class="rotulo" for="new-interaction-desc">Descrição</label>
+                            <textarea id="new-interaction-desc" rows="3" class="campo w-full" placeholder="Detalhes da interação..."></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" id="new-interaction-sem-resposta" class="rounded">
-                                <span class="font-medium text-orange-600">
-                                    <i class="fas fa-phone-slash"></i> Tentativa sem resposta
+                            <label class="flex items-center gap-2" style="font-size:12px;color:var(--ink-1);">
+                                <input type="checkbox" id="new-interaction-sem-resposta">
+                                <span style="font-weight:600;">
+                                    <i class="fas fa-phone-slash" style="color:var(--atencao);" aria-hidden="true"></i> Tentativa sem resposta
                                 </span>
-                                <span class="text-gray-500 text-xs">(Incrementa contador para auto-perdido)</span>
+                                <span class="ajuda">(Incrementa contador para auto-perdido)</span>
                             </label>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="salvarNovaInteracao()" class="text-white px-4 py-2 rounded" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
-                                <i class="fas fa-save mr-2"></i>Salvar
+                            <button onclick="salvarNovaInteracao()" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i>Salvar
                             </button>
-                            <button onclick="hideAddInteractionForm()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                            <button onclick="hideAddInteractionForm()" class="btn">
                                 Cancelar
                             </button>
                         </div>
                     </div>
 
-                    <div id="timeline-container" class="space-y-4">
+                    <div id="timeline-container" class="space-y-3">
                         <!-- Timeline inserida via JS -->
                     </div>
                 </div>
@@ -808,42 +1904,42 @@
 
     <!-- Modal: Novo Lead -->
     <div id="newLeadModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-            <div class="text-white p-6 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-                <h3 class="text-2xl font-bold">➕ Novo Lead</h3>
-                <button onclick="closeNewLeadModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                    <i class="fas fa-times text-2xl"></i>
+        <div class="modal-painel w-full max-w-2xl">
+            <div class="modal-topo">
+                <h3><i class="fas fa-plus mr-2" aria-hidden="true"></i>Novo Lead</h3>
+                <button onclick="closeNewLeadModal()" class="botao-fechar" title="Fechar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <form id="newLeadForm" class="p-6 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form id="newLeadForm" class="p-4 space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-                        <input type="text" id="new-lead-nome" required class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="new-lead-nome">Nome *</label>
+                        <input type="text" id="new-lead-nome" required class="campo w-full">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" id="new-lead-email" required class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="new-lead-email">Email *</label>
+                        <input type="email" id="new-lead-email" required class="campo w-full">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-                        <input type="tel" id="new-lead-phone" class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="new-lead-phone">Telefone</label>
+                        <input type="tel" id="new-lead-phone" class="campo w-full">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
-                        <select id="new-lead-tipo" required class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="new-lead-tipo">Tipo *</label>
+                        <select id="new-lead-tipo" required class="campo w-full">
                             <option value="residencial">Residencial</option>
                             <option value="empresarial">Empresarial</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Consumo Mensal (kWh)</label>
-                        <input type="number" id="new-lead-consumo" class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="new-lead-consumo">Consumo Mensal (kWh)</label>
+                        <input type="number" id="new-lead-consumo" class="campo w-full">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select id="new-lead-status" class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="new-lead-status">Status</label>
+                        <select id="new-lead-status" class="campo w-full">
                             <option value="novo">Novo</option>
                             <option value="qualificado">Qualificado</option>
                             <option value="em_nutricao">Em Nutrição</option>
@@ -851,12 +1947,12 @@
                     </div>
                 </div>
 
-                <div class="flex gap-3 justify-end pt-4 border-t">
-                    <button type="button" onclick="closeNewLeadModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                <div class="flex gap-2 justify-end pt-3" style="border-top:2px solid var(--rule);">
+                    <button type="button" onclick="closeNewLeadModal()" class="btn">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-6 py-2 text-white rounded-lg" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
-                        <i class="fas fa-save mr-2"></i>Salvar Lead
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save" aria-hidden="true"></i>Salvar Lead
                     </button>
                 </div>
             </form>
@@ -865,31 +1961,31 @@
 
     <!-- Modal: Editar Tarefa -->
     <div id="editTaskModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg">
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 flex justify-between items-center">
-                <h3 class="text-2xl font-bold">✏️ Editar Tarefa</h3>
-                <button onclick="closeEditTaskModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                    <i class="fas fa-times text-2xl"></i>
+        <div class="modal-painel w-full max-w-lg">
+            <div class="modal-topo">
+                <h3><i class="fas fa-edit mr-2" aria-hidden="true"></i>Editar Tarefa</h3>
+                <button onclick="closeEditTaskModal()" class="botao-fechar" title="Fechar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <div class="p-6 space-y-4">
+            <div class="p-4 space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
-                    <input type="text" id="edit-task-title" class="w-full border rounded-lg px-3 py-2">
+                    <label class="rotulo" for="edit-task-title">Título *</label>
+                    <input type="text" id="edit-task-title" class="campo w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                    <textarea id="edit-task-desc" rows="3" class="w-full border rounded-lg px-3 py-2"></textarea>
+                    <label class="rotulo" for="edit-task-desc">Descrição</label>
+                    <textarea id="edit-task-desc" rows="3" class="campo w-full"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data Vencimento *</label>
-                        <input type="date" id="edit-task-date" class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="edit-task-date">Data Vencimento *</label>
+                        <input type="date" id="edit-task-date" class="campo w-full">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
-                        <select id="edit-task-priority" class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="edit-task-priority">Prioridade</label>
+                        <select id="edit-task-priority" class="campo w-full">
                             <option value="baixa">Baixa</option>
                             <option value="media">Média</option>
                             <option value="alta">Alta</option>
@@ -897,12 +1993,12 @@
                     </div>
                 </div>
 
-                <div class="flex gap-3 justify-end pt-4 border-t">
-                    <button onclick="closeEditTaskModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                <div class="flex gap-2 justify-end pt-3" style="border-top:2px solid var(--rule);">
+                    <button onclick="closeEditTaskModal()" class="btn">
                         Cancelar
                     </button>
-                    <button onclick="salvarEdicaoTarefa()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                        <i class="fas fa-save mr-2"></i>Salvar
+                    <button onclick="salvarEdicaoTarefa()" class="btn btn-primary">
+                        <i class="fas fa-save" aria-hidden="true"></i>Salvar
                     </button>
                 </div>
             </div>
@@ -911,72 +2007,73 @@
 
     <!-- Modal: Nova Tarefa -->
     <div id="novaTarefaModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-            <div class="text-white p-6 flex justify-between items-center" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-                <h3 class="text-2xl font-bold">➕ Nova Tarefa</h3>
-                <button onclick="closeNovaTarefaModal()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                    <i class="fas fa-times text-2xl"></i>
+        <div class="modal-painel w-full max-w-2xl">
+            <div class="modal-topo">
+                <h3><i class="fas fa-plus mr-2" aria-hidden="true"></i>Nova Tarefa</h3>
+                <button onclick="closeNovaTarefaModal()" class="botao-fechar" title="Fechar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <form id="form-nova-tarefa" class="p-6 space-y-4">
+            <form id="form-nova-tarefa" class="p-4 space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título *</label>
-                    <input type="text" id="nova-task-title" name="titulo" class="w-full border rounded-lg px-3 py-2" placeholder="Ex: Agendar visita técnica" required>
+                    <label class="rotulo" for="nova-task-title">Título *</label>
+                    <input type="text" id="nova-task-title" name="titulo" class="campo w-full" placeholder="Ex: Agendar visita técnica" required>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cliente/Lead (opcional)</label>
-                    <select id="nova-task-lead" name="lead_id" class="w-full border rounded-lg px-3 py-2">
+                    <label class="rotulo" for="nova-task-lead">Cliente/Lead (opcional)</label>
+                    <select id="nova-task-lead" name="lead_id" class="campo w-full">
                         <option value="">-- Sem cliente vinculado --</option>
                     </select>
-                    <small class="text-gray-500">Vincule a tarefa a um cliente específico</small>
+                    <small class="ajuda">Vincule a tarefa a um cliente específico</small>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Descrição/Observações</label>
-                    <textarea id="nova-task-desc" name="descricao" rows="3" class="w-full border rounded-lg px-3 py-2" placeholder="Detalhes sobre a tarefa..."></textarea>
+                    <label class="rotulo" for="nova-task-desc">Descrição/Observações</label>
+                    <textarea id="nova-task-desc" name="descricao" rows="3" class="campo w-full" placeholder="Detalhes sobre a tarefa..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data de Vencimento *</label>
-                        <input type="date" id="nova-task-date" name="data_vencimento" class="w-full border rounded-lg px-3 py-2" required>
+                        <label class="rotulo" for="nova-task-date">Data de Vencimento *</label>
+                        <input type="date" id="nova-task-date" name="data_vencimento" class="campo w-full" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Horário</label>
-                        <input type="time" id="nova-task-time" name="horario" class="w-full border rounded-lg px-3 py-2">
+                        <label class="rotulo" for="nova-task-time">Horário</label>
+                        <input type="time" id="nova-task-time" name="horario" class="campo w-full">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade *</label>
-                        <select id="nova-task-priority" name="prioridade" class="w-full border rounded-lg px-3 py-2">
-                            <option value="baixa">🟢 Baixa</option>
-                            <option value="media" selected>🟡 Média</option>
-                            <option value="alta">🔴 Alta</option>
+                        <label class="rotulo" for="nova-task-priority">Prioridade *</label>
+                        <!-- Prioridade por palavra, nao por bolinha colorida. -->
+                        <select id="nova-task-priority" name="prioridade" class="campo w-full">
+                            <option value="baixa">Baixa</option>
+                            <option value="media" selected>Média</option>
+                            <option value="alta">Alta</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Tarefa</label>
-                        <select id="nova-task-type" name="tipo" class="w-full border rounded-lg px-3 py-2">
-                            <option value="geral">📌 Geral</option>
-                            <option value="follow-up">📞 Follow-up</option>
-                            <option value="visita">🏠 Visita Técnica</option>
-                            <option value="reuniao">👥 Reunião</option>
-                            <option value="documentacao">📄 Documentação</option>
-                            <option value="instalacao">🔧 Instalação</option>
+                        <label class="rotulo" for="nova-task-type">Tipo de Tarefa</label>
+                        <select id="nova-task-type" name="tipo" class="campo w-full">
+                            <option value="geral">Geral</option>
+                            <option value="follow-up">Follow-up</option>
+                            <option value="visita">Visita Técnica</option>
+                            <option value="reuniao">Reunião</option>
+                            <option value="documentacao">Documentação</option>
+                            <option value="instalacao">Instalação</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="flex gap-3 justify-end pt-4 border-t">
-                    <button type="button" onclick="closeNovaTarefaModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                <div class="flex gap-2 justify-end pt-3" style="border-top:2px solid var(--rule);">
+                    <button type="button" onclick="closeNovaTarefaModal()" class="btn">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-6 py-2 text-white rounded-lg hover:opacity-90" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-                        <i class="fas fa-plus mr-2"></i>Criar Tarefa
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus" aria-hidden="true"></i>Criar Tarefa
                     </button>
                 </div>
             </form>
@@ -985,31 +2082,31 @@
 
     <!-- Modal: Simulador Solar -->
     <div id="simuladorSolarModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-            <div class="text-white p-6 flex justify-between items-center sticky top-0 z-10" style="background: linear-gradient(135deg, #309086 0%, #267269 100%);">
-                <h3 class="text-2xl font-bold">☀️ Simulador Solar - Cálculo Completo</h3>
-                <button onclick="closeSimuladorSolar()" class="text-white hover:bg-white/20 p-2 rounded-lg transition">
-                    <i class="fas fa-times text-2xl"></i>
+        <div class="modal-painel w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div class="modal-topo sticky top-0 z-10">
+                <h3><i class="fas fa-sun mr-2" aria-hidden="true"></i>Simulador Solar — Cálculo Completo</h3>
+                <button onclick="closeSimuladorSolar()" class="botao-fechar" title="Fechar">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <div class="p-6">
+            <div class="p-4">
                 <!-- Formulário de Input -->
-                <div id="simulador-form" class="bg-gray-50 rounded-lg p-6 mb-6">
-                    <h4 class="text-lg font-bold mb-4">Dados para Simulação</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="simulador-form" class="secao-recuada mb-5">
+                    <h4 class="rotulo">Dados para Simulação</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium mb-1">CEP do Imóvel *</label>
-                            <input type="text" id="sim-cep" class="w-full border rounded px-3 py-2" placeholder="00000-000" maxlength="9" onblur="autoPreencherOrientacao()">
-                            <small class="text-gray-500">Inclina\u00e7\u00e3o e azimute ser\u00e3o estimados automaticamente</small>
+                            <label class="rotulo" for="sim-cep">CEP do Imóvel *</label>
+                            <input type="text" id="sim-cep" class="campo w-full" placeholder="00000-000" maxlength="9" onblur="autoPreencherOrientacao()">
+                            <small class="ajuda">Inclinação e azimute serão estimados automaticamente</small>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Consumo Mensal (kWh) *</label>
-                            <input type="number" id="sim-consumo" class="w-full border rounded px-3 py-2" placeholder="350">
+                            <label class="rotulo" for="sim-consumo">Consumo Mensal (kWh) *</label>
+                            <input type="number" id="sim-consumo" class="campo w-full" placeholder="350">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">% de Redução Desejada *</label>
-                            <select id="sim-reducao" class="w-full border rounded px-3 py-2">
+                            <label class="rotulo" for="sim-reducao">% de Redução Desejada *</label>
+                            <select id="sim-reducao" class="campo w-full">
                                 <option value="50">50% - Redução Parcial</option>
                                 <option value="75">75% - Alta Redução</option>
                                 <option value="95" selected>95% - Máxima Redução</option>
@@ -1017,33 +2114,33 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Tarifa de Energia (R$/kWh)</label>
-                            <input type="number" step="0.01" id="sim-tarifa" class="w-full border rounded px-3 py-2" value="0.85">
+                            <label class="rotulo" for="sim-tarifa">Tarifa de Energia (R$/kWh)</label>
+                            <input type="number" step="0.01" id="sim-tarifa" class="campo w-full" value="0.85">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Tipo de Cliente</label>
-                            <select id="sim-tipo" class="w-full border rounded px-3 py-2">
+                            <label class="rotulo" for="sim-tipo">Tipo de Cliente</label>
+                            <select id="sim-tipo" class="campo w-full">
                                 <option value="residencial">Residencial</option>
                                 <option value="empresarial">Empresarial</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Tipo de Sistema *</label>
-                            <select id="sim-tipo-sistema" class="w-full border rounded px-3 py-2">
+                            <label class="rotulo" for="sim-tipo-sistema">Tipo de Sistema *</label>
+                            <select id="sim-tipo-sistema" class="campo w-full">
                                 <option value="on-grid">On-Grid (Conectado à Rede)</option>
                                 <option value="off-grid">Off-Grid (Isolado)</option>
                                 <option value="hibrido">Híbrido (Grid + Baterias)</option>
                             </select>
-                            <small class="text-gray-500">On-Grid: mais comum, sem baterias. Off-Grid: com baterias.</small>
+                            <small class="ajuda">On-Grid: mais comum, sem baterias. Off-Grid: com baterias.</small>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Inclinação do Telhado (°)</label>
-                            <input type="number" id="sim-inclinacao" class="w-full border rounded px-3 py-2" value="15" min="0" max="90">
-                            <small class="text-gray-500">Ideal: 15-20° (latitude local)</small>
+                            <label class="rotulo" for="sim-inclinacao">Inclinação do Telhado (°)</label>
+                            <input type="number" id="sim-inclinacao" class="campo w-full" value="15" min="0" max="90">
+                            <small class="ajuda">Ideal: 15-20° (latitude local)</small>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Azimute - Orientação (°)</label>
-                            <select id="sim-azimute" class="w-full border rounded px-3 py-2">
+                            <label class="rotulo" for="sim-azimute">Azimute - Orientação (°)</label>
+                            <select id="sim-azimute" class="campo w-full">
                                 <option value="0">0° - Norte (Ideal)</option>
                                 <option value="15">15° - Norte-Nordeste</option>
                                 <option value="30">30° - Nordeste</option>
@@ -1058,45 +2155,45 @@
                     </div>
 
                     <!-- Campos Avançados (Opcional) -->
-                    <div class="mt-4 border-t pt-4">
-                        <button type="button" onclick="document.getElementById('campos-avancados').classList.toggle('hidden')" class="text-sm text-gray-600 hover:text-gray-900">
-                            <i class="fas fa-cog mr-1"></i>Configurações Avançadas (Opcional)
+                    <div class="mt-4 pt-4" style="border-top:2px solid var(--rule);">
+                        <button type="button" onclick="document.getElementById('campos-avancados').classList.toggle('hidden')" class="btn">
+                            <i class="fas fa-cog" aria-hidden="true"></i>Configurações Avançadas (Opcional)
                         </button>
-                        <div id="campos-avancados" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-100 p-4 rounded">
+                        <div id="campos-avancados" class="hidden mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 secao-recuada">
                             <div>
-                                <label class="block text-sm font-medium mb-1">Distância Cabos DC (m)</label>
-                                <input type="number" id="sim-dist-dc" class="w-full border rounded px-3 py-2" value="15">
+                                <label class="rotulo" for="sim-dist-dc">Distância Cabos DC (m)</label>
+                                <input type="number" id="sim-dist-dc" class="campo w-full" value="15">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-1">Distância Cabos AC (m)</label>
-                                <input type="number" id="sim-dist-ac" class="w-full border rounded px-3 py-2" value="10">
+                                <label class="rotulo" for="sim-dist-ac">Distância Cabos AC (m)</label>
+                                <input type="number" id="sim-dist-ac" class="campo w-full" value="10">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-1">Reajuste Anual Energia (%)</label>
-                                <input type="number" step="0.1" id="sim-reajuste" class="w-full border rounded px-3 py-2" value="8.0">
+                                <label class="rotulo" for="sim-reajuste">Reajuste Anual Energia (%)</label>
+                                <input type="number" step="0.1" id="sim-reajuste" class="campo w-full" value="8.0">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-1">Inflação Anual (%)</label>
-                                <input type="number" step="0.1" id="sim-inflacao" class="w-full border rounded px-3 py-2" value="4.5">
+                                <label class="rotulo" for="sim-inflacao">Inflação Anual (%)</label>
+                                <input type="number" step="0.1" id="sim-inflacao" class="campo w-full" value="4.5">
                             </div>
                         </div>
                     </div>
-                    <button onclick="calcularSistema()" class="mt-4 text-white px-6 py-3 rounded-lg font-semibold" style="background: #309086;" onmouseover="this.style.background='#267269'" onmouseout="this.style.background='#309086'">
-                        <i class="fas fa-calculator mr-2"></i>Calcular Sistema
+                    <button onclick="calcularSistema()" class="btn btn-primary mt-4">
+                        <i class="fas fa-calculator" aria-hidden="true"></i>Calcular Sistema
                     </button>
                 </div>
 
                 <!-- Resultados -->
                 <div id="simulador-resultados" class="hidden">
                     <!-- Localização -->
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
-                        <h5 class="font-bold text-blue-900 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Localização</h5>
-                        <p id="sim-localizacao" class="text-sm text-blue-800"></p>
-                        <p id="sim-irradiacao" class="text-sm text-blue-800 font-semibold mt-1"></p>
+                    <div class="aviso-info mb-5">
+                        <h5><i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i>Localização</h5>
+                        <p id="sim-localizacao"></p>
+                        <p id="sim-irradiacao" style="font-weight:600;margin-top:4px;"></p>
                     </div>
 
                     <!-- Propostas (3 opções) -->
-                    <div id="propostas-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div id="propostas-container" class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <!-- Propostas inseridas via JS -->
                     </div>
                 </div>
@@ -1118,11 +2215,13 @@
                 logo: 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png'
             },
             style: {
-                primaryColor: '#309086',
-                secondaryColor: '#267269',
+                // Cores do sistema de design: o #309086 antigo reprovava
+                // 3,85:1 com texto branco. --brand-600 / --brand-700.
+                primaryColor: '#297A72',
+                secondaryColor: '#1A5952',
                 position: 'right',
-                backgroundColor: '#ffffff',
-                fontColor: '#1f2937'
+                backgroundColor: '#FFFFFF',
+                fontColor: '#16211F'
             },
             suggestedQuestions: [],
             // Empresa dona dos leads criados por este widget. Obrigatorio
