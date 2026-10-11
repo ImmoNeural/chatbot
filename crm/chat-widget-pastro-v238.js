@@ -2039,17 +2039,44 @@
         formData.append('chatInput', trimmedMessage);
 
         try {
+            if (!settings.webhook.url) {
+                throw new Error('SEM_WEBHOOK');
+            }
+
             const response = await fetch(settings.webhook.url, {
                 method: 'POST',
                 body: formData
             });
-            const responseData = await response.json();
+
+            // Sem esta checagem, um 404 ou 500 do n8n caia direto no .json()
+            // e o usuario via um erro de parse em vez do problema real.
+            if (!response.ok) {
+                throw new Error(`HTTP_${response.status}`);
+            }
+
+            // O n8n as vezes devolve 200 com corpo vazio ou com uma pagina de
+            // erro em HTML; .json() estoura nos dois casos com uma mensagem
+            // que nao ajuda ninguem a descobrir o que houve.
+            const corpo = await response.text();
+            let responseData;
+            try {
+                responseData = JSON.parse(corpo);
+            } catch (e) {
+                throw new Error(corpo.trim() ? 'RESPOSTA_NAO_JSON' : 'RESPOSTA_VAZIA');
+            }
 
             // Remove typing indicator
             if (typingIndicator) messagesContainer.removeChild(typingIndicator);
 
             // Display bot response
-            const rawResponse = Array.isArray(responseData) ? responseData[0].output : responseData.output;
+            const item = Array.isArray(responseData) ? responseData[0] : responseData;
+            const rawResponse = item && (item.output ?? item.text ?? item.message ?? item.answer);
+            if (typeof rawResponse !== 'string' || !rawResponse.trim()) {
+                // Array vazio ou objeto sem 'output': antes isto virava
+                // "cannot read property of undefined" dentro do renderMarkdown.
+                throw new Error('SEM_CAMPO_OUTPUT');
+            }
+
             let processedResponse = renderMarkdown(rawResponse);
             processedResponse = renderImages(processedResponse);
             processedResponse = linkifyText(processedResponse);
@@ -2068,12 +2095,49 @@
             messagesContainer.appendChild(botMessageContainer);
 
         } catch (error) {
-            console.error('Chat Widget Error:', error);
-            if (typingIndicator) messagesContainer.removeChild(typingIndicator);
-            // Display error message in chat
+            console.error('[chat-widget] falha ao consultar o webhook:', settings.webhook.url, error);
+            if (typingIndicator && typingIndicator.parentNode) {
+                messagesContainer.removeChild(typingIndicator);
+            }
+
+            // Uma mensagem por causa. "Ocorreu um erro" nao permite a ninguem
+            // descobrir se o problema e a rede, o fluxo desligado no n8n ou a
+            // forma da resposta — e essas tres se consertam em lugares
+            // diferentes.
+            const causas = {
+                SEM_WEBHOOK:        'O endereço do atendimento não está configurado nesta página.',
+                RESPOSTA_VAZIA:     'O serviço respondeu sem conteúdo. O fluxo pode estar desligado.',
+                RESPOSTA_NAO_JSON:  'O serviço respondeu num formato inesperado.',
+                SEM_CAMPO_OUTPUT:   'O serviço respondeu sem texto de resposta.',
+            };
+            let detalhe = causas[error.message];
+            if (!detalhe && /^HTTP_/.test(error.message)) {
+                const cod = error.message.slice(5);
+                detalhe = cod === '404'
+                    ? 'O atendimento não foi encontrado no servidor (404). O fluxo pode estar desativado.'
+                    : `O servidor respondeu com erro ${cod}.`;
+            }
+            if (!detalhe) {
+                detalhe = 'Não consegui falar com o servidor. Verifique sua conexão.';
+            }
+
             const errorMessage = document.createElement('div');
             errorMessage.className = 'message-container bot-message';
-            errorMessage.innerHTML = `<p class="chat-bubble bot-bubble"><span class="chat-status chat-status-erro"><span class="chat-status-label">${icone('alerta')} Erro</span><span>Desculpe, ocorreu um erro. Tente novamente.</span></span></p>`;
+            errorMessage.innerHTML = `
+                ${botAvatarHTML}
+                <div class="message-content">
+                    <div class="chat-bubble bot-bubble">
+                        <p><strong>Não consegui responder agora.</strong></p>
+                        <p class="chat-hint">${detalhe}</p>
+                        <p class="chat-hint">Se preferir, fale com a nossa equipe no WhatsApp.</p>
+                        <div class="dynamic-buttons-container">
+                            <button class="dynamic-button" data-erro-acao="whatsapp">${icone('conversa')}<span>Falar no WhatsApp</span></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            errorMessage.querySelector('[data-erro-acao="whatsapp"]')
+                ?.addEventListener('click', () => window.open('https://wa.me/4901799044322', '_blank'));
             messagesContainer.appendChild(errorMessage);
         } finally {
             isWaitingForResponse = false;
