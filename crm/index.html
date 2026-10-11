@@ -2420,9 +2420,13 @@
             empresa_id: 'a0000000-0000-0000-0000-000000000001'  // Neureka AI - Solar
         };
     </script>
-    <script src="./chat-widget-pastro-v238.js"></script>
+    <!-- O ?v= existe porque o navegador guarda estes arquivos em cache e
+         continua executando a versao antiga depois de um git pull: o arquivo
+         novo esta no disco e a tela nao muda. Suba este numero sempre que
+         mexer no JS. -->
+    <script src="./chat-widget-pastro-v238.js?v=11"></script>
 
     <!-- JavaScript CRM -->
-    <script src="./crm-v2.js"></script>
+    <script src="./crm-v2.js?v=11"></script>
 </body>
 </html>
