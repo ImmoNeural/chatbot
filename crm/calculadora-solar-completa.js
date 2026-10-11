@@ -423,14 +423,36 @@ function selecionarInversor(potenciaKwp) {
         inv.potencia_kw >= potenciaMinima && inv.potencia_kw <= potenciaMaxima
     );
 
-    if (adequados.length === 0) {
-        return INVERSORES.reduce((prev, curr) =>
-            Math.abs(curr.potencia_kw - potenciaKwp) < Math.abs(prev.potencia_kw - potenciaKwp) ? curr : prev
-        );
+    // Uma unidade resolve: caminho normal dos sistemas pequenos.
+    if (adequados.length > 0) {
+        const escolhido = adequados.sort((a, b) =>
+            (b.eficiencia / b.preco_custo) - (a.eficiencia / a.preco_custo)
+        )[0];
+        return { ...escolhido, quantidade: 1, potencia_total_kw: escolhido.potencia_kw };
     }
 
-    return adequados.sort((a, b) =>
-        (b.eficiencia / b.preco_custo) - (a.eficiencia / a.preco_custo)
+    // Nenhuma unidade sozinha atende. O maior inversor do catalogo tem 15 kW,
+    // entao isto acontece em TODO sistema acima de ~16,5 kWp — ou seja, em
+    // todo projeto comercial. Antes a funcao devolvia aqui o inversor "mais
+    // proximo" e calcularCustosProjeto cobrava UM: um sistema de 50 kWp saia
+    // orcado com um unico inversor de 15 kW. Alem de impossivel de instalar,
+    // subfaturava o projeto em dezenas de milhares de reais.
+    //
+    // A saida correta e a que o instalador usa na pratica: varias unidades do
+    // mesmo modelo. Escolhemos o modelo que resolve com o menor custo total,
+    // mantendo a mesma folga de 10% que o caminho de cima aceita.
+    const combinacoes = INVERSORES.map(inv => {
+        const quantidade = Math.max(1, Math.ceil(potenciaKwp / (inv.potencia_kw * 1.10)));
+        return {
+            ...inv,
+            quantidade,
+            potencia_total_kw: Math.round(inv.potencia_kw * quantidade * 100) / 100,
+            custo_total: inv.preco_custo * quantidade
+        };
+    });
+
+    return combinacoes.sort((a, b) =>
+        (a.custo_total - b.custo_total) || (b.eficiencia - a.eficiencia)
     )[0];
 }
 
@@ -540,7 +562,10 @@ function calcularCustosProjeto(config, tipoCliente, distanciaCabos = { dc: 15, a
 
     // Custos de materiais
     const custoPlacas = numModulos * placa.preco_custo;
-    const custoInversor = inversor.preco_custo;
+    // Multiplica pela quantidade: ver selecionarInversor. Sistemas acima de
+    // ~16,5 kWp precisam de mais de um inversor, e cobrar um so era o defeito
+    // mais caro desta calculadora.
+    const custoInversor = inversor.preco_custo * (inversor.quantidade || 1);
     const custoEstrutura = numModulos * CUSTOS_MATERIAIS.estrutura_fixacao_por_modulo;
     const custoCabosDC = cabosDC.distancia * 2 * CUSTOS_MATERIAIS.cabo_solar_6mm_metro;
     const custoCabosAC = cabosAC.distancia * 3 * CUSTOS_MATERIAIS.cabo_flexivel_4mm_metro;
@@ -699,6 +724,13 @@ function calcularTIR_VPL(valorInvestimento, economiaAnual, reajusteAnual = 0.08,
         vpl += fluxoCaixa / Math.pow(1 + taxaDesconto, ano);
     }
 
+    // Sem fluxo de caixa nao ha taxa de retorno: com economia zero, a
+    // derivada abaixo fica zero e a divisao devolvia Infinity, que o cartao
+    // imprimia como "Infinity% a.a." na frente do cliente.
+    if (!(economiaAnual > 0)) {
+        return { vpl: Math.round(vpl * 100) / 100, tir: null };
+    }
+
     // TIR - Taxa Interna de Retorno (aproximação por Newton-Raphson)
     let tir = 0.1; // Chute inicial de 10%
     const precisao = 0.0001;
@@ -715,13 +747,24 @@ function calcularTIR_VPL(valorInvestimento, economiaAnual, reajusteAnual = 0.08,
         }
 
         if (Math.abs(f) < precisao) break;
-        tir = tir - f / df;
+        if (df === 0) return { vpl: Math.round(vpl * 100) / 100, tir: null };
+
+        const proxima = tir - f / df;
+
+        // Newton-Raphson pode divergir. Abaixo de -100% a base de
+        // Math.pow(1 + tir, ano) fica negativa e tudo vira NaN silencioso,
+        // entao preferimos nao devolver numero a devolver um numero falso.
+        if (!Number.isFinite(proxima) || proxima <= -0.99) {
+            return { vpl: Math.round(vpl * 100) / 100, tir: null };
+        }
+
+        tir = proxima;
         iteracoes++;
     }
 
     return {
         vpl: Math.round(vpl * 100) / 100,
-        tir: Math.round(tir * 10000) / 100 // em %
+        tir: Number.isFinite(tir) ? Math.round(tir * 10000) / 100 : null // em %
     };
 }
 
@@ -763,8 +806,27 @@ async function gerarPropostaCompleta(dados) {
     // 4. Gerar propostas completas
     const propostas = configuracoes.map(config => {
         const custos = calcularCustosProjeto(config, tipoCliente, distanciaCabos);
+
+        // Geracao REAL desta configuracao, invertendo a conta do
+        // dimensionamento: potencia x horas de sol pleno x fator de
+        // performance. Antes as tres propostas recebiam aqui a energia-ALVO
+        // do dimensionamento — a mesma para todas — entao um sistema de
+        // 4,4 kWp aparecia com a mesma economia de um de 3,85 kWp, e a unica
+        // diferenca entre as opcoes era o preco. Quem comparava as tres via
+        // a opcao maior como simplesmente pior.
+        const energiaMensalGerada = Math.round(
+            config.potenciaRealKwp * dimensionamento.hspAnual * dimensionamento.fatorPerformance / 12
+        );
+
+        // O que de fato vira desconto na conta e o que a casa consome: o
+        // excedente gera credito, que a Lei 14.300 so deixa usar em outra
+        // unidade ou em outro mes, e isso esta fora do que esta calculadora
+        // modela. Prometer economia sobre o excedente seria inflar a
+        // proposta.
+        const energiaCompensada = Math.min(energiaMensalGerada, consumoMensalKwh);
+
         const economia = calcularEconomiaAvancada(
-            dimensionamento.energiaMensalNecessaria,
+            energiaCompensada,
             tarifaKwh,
             reajusteAnual
         );
@@ -787,7 +849,8 @@ async function gerarPropostaCompleta(dados) {
             payback: payback,
             vpl: vpl,
             tir: tir,
-            energiaGerada: dimensionamento.energiaMensalNecessaria
+            energiaGerada: energiaMensalGerada,
+            energiaCompensada: energiaCompensada
         };
     });
 

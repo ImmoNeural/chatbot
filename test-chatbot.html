@@ -377,7 +377,7 @@
     <!-- Carrega o Chatbot v238 (cache-busting). Aponta para a copia de crm/,
          que e a unica que repassa o empresa_id configurado acima no POST do
          lead; sem ela o RLS recusa o INSERT. -->
-    <script src="./crm/chat-widget-pastro-v238.js?v=12"></script>
+    <script src="./crm/chat-widget-pastro-v238.js?v=13"></script>
 
     <script>
         // O widget e um IIFE sincrono: quando esta linha roda, as flags ja
@@ -399,7 +399,7 @@
                 alvo.innerHTML = '<i class="fas fa-triangle-exclamation" aria-hidden="true"></i>'
                     + '<span><span class="status-palavra">Falha</span> '
                     + '<span class="status-texto">— o script do widget não carregou. '
-                    + 'Confira o caminho <code>./crm/chat-widget-pastro-v238.js?v=12</code> '
+                    + 'Confira o caminho <code>./crm/chat-widget-pastro-v238.js?v=13</code> '
                     + 'e o console do navegador.</span></span>';
             }
         })();

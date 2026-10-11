@@ -24,7 +24,7 @@ window.supabaseClient = supabaseClient;
 //
 // Em vez de repetir o campo em quinze lugares (e esquecer no decimo sexto),
 // ele entra no unico caminho por onde todos passam: o proprio client.
-const VERSAO_CRM = '12';
+const VERSAO_CRM = '13';
 
 let perfilUsuario = null;
 
@@ -470,9 +470,16 @@ async function loadCurrentUser() {
     try {
         if (!currentUser?.id) throw new Error('sem sessao ativa');
 
+        // 'cargo', nao 'role': quem tem 'role' e a tabela legada public.users
+        // (schema.sql), justamente a que esta funcao deixou de usar.
+        // public.usuarios nasce em add_multi_tenant.sql com 'cargo', e os
+        // INSERT reais (fix_user_empresa_binding.sql) gravam 'admin'.
+        // Pedir uma coluna que nao existe faz o PostgREST devolver 400 e o
+        // perfil inteiro cair no catch: empresa_id ficava null e o carimbo
+        // de empresa nos inserts, que depende dele, nunca disparava.
         const { data, error } = await supabaseClient
             .from('usuarios')
-            .select('id, nome, email, role, empresa_id')
+            .select('id, nome, email, cargo, empresa_id')
             .eq('id', currentUser.id)
             .maybeSingle();
 
@@ -481,7 +488,10 @@ async function loadCurrentUser() {
         perfilUsuario = data || null;
 
         if (nomeEl) nomeEl.textContent = data?.nome || currentUser.email || 'Vendedor';
-        if (papelEl) papelEl.textContent = data?.role === 'gestor' ? 'Gestor' : 'Vendedor';
+        if (papelEl) {
+            papelEl.textContent = ['admin', 'gerente', 'gestor'].includes(data?.cargo)
+                ? 'Gestor' : 'Vendedor';
+        }
 
         if (!empresaAtual()) {
             // Sem empresa vinculada o CRM nem le (as policies de SELECT
@@ -1138,7 +1148,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
             case 'proposta':
                 // Verificar se tem dados de negociação
                 const { data: negociacao } = await supabaseClient
-                    .from('negociacao')
+                    .from('status_negociacao')
                     .select('*')
                     .eq('lead_id', leadId)
                     .single();
@@ -1154,7 +1164,7 @@ async function validarCompletudeEtapa(leadId, etapa) {
             case 'negociacao':
                 // Verificar se proposta foi aceita
                 const { data: negociacaoStatus } = await supabaseClient
-                    .from('negociacao')
+                    .from('status_negociacao')
                     .select('status_proposta')
                     .eq('lead_id', leadId)
                     .single();
@@ -2154,12 +2164,26 @@ function linkDaProposta(token) {
 }
 
 function abrirProposta(token) {
-    const janela = window.open(linkDaProposta(token), '_blank', 'noopener');
-    // O navegador bloqueia popup quando o clique nao e reconhecido como gesto
-    // do usuario. Sem este aviso, clicar em "Visualizar" nao fazia nada e nao
-    // explicava nada.
+    // Sem token nao ha proposta publica: o link sairia com t=undefined e a
+    // pagina abriria so para dizer que o link esta incompleto.
+    if (!token || token === 'undefined') {
+        showNotification('Esta proposta não tem link público. Gere a proposta de novo.', 'warning');
+        return;
+    }
+
+    // Aqui havia um terceiro argumento, 'noopener'. Pela especificacao do
+    // HTML, quando 'noopener' aparece nas features o window.open devolve
+    // null SEMPRE — mesmo com a aba abrindo normalmente. Entao o aviso
+    // abaixo disparava em 100% dos cliques: a aba abria atras da janela do
+    // CRM e o proprio CRM dizia que o navegador tinha bloqueado o popup.
+    // Quem clica le isso como "nao abriu". (A proposta e do mesmo site, nao
+    // ha o que isolar com noopener.)
+    const janela = window.open(linkDaProposta(token), '_blank');
+
+    // Agora sim: null aqui significa bloqueio de verdade, quando o clique
+    // nao foi reconhecido como gesto do usuario.
     if (!janela) {
-        showNotification('O navegador bloqueou a nova aba. Libere os pop-ups deste site.', 'error');
+        showNotification('O navegador bloqueou a nova aba. Libere os pop-ups deste site.', 'danger');
     }
 }
 
@@ -2190,7 +2214,7 @@ async function copiarLinkProposta(token) {
         } catch (e2) { /* cai no aviso abaixo */ }
 
         // Nem um nem outro: mostra o link para copiar a mao, em vez de mentir.
-        showNotification('Não consegui copiar. O link é: ' + url, 'error');
+        showNotification('Não consegui copiar. O link é: ' + url, 'danger');
         console.warn('[crm] cópia bloqueada. Link da proposta:', url);
     }
 }
@@ -3516,7 +3540,12 @@ async function calcularSistema() {
     const cep = document.getElementById('sim-cep').value.trim();
     const consumoMensalKwh = parseFloat(document.getElementById('sim-consumo').value);
     const percentualReducao = parseFloat(document.getElementById('sim-reducao').value);
-    const tarifaKwh = parseFloat(document.getElementById('sim-tarifa').value);
+    // parseFloat('') e NaN, e NaN NAO aciona o valor padrao do destructuring
+    // la na calculadora (isso so acontece com undefined). O NaN descia por
+    // toda a conta e saia como "R$ 0,00" de economia, sem erro nenhum na tela.
+    const tarifaDigitada = parseFloat(document.getElementById('sim-tarifa').value);
+    const tarifaKwh = Number.isFinite(tarifaDigitada) && tarifaDigitada > 0
+        ? tarifaDigitada : 0.85;
     const tipoCliente = document.getElementById('sim-tipo').value;
     const tipoSistema = document.getElementById('sim-tipo-sistema').value;
 
@@ -3605,7 +3634,10 @@ function renderResultadosSimulador(resultado) {
         const paybackAnos = payback.real?.anos || payback.anos;
 
         // Compatibilidade: TIR e VPL podem não existir na calculadora antiga
-        const tir = proposta.tir || 0;
+        // tir vem null quando nao ha fluxo de caixa para calcular (economia
+        // zero). Mostrar "0% a.a." nesse caso seria afirmar um retorno nulo
+        // em vez de admitir que a conta nao fecha com os dados informados.
+        const tir = Number.isFinite(proposta.tir) ? `${proposta.tir}% a.a.` : '—';
         const vpl = proposta.vpl || 0;
 
         return `
@@ -3661,7 +3693,7 @@ function renderResultadosSimulador(resultado) {
                             </div>
                             ${tir > 0 ? `<div class="flex justify-between">
                                 <span class="text-xs tinta-2">TIR:</span>
-                                <span class="num font-semibold text-xs tinta-1">${tir}% a.a.</span>
+                                <span class="num font-semibold text-xs tinta-1">${tir}</span>
                             </div>` : ''}
                             ${vpl !== 0 ? `<div class="flex justify-between">
                                 <span class="text-xs tinta-2">VPL:</span>
@@ -3756,6 +3788,13 @@ async function gerarPropostaComercial(propostaIndex) {
             const proposta = resultado.propostas[propostaIndex];
             const { configuracao, custos, economia, payback } = proposta;
 
+            // payback.real.anos quando a calculadora completa devolve a
+            // estrutura nova; payback.anos na antiga. O banco guarda os dois
+            // formatos (anos e meses), entao convertemos aqui, uma vez.
+            const paybackAnos = payback.real?.anos ?? payback.anos ?? null;
+            const paybackMeses = payback.real?.meses ?? payback.meses
+                ?? (paybackAnos != null ? Math.round(paybackAnos * 12) : null);
+
             const dadosProposta = {
                 oportunidade_id: oportunidade.id,
                 numero_proposta: `PROP-${Date.now()}`,
@@ -3769,9 +3808,25 @@ async function gerarPropostaComercial(propostaIndex) {
                 valor_equipamentos: custos.custoTotal,
                 valor_total: custos.valorVenda,
                 valor_final: custos.valorVenda,
+
+                // A tabela 'propostas' tem DOIS conjuntos de colunas para a
+                // mesma coisa: as originais do schema.sql
+                // (economia_mensal_prevista, payback_meses, economia_25_anos)
+                // e as que add_propostas_columns.sql acrescentou depois
+                // (economia_mensal, economia_anual, payback_anos). Este insert
+                // so preenchia o segundo conjunto — mas a pagina publica, que
+                // e o que o CLIENTE abre, le o primeiro. Resultado: a proposta
+                // chegava ao cliente anunciando economia de R$ 0,00 e payback
+                // em branco. Enquanto as duas familias existirem, gravamos as
+                // duas, com o mesmo numero.
                 economia_mensal: economia.economiaMensal,
                 economia_anual: economia.economiaAnual,
-                payback_anos: payback.real?.anos || payback.anos,
+                payback_anos: paybackAnos,
+
+                economia_mensal_prevista: economia.economiaMensal,
+                economia_25_anos: economia.economia25Anos,
+                payback_meses: paybackMeses,
+
                 status: 'enviada'
             };
 
@@ -3830,7 +3885,11 @@ async function salvarCalculoNoLead(leadId, resultado) {
                 lead_id: leadId,
                 tipo: 'nota',
                 titulo: `Cálculo Solar - ${melhorProposta.configuracao.potenciaRealKwp} kWp`,
-                descricao: `Sistema calculado: ${melhorProposta.configuracao.numModulos}x ${melhorProposta.configuracao.placa.potencia}Wp | Valor: ${formatCurrency(melhorProposta.custos.valorVenda)} | Payback: ${melhorProposta.payback.anos} anos`
+                // A calculadora completa devolve payback como
+                // { simples: {meses, anos}, real: {meses, anos} } — nao tem
+                // .anos na raiz. Toda nota gravada no historico do lead saia
+                // escrita "Payback: undefined anos".
+                descricao: `Sistema calculado: ${melhorProposta.configuracao.numModulos}x ${melhorProposta.configuracao.placa.potencia}Wp | Valor: ${formatCurrency(melhorProposta.custos.valorVenda)} | Payback: ${melhorProposta.payback?.real?.anos ?? melhorProposta.payback?.anos ?? '—'} anos`
             }]);
 
         console.log('Cálculo salvo no lead');

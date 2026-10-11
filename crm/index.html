@@ -2316,12 +2316,20 @@
                         </div>
                         <div>
                             <label class="rotulo" for="sim-tipo-sistema">Tipo de Sistema *</label>
+                            <!-- Off-grid e hibrido ficam desabilitados ate a
+                                 calculadora saber orcar banco de baterias e
+                                 controlador de carga. Hoje ela recebe o campo
+                                 e o ignora: escolher "Off-Grid" devolvia
+                                 numero identico ao On-Grid, sem bateria
+                                 nenhuma no custo. Preferivel um campo
+                                 honestamente indisponivel a um orcamento
+                                 errado saindo para o cliente. -->
                             <select id="sim-tipo-sistema" class="campo w-full">
                                 <option value="on-grid">On-Grid (Conectado à Rede)</option>
-                                <option value="off-grid">Off-Grid (Isolado)</option>
-                                <option value="hibrido">Híbrido (Grid + Baterias)</option>
+                                <option value="off-grid" disabled>Off-Grid (Isolado) — em breve</option>
+                                <option value="hibrido" disabled>Híbrido (Grid + Baterias) — em breve</option>
                             </select>
-                            <small class="ajuda">On-Grid: mais comum, sem baterias. Off-Grid: com baterias.</small>
+                            <small class="ajuda">On-Grid: o mais comum, sem baterias. Off-grid e híbrido ainda não entram no orçamento (faltam baterias e controlador).</small>
                         </div>
                         <div>
                             <label class="rotulo" for="sim-inclinacao">Inclinação do Telhado (°)</label>
@@ -2435,7 +2443,7 @@
          novo esta no disco e a tela nao muda. Suba este numero sempre que
          mexer no JS, e suba VERSAO_CRM (crm-v2.js) junto: e ele que aparece
          na fita, e so serve se os dois contarem a mesma historia. -->
-    <script src="./chat-widget-pastro-v238.js?v=12"></script>
+    <script src="./chat-widget-pastro-v238.js?v=13"></script>
 
     <!-- Dimensionamento solar. Esta tag NUNCA existiu: o arquivo estava na
          pasta, definia window.CalculadoraSolarCompleta e nunca era carregado,
@@ -2443,9 +2451,9 @@
          completa nao carregada. Recarregue a pagina." — e recarregar nao
          resolvia nada, porque o problema nao era a carga, era a falta da tag.
          Vem antes do crm-v2.js so por clareza: quem e usado aparece primeiro. -->
-    <script src="./calculadora-solar-completa.js?v=12"></script>
+    <script src="./calculadora-solar-completa.js?v=13"></script>
 
     <!-- JavaScript CRM -->
-    <script src="./crm-v2.js?v=12"></script>
+    <script src="./crm-v2.js?v=13"></script>
 </body>
 </html>
