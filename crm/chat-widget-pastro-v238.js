@@ -743,22 +743,46 @@
             display: block;
         }
 
+        /* Enquanto a pessoa rola, o lancador sai de cena. Ele e fixo no canto
+           inferior direito, entao durante a rolagem flutua por cima de
+           qualquer coisa que passe por ali — no CRM, por cima do status do
+           lead, que fica na ponta direita da linha. Folga no rodape so
+           resolve o fim da pagina; o meio continua coberto. */
+        .chat-assist-widget .chat-launcher.rolando {
+            transform: translateY(90px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chat-assist-widget .chat-launcher.rolando {
+                transform: none;
+                opacity: 0;
+            }
+        }
+
         .chat-assist-widget .chat-launcher {
             position: fixed;
-            bottom: 20px;
-            height: 56px;
-            border-radius: var(--chat-radius-full);
-            background: linear-gradient(135deg, var(--chat-color-primary) 0%, var(--chat-color-secondary) 100%);
+            bottom: 24px;
+            /* Circulo de 54px: o menor alvo confortavel para o dedo e 44px, e
+               54 da folga sem virar um bloco de cor na tela. A pilula anterior
+               tinha 122px de largura para dizer o que o simbolo ja diz. */
+            width: 54px;
+            height: 54px;
+            padding: 0;
+            border-radius: 50%;
+            background: var(--brand-600);
             color: #ffffff;
-            border: 2px solid var(--brand-700);
+            border: 0;
             cursor: pointer;
             z-index: 999;
-            transition: var(--chat-transition);
             display: flex;
             align-items: center;
-            padding: 0 20px 0 16px;
-            gap: 8px;
-            font-family: var(--fonte-texto);
+            justify-content: center;
+            /* Anel claro em vez de borda escura: separa o botao de qualquer
+               fundo sobre o qual ele caia, inclusive foto e tabela. */
+            box-shadow: 0 0 0 3px rgba(255,255,255,.9), 0 6px 20px rgba(22,33,31,.22);
+            transition: transform .18s cubic-bezier(.34,1.3,.64,1), opacity .22s ease, background-color .18s ease;
         }
 
         .chat-assist-widget .chat-launcher.right-side {
@@ -771,18 +795,12 @@
 
         .chat-assist-widget .chat-launcher:hover {
             background: var(--brand-700);
-            transform: scale(1.05);
+            transform: scale(1.06);
         }
 
         .chat-assist-widget .chat-launcher svg {
             width: 24px;
             height: 24px;
-        }
-
-        .chat-assist-widget .chat-launcher-text {
-            font-weight: 600;
-            font-size: 15px;
-            white-space: nowrap;
         }
 
         /* Antes era uma faixa de 47px com borda propria so para a assinatura.
@@ -1115,7 +1133,12 @@
         // Obrigatorio para o RLS multi-tenant: o lead precisa nascer dentro
         // de uma empresa, senao o banco recusa o INSERT (ver
         // crm/migrations/SECURITY_lockdown_rls.sql).
-        empresa_id: window.ChatWidgetConfig.empresa_id || null
+        empresa_id: window.ChatWidgetConfig.empresa_id || null,
+        // 'flutuante' (padrao) desenha o botao no canto; 'nenhum' nao desenha
+        // nada e deixa a pagina abrir a aba pelo proprio menu. Num sistema que
+        // ja tem navegacao, um botao fixo no canto so existe para cobrir
+        // conteudo: a porta de entrada ja existe.
+        launcher: window.ChatWidgetConfig.launcher || 'flutuante'
     } : defaultSettings;
 
     // Session tracking
@@ -1233,6 +1256,41 @@
     };
 
     // Create widget DOM structure
+    // Os icones precisam existir ANTES do primeiro uso: o lancador e montado
+    // logo abaixo e chama icone(). Como sao const, usar antes da declaracao
+    // lanca ReferenceError por zona morta temporal — e um ReferenceError aqui
+    // derruba o widget inteiro, sem deixar nem o botao na tela.
+    const ICONES = {
+        telhaCeramica: '<path d="M2 9 12 3l10 6"/><path d="M4 9v11h16V9"/><path d="M8 20v-6h8v6"/>',
+        fibrocimento:  '<path d="M3 8h18"/><path d="M3 8v12h18V8"/><path d="M7 8v12M12 8v12M17 8v12"/><path d="M3 8 6 4h12l3 4"/>',
+        metalico:      '<path d="M3 20 7 5h10l4 15"/><path d="M8 5 6 20M12 5v15M16 5l2 15"/>',
+        laje:          '<path d="M3 7h18v3H3z"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
+        duvida:        '<circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4"/><path d="M12 17.6h.01"/>',
+        agenda:        '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/>',
+        pessoas:       '<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3.2 3.2 0 0 1 0 6"/><path d="M17 14.4A6 6 0 0 1 21 20"/>',
+        raio:          '<path d="M13 2 4.5 13.5H11l-1 8.5L18.5 10H12z"/>',
+        correio:       '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+        telefone:      '<path d="M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z"/>',
+        casa:          '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V21h14V9.8"/><path d="M9.5 21v-6h5v6"/>',
+        economia:      '<path d="M4 19V9M10 19V5M16 19v-7M4 19h16"/><path d="m14 8 3-3 3 3"/>',
+        conversa:      '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
+        aceno:         '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/>',
+        alerta:        '<path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5h.01"/>',
+        confirma:      '<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16 9.7"/>',
+        setaBaixo:     '<path d="M12 4v14"/><path d="m6 12.5 6 6 6-6"/>',
+        setaCima:      '<path d="M12 20V6"/><path d="m6 11.5 6-6 6 6"/>',
+        sol:           '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5 5l1.8 1.8M17.2 17.2 19 19M19 5l-1.8 1.8M6.8 17.2 5 19"/>',
+    };
+
+    // tam em px; o traco acompanha para o peso optico nao mudar com o tamanho.
+    const icone = (nome, tam = 16) => {
+        const d = ICONES[nome];
+        if (!d) return '';
+        return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" ` +
+               `stroke="currentColor" stroke-width="1.75" stroke-linecap="round" ` +
+               `stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
+    };
+
     const widgetRoot = document.createElement('div');
     widgetRoot.className = 'chat-assist-widget';
 
@@ -1333,13 +1391,16 @@
     // Create launcher button
     const launchButton = document.createElement('button');
     launchButton.className = `chat-launcher ${settings.style.position === 'left' ? 'left-side' : 'right-side'}`;
-    launchButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-        <span class="chat-launcher-text">Ajuda?</span>`;
+    // So o icone. A pilula com "Ajuda?" tinha 122px de largura e nao dizia
+    // mais do que o simbolo ja diz. O rotulo vive no title e no aria-label,
+    // onde serve a quem navega por teclado ou leitor de tela sem ocupar a tela.
+    launchButton.setAttribute('aria-label', 'Abrir atendimento');
+    launchButton.setAttribute('title', 'Fale com a gente');
+    launchButton.innerHTML = icone('conversa', 24);
 
     // Add elements to DOM
     widgetRoot.appendChild(chatWindow);
-    widgetRoot.appendChild(launchButton);
+    if (settings.launcher !== 'nenhum') widgetRoot.appendChild(launchButton);
     document.body.appendChild(widgetRoot);
 
     // Get DOM elements after they are created
@@ -1383,36 +1444,6 @@
     };
 
 
-    const ICONES = {
-        telhaCeramica: '<path d="M2 9 12 3l10 6"/><path d="M4 9v11h16V9"/><path d="M8 20v-6h8v6"/>',
-        fibrocimento:  '<path d="M3 8h18"/><path d="M3 8v12h18V8"/><path d="M7 8v12M12 8v12M17 8v12"/><path d="M3 8 6 4h12l3 4"/>',
-        metalico:      '<path d="M3 20 7 5h10l4 15"/><path d="M8 5 6 20M12 5v15M16 5l2 15"/>',
-        laje:          '<path d="M3 7h18v3H3z"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
-        duvida:        '<circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4"/><path d="M12 17.6h.01"/>',
-        agenda:        '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/>',
-        pessoas:       '<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3.2 3.2 0 0 1 0 6"/><path d="M17 14.4A6 6 0 0 1 21 20"/>',
-        raio:          '<path d="M13 2 4.5 13.5H11l-1 8.5L18.5 10H12z"/>',
-        correio:       '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
-        telefone:      '<path d="M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z"/>',
-        casa:          '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V21h14V9.8"/><path d="M9.5 21v-6h5v6"/>',
-        economia:      '<path d="M4 19V9M10 19V5M16 19v-7M4 19h16"/><path d="m14 8 3-3 3 3"/>',
-        conversa:      '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
-        aceno:         '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/>',
-        alerta:        '<path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5h.01"/>',
-        confirma:      '<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16 9.7"/>',
-        setaBaixo:     '<path d="M12 4v14"/><path d="m6 12.5 6 6 6-6"/>',
-        setaCima:      '<path d="M12 20V6"/><path d="m6 11.5 6-6 6 6"/>',
-        sol:           '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5 5l1.8 1.8M17.2 17.2 19 19M19 5l-1.8 1.8M6.8 17.2 5 19"/>',
-    };
-
-    // tam em px; o traco acompanha para o peso optico nao mudar com o tamanho.
-    const icone = (nome, tam = 16) => {
-        const d = ICONES[nome];
-        if (!d) return '';
-        return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" ` +
-               `stroke="currentColor" stroke-width="1.75" stroke-linecap="round" ` +
-               `stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
-    };
 
     // Bot avatar SVG inline
     // O marcador de quem fala e o sol da marca, nao um rosto de robo: ele se
@@ -2439,6 +2470,35 @@
             isChatInitialized = true;
         }
     });
+
+    // Porta de entrada para quem nao usa o botao flutuante: a propria pagina
+    // abre a aba a partir do seu menu.
+    window.SunboticChat = {
+        abrir() {
+            chatWindow.classList.add('visible');
+            if (!isChatInitialized) { startChat(); isChatInitialized = true; }
+        },
+        fechar() { chatWindow.classList.remove('visible'); },
+        alternar() {
+            chatWindow.classList.contains('visible') ? this.fechar() : this.abrir();
+        },
+    };
+
+    // Esconde o lancador durante a rolagem e devolve quando ela para. Sem
+    // isto ele cobre o que estiver no canto inferior direito a cada rolagem.
+    // Nao se aplica com a aba aberta: ali o lancador ja nao aparece.
+    let timerRolagem = null;
+    const aoRolar = () => {
+        if (chatWindow.classList.contains('visible')) return;
+        launchButton.classList.add('rolando');
+        clearTimeout(timerRolagem);
+        // 420ms: tempo suficiente para a rolagem por inercia terminar, sem a
+        // sensacao de que o botao demorou a voltar.
+        timerRolagem = setTimeout(() => launchButton.classList.remove('rolando'), 420);
+    };
+    window.addEventListener('scroll', aoRolar, { passive: true });
+    // Alguns layouts rolam num container interno, nao na janela.
+    document.addEventListener('scroll', aoRolar, { passive: true, capture: true });
 
     // Close chat window
     chatWindow.querySelector('.chat-close-btn').addEventListener('click', () => chatWindow.classList.remove('visible'));
