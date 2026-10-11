@@ -134,13 +134,18 @@
             border-bottom: 2px solid var(--brand-700);
         }
 
+        /* O chip branco existe para logo de cliente, que pode vir em qualquer
+           cor e precisa de fundo neutro. Como a largura e fixa em 128px, uma
+           marca quadrada ficava nadando no meio dele: o width passa a ser
+           automatico e o chip se ajusta ao que recebe. */
         .chat-assist-widget .chat-header-logo {
-            width: 128px;
-            height: 64px;
+            width: auto;
+            max-width: 128px;
+            height: 40px;
             border-radius: var(--chat-radius-sm);
             object-fit: contain;
             background: var(--card);
-            padding: 2px;
+            padding: 4px 8px;
         }
 
         .chat-assist-widget .chat-header-title {
@@ -407,6 +412,172 @@
         @keyframes typingAnimation {
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-4px); }
+        }
+
+        /* ============================================================
+           LEITURA SOLAR
+           Painel que so existe durante o funil. O sol percorre o arco do
+           ceu conforme as respostas chegam, e os numeros se recalculam a
+           cada uma. Fechado (altura 0) fora do funil, para nao roubar
+           espaco da conversa.
+           ============================================================ */
+        .chat-assist-widget .leitura-solar {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            /* Fora do funil o painel some por inteiro: sem a borda e sem
+               altura minima, senao sobra uma faixa morta de 24px acima da
+               caixa de entrada durante a conversa normal. */
+            border-top: 0 solid var(--rule);
+            min-height: 0;
+            background: linear-gradient(180deg, var(--sunken) 0%, var(--card) 100%);
+            transition: grid-template-rows .45s cubic-bezier(.4,0,.2,1), opacity .3s;
+        }
+
+        /* min-height: 0 no ITEM do grid, nao no container: sem isto o
+           conteudo impoe sua altura minima e a linha de 0fr nao colapsa
+           — sobravam 22px de faixa morta acima da caixa de entrada. */
+        .chat-assist-widget .leitura-solar > * {
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .chat-assist-widget .leitura-solar.ativa {
+            grid-template-rows: 1fr;
+            opacity: 1;
+            border-top-width: 2px;
+        }
+
+        /* O wrapper existe porque grid-template-rows:0fr so colapsa um
+           filho unico; o conteudo real vai dentro dele. */
+        /* O padding fica em zero enquanto o painel esta fechado: a unidade
+           fr dimensiona o CONTEUDO, entao o padding do item do grid
+           sobrevive ao 0fr e eram exatamente ele os 22px que restavam
+           (10 em cima + 12 embaixo). */
+        .chat-assist-widget .leitura-interna {
+            padding: 0 14px;
+            transition: padding .45s cubic-bezier(.4,0,.2,1);
+        }
+
+        .chat-assist-widget .leitura-solar.ativa .leitura-interna {
+            padding: 10px 14px 12px;
+        }
+
+        .chat-assist-widget .leitura-ceu {
+            position: relative;
+            height: 46px;
+            margin-bottom: 8px;
+        }
+
+        .chat-assist-widget .leitura-arco {
+            width: 100%;
+            height: 46px;
+            display: block;
+            overflow: visible;
+        }
+
+        .chat-assist-widget .leitura-trilha,
+        .chat-assist-widget .leitura-percorrido {
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        /* Trilha tracejada: o caminho que ainda falta se le como caminho,
+           nao como linha cheia apagada. */
+        .chat-assist-widget .leitura-trilha {
+            stroke: var(--rule);
+            stroke-width: 2;
+            stroke-dasharray: 3 6;
+        }
+
+        /* O percorrido e desenhado por stroke-dashoffset, controlado por
+           --progresso (0 a 1). Uma variavel so move o arco e o sol juntos. */
+        .chat-assist-widget .leitura-percorrido {
+            stroke: var(--brand-600);
+            stroke-width: 3;
+            stroke-dasharray: var(--arco-comprimento, 340);
+            stroke-dashoffset: calc(var(--arco-comprimento, 340) * (1 - var(--progresso, 0)));
+            transition: stroke-dashoffset .6s cubic-bezier(.34,1.3,.64,1);
+        }
+
+        .chat-assist-widget .leitura-horizonte {
+            stroke: var(--rule);
+            stroke-width: 2;
+        }
+
+        /* O sol anda pelo arco: angulo de 180 graus mapeado em --progresso.
+           Raio e centro batem com o path do SVG (A 108 108, centro em 120,42). */
+        /* O sol e posicionado pelo PONTO EXATO do tracado, calculado com
+           getPointAtLength no JS, e nao por trigonometria no CSS. Trig no
+           CSS exige que o raio e o centro do arco sejam replicados a mao
+           nos dois lugares: na hora que o path muda, o sol descola da
+           linha e ninguem percebe. Assim ele segue qualquer curva. */
+        .chat-assist-widget .leitura-sol {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            margin: -7px 0 0 -7px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #F6C96B 0%, var(--atencao) 70%);
+            box-shadow: 0 0 0 3px rgba(154, 98, 9, .16), 0 0 14px rgba(246, 201, 107, .55);
+            transform: translate(var(--sol-x, 12px), var(--sol-y, 42px));
+            transition: transform .6s cubic-bezier(.34,1.3,.64,1);
+        }
+
+        .chat-assist-widget .leitura-dados {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+        }
+
+        .chat-assist-widget .leitura-item {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+
+        .chat-assist-widget .leitura-item--destaque { margin-left: auto; text-align: right; }
+
+        .chat-assist-widget .leitura-rotulo {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            white-space: nowrap;
+        }
+
+        .chat-assist-widget .leitura-valor {
+            font-family: var(--fonte-numero, 'Atkinson Hyperlegible', sans-serif);
+            font-variant-numeric: tabular-nums;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink-1);
+            white-space: nowrap;
+        }
+
+        .chat-assist-widget .leitura-item--destaque .leitura-valor {
+            font-size: 17px;
+            color: var(--brand-700);
+        }
+
+        /* Pulso curto quando o numero muda: a pessoa percebe que a propria
+           resposta mexeu no resultado. */
+        .chat-assist-widget .leitura-valor.mudou { animation: leituraPulso .5s ease-out; }
+
+        @keyframes leituraPulso {
+            0%   { transform: translateY(3px); opacity: .4; }
+            100% { transform: translateY(0);   opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chat-assist-widget .leitura-solar,
+            .chat-assist-widget .leitura-percorrido,
+            .chat-assist-widget .leitura-sol { transition: none; }
+            .chat-assist-widget .leitura-valor.mudou { animation: none; }
         }
 
         .chat-assist-widget .chat-controls {
@@ -791,10 +962,15 @@
     document.head.appendChild(widgetStyles);
 
     // Default configuration - Sunbotic Theme
+    const LOGO_PADRAO = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23297A72' stroke-width='3' stroke-linecap='round'%3E%3Ccircle cx='24' cy='24' r='8' fill='%23297A72' stroke='none'/%3E%3Cpath d='M24 6v5M24 37v5M6 24h5M37 24h5M11.2 11.2l3.5 3.5M33.3 33.3l3.5 3.5M36.8 11.2l-3.5 3.5M14.7 33.3l-3.5 3.5'/%3E%3C/g%3E%3C/svg%3E";
+
     const defaultSettings = {
         webhook: { url: '', route: '' },
         branding: {
-            logo: 'https://neureka-ai.com/wp-content/uploads/2025/02/2-1.png',
+            // Marca em SVG inline: o PNG antigo (neureka-ai.com/.../2-1.png) saiu
+            // do ar e o cabecalho ficava com icone de imagem quebrada. Data URI
+            // nao depende de servidor nenhum e nao tem como falhar.
+            logo: LOGO_PADRAO,
             name: 'Sunbotic 🌞 Energia Solar',
             welcomeText: 'Olá! Como posso ajudá-lo hoje?',
             responseTimeText: 'Responde em segundos',
@@ -848,6 +1024,8 @@
         roofType: null
     };
     let qualificationStep = 0;
+    // Liga a formatacao ao vivo so durante a pergunta do telefone.
+    let modoTelefone = false;
 
     // Supabase configuration
     const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
@@ -904,9 +1082,46 @@
         return email.includes('@') && email.includes('.');
     };
 
+    // So os digitos importam. O usuario digita como quiser — "11912345678",
+    // "(11) 91234-5678", "11 91234 5678", "+55 11 91234-5678" — e nos
+    // normalizamos. Exigir pontuacao exata e empurrar para o usuario um
+    // trabalho que o codigo faz melhor, e era o que fazia a conversa travar.
+    const soDigitos = (texto) => (texto || '').replace(/\D/g, '');
+
+    const normalizarTelefone = (texto) => {
+        let d = soDigitos(texto);
+        // Codigo do pais, com ou sem o zero de operadora na frente.
+        if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+        if (d.length > 11 && d.startsWith('0')) d = d.slice(1);
+        return d;
+    };
+
     const validatePhone = (phone) => {
-        const phoneRegex = /^\(\d{2}\)\s?\d{4,5}-\d{4}$/;
-        return phoneRegex.test(phone);
+        const d = normalizarTelefone(phone);
+        if (d.length !== 10 && d.length !== 11) return false;      // DDD + 8 ou 9 digitos
+        if (!/^[1-9][1-9]$/.test(d.slice(0, 2))) return false;      // DDD valido no Brasil
+        if (d.length === 11 && d[2] !== '9') return false;          // celular de 9 digitos comeca com 9
+        if (/^(\d)\1+$/.test(d.slice(2))) return false;            // 11111111111 nao e telefone
+        return true;
+    };
+
+    // Formata para guardar e exibir sempre do mesmo jeito, venha como vier.
+    const formatarTelefone = (texto) => {
+        const d = normalizarTelefone(texto);
+        if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+        if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+        return texto;
+    };
+
+    // Formatacao ao vivo enquanto digita, sem bloquear nada: o usuario ve o
+    // numero tomando forma em vez de receber um erro depois de enviar.
+    const formatarParcial = (texto) => {
+        const d = normalizarTelefone(texto).slice(0, 11);
+        if (!d) return '';
+        if (d.length <= 2) return `(${d}`;
+        if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+        if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+        return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
     };
 
     // Create widget DOM structure
@@ -936,7 +1151,8 @@
     // Create header HTML
     const headerHTML = `
         <div class="chat-header">
-            <img class="chat-header-logo" src="${settings.branding.logo}" alt="${settings.branding.name}">
+            <img class="chat-header-logo" src="${settings.branding.logo}" alt="${settings.branding.name}"
+                 onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23297A72' stroke-width='3' stroke-linecap='round'%3E%3Ccircle cx='24' cy='24' r='8' fill='%23297A72' stroke='none'/%3E%3Cpath d='M24 6v5M24 37v5M6 24h5M37 24h5M11.2 11.2l3.5 3.5M33.3 33.3l3.5 3.5M36.8 11.2l-3.5 3.5M14.7 33.3l-3.5 3.5'/%3E%3C/g%3E%3C/svg%3E'http://www.w3.org/2000/svg\' viewBox=\'0 0 160 40\'%3E%3Cg fill=\'%23ffffff\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'7\'/%3E%3Cg stroke=\'%23ffffff\' stroke-width=\'2.4\' stroke-linecap=\'round\'%3E%3Cpath d=\'M20 4v4M20 32v4M4 20h4M32 20h4M8.7 8.7l2.8 2.8M28.5 28.5l2.8 2.8M31.3 8.7l-2.8 2.8M11.5 28.5l-2.8 2.8\'/%3E%3C/g%3E%3Ctext x=\'44\' y=\'26\' font-family=\'Inter,system-ui,sans-serif\' font-size=\'17\' font-weight=\'700\'%3ESunbotic%3C/text%3E%3C/g%3E%3C/svg%3E'">
             <span class="chat-header-title">${settings.branding.name}</span>
             <button class="chat-close-btn">×</button>
         </div>
@@ -946,6 +1162,32 @@
     const chatInterfaceHTML = `
         <div class="chat-body active">
             <div class="chat-messages"></div>
+            <div class="leitura-solar" aria-live="polite">
+              <div class="leitura-interna">
+                <div class="leitura-ceu">
+                    <svg class="leitura-arco" viewBox="0 0 240 46" aria-hidden="true">
+                        <path class="leitura-trilha" d="M12 42 A 198 198 0 0 1 228 42" />
+                        <path class="leitura-percorrido" d="M12 42 A 198 198 0 0 1 228 42" />
+                        <line class="leitura-horizonte" x1="0" y1="42.5" x2="240" y2="42.5" />
+                    </svg>
+                    <span class="leitura-sol" aria-hidden="true"></span>
+                </div>
+                <div class="leitura-dados">
+                    <div class="leitura-item">
+                        <span class="leitura-rotulo">Etapa</span>
+                        <span class="leitura-valor" data-leitura="etapa">0 de 5</span>
+                    </div>
+                    <div class="leitura-item">
+                        <span class="leitura-rotulo">Consumo</span>
+                        <span class="leitura-valor" data-leitura="consumo">—</span>
+                    </div>
+                    <div class="leitura-item leitura-item--destaque">
+                        <span class="leitura-rotulo">Economia estimada</span>
+                        <span class="leitura-valor" data-leitura="economia">—</span>
+                    </div>
+                </div>
+              </div>
+            </div>
             <div class="chat-controls">
                 <textarea class="chat-textarea" placeholder="Digite aqui..." rows="1"></textarea>
                 <button class="chat-submit">
@@ -1146,10 +1388,146 @@
                 <p class="chat-hint">Digite seu e-mail no campo abaixo 👇</p>
             `, true, emailImage);
 
-            messageTextarea.placeholder = "exemplo@email.com";
-            messageTextarea.focus();
+            esperarTexto("exemplo@email.com");
         }, 500);
     };
+
+    // Cada passo declara o que espera na caixa de entrada. Antes o placeholder
+    // so era devolvido ao normal dentro do clique do botao do passo SEGUINTE,
+    // entao o exemplo de telefone continuava na tela durante a pergunta de
+    // quantas pessoas moram na casa — e se lia como o que o bot estava pedindo.
+    const esperarTexto = (exemplo) => {
+        modoTelefone = false;
+        messageTextarea.placeholder = exemplo || "Digite aqui...";
+        messageTextarea.disabled = false;
+        messageTextarea.focus();
+    };
+
+    // Passo de botoes: nao ha o que digitar. A caixa volta ao estado neutro
+    // para nao sugerir uma resposta que o passo nem aceita.
+    const esperarBotao = () => {
+        modoTelefone = false;
+        messageTextarea.placeholder = "Escolha uma opção acima 👆";
+        messageTextarea.value = '';
+    };
+
+    // =================================================================
+    // LEITURA SOLAR — recalcula a cada resposta
+    // =================================================================
+    // Tarifa media residencial no Brasil. Fica como constante nomeada
+    // porque e a unica premissa economica do calculo: quando mudar, muda
+    // aqui e em lugar nenhum mais.
+    const TARIFA_KWH = 0.85;
+    // Um sistema bem dimensionado cobre ate ~95% da conta; o resto e
+    // custo de disponibilidade, que a concessionaria cobra de todo jeito.
+    const COBERTURA = 0.95;
+
+    const leituraEl = () => widgetRoot.querySelector('.leitura-solar');
+
+    // Converte a faixa escolhida ("250-400 kWh", "Ate 150 kWh",
+    // "Acima de 800 kWh") no ponto medio, que e a melhor estimativa
+    // pontual que uma faixa permite. Para "acima de X" usa X * 1,25:
+    // chutar o proprio X subestimaria sempre.
+    const kwhDaFaixa = (faixa) => {
+        if (!faixa) return null;
+        const nums = (faixa.match(/\d+/g) || []).map(Number);
+        if (!nums.length) return null;
+        if (/acima/i.test(faixa)) return Math.round(nums[0] * 1.25);
+        if (/at[ée]/i.test(faixa)) return Math.round(nums[0] * 0.7);
+        if (nums.length >= 2) return Math.round((nums[0] + nums[1]) / 2);
+        return nums[0];
+    };
+
+    const moeda = (v) => v.toLocaleString('pt-BR', {
+        style: 'currency', currency: 'BRL', maximumFractionDigits: 0
+    });
+
+    // Escreve so quando o valor muda, e pulsa para a pessoa perceber que
+    // foi a resposta dela que mexeu no numero.
+    const escreverLeitura = (chave, texto) => {
+        const el = widgetRoot.querySelector(`[data-leitura="${chave}"]`);
+        if (!el || el.textContent === texto) return;
+        el.textContent = texto;
+        el.classList.remove('mudou');
+        void el.offsetWidth;   // reinicia a animacao
+        el.classList.add('mudou');
+    };
+
+    const atualizarLeitura = () => {
+        const painel = leituraEl();
+        if (!painel) return;
+
+        const d = qualificationData;
+        const preenchidos = ['email', 'phone', 'familySize', 'kwhConsumption', 'roofType']
+            .filter(k => d[k]).length;
+
+        painel.classList.add('ativa');
+        calibrarArco();
+        painel.style.setProperty('--progresso', (preenchidos / 5).toFixed(3));
+        posicionarSol();
+        escreverLeitura('etapa', `${preenchidos} de 5`);
+
+        const kwh = kwhDaFaixa(d.kwhConsumption);
+        if (kwh) {
+            escreverLeitura('consumo', `${kwh.toLocaleString('pt-BR')} kWh`);
+            escreverLeitura('economia', `${moeda(kwh * TARIFA_KWH * COBERTURA)}/mês`);
+        } else if (d.familySize) {
+            // Antes do consumo, a casa ja diz muito: da para mostrar uma
+            // faixa em vez de um travessao mudo.
+            const porPessoas = { '1-2 pessoas': 180, '3-4 pessoas': 320, '5-6 pessoas': 520 };
+            const est = porPessoas[d.familySize] || 800;
+            escreverLeitura('consumo', `~${est} kWh`);
+            escreverLeitura('economia', `~${moeda(est * TARIFA_KWH * COBERTURA)}/mês`);
+        }
+    };
+
+    const fecharLeitura = () => {
+        const painel = leituraEl();
+        if (painel) painel.classList.remove('ativa');
+    };
+
+    // Calibra o arco com a geometria REAL, nao com numero chutado: o SVG
+    // escala com a largura do widget, entao o raio em pixels muda com ela.
+    // Sem isto o sol descola da linha em telas diferentes.
+    const calibrarArco = () => {
+        const painel = leituraEl();
+        if (!painel) return;
+        const caminho = painel.querySelector('.leitura-percorrido');
+        const svg = painel.querySelector('.leitura-arco');
+        if (!caminho || !svg) return;
+
+        // Comprimento do traco, para o stroke-dashoffset desenhar o arco.
+        try {
+            painel.style.setProperty('--arco-comprimento', caminho.getTotalLength().toFixed(1));
+        } catch (e) { /* getTotalLength indisponivel: o dasharray padrao serve */ }
+
+        // Escala do viewBox (240 de largura) para os pixels reais. O sol
+        // usa isto para converter o ponto do tracado em posicao na tela.
+        const largura = svg.getBoundingClientRect().width;
+        if (largura > 0) painel.dataset.escala = (largura / 240).toFixed(4);
+
+        posicionarSol();
+    };
+
+    // Coloca o sol sobre o tracado, no ponto correspondente ao progresso.
+    const posicionarSol = () => {
+        const painel = leituraEl();
+        if (!painel) return;
+        const caminho = painel.querySelector('.leitura-percorrido');
+        if (!caminho || !caminho.getPointAtLength) return;
+
+        const escala = parseFloat(painel.dataset.escala || '1');
+        const prog = parseFloat(getComputedStyle(painel).getPropertyValue('--progresso')) || 0;
+
+        try {
+            const pt = caminho.getPointAtLength(caminho.getTotalLength() * prog);
+            painel.style.setProperty('--sol-x', (pt.x * escala).toFixed(1) + 'px');
+            painel.style.setProperty('--sol-y', (pt.y * escala).toFixed(1) + 'px');
+        } catch (e) { /* SVG nao medivel: o sol fica no inicio, sem quebrar nada */ }
+    };
+
+    // Recalibra quando a janela muda de tamanho: o widget e responsivo.
+    window.addEventListener('resize', calibrarArco);
 
     // Step 2: Ask for phone
     const askPhone = () => {
@@ -1159,11 +1537,11 @@
             addBotMessage(`
                 <p>Perfeito! Agora me informe seu telefone com DDD.</p>
                 <p><strong>Qual é o seu telefone?</strong></p>
-                <p class="chat-hint">Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX</p>
+                <p class="chat-hint">Pode digitar do jeito que preferir — eu formato para você.</p>
             `, true, phoneImage);
 
-            messageTextarea.placeholder = "(11) 91234-5678";
-            messageTextarea.focus();
+            esperarTexto("(11) 91234-5678");
+            modoTelefone = true;
         }, 500);
     };
 
@@ -1182,11 +1560,16 @@
                 </div>
             `, true, familyImage);
 
+            // A caixa de entrada volta ao estado neutro assim que a pergunta
+            // aparece, nao depois do clique: era isso que deixava o exemplo de
+            // telefone preso na tela durante a pergunta seguinte.
+            esperarBotao();
+
             messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
                 btn.addEventListener('click', () => {
                     qualificationData.familySize = btn.dataset.family;
+                    atualizarLeitura();
                     addUserMessage(btn.dataset.family);
-                    messageTextarea.placeholder = "Digite aqui...";
                     askKwhConsumption();
                 });
             });
@@ -1242,9 +1625,15 @@
                 </div>
             `, true, energyBillImage);
 
+            // A caixa de entrada volta ao estado neutro assim que a pergunta
+            // aparece, nao depois do clique: era isso que deixava o exemplo de
+            // telefone preso na tela durante a pergunta seguinte.
+            esperarBotao();
+
             messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
                 btn.addEventListener('click', () => {
                     qualificationData.kwhConsumption = btn.dataset.kwh;
+                    atualizarLeitura();
                     addUserMessage(btn.dataset.kwh);
                     askRoofType();
                 });
@@ -1269,9 +1658,15 @@
                 </div>
             `, true, roofTypesImage);
 
+            // A caixa de entrada volta ao estado neutro assim que a pergunta
+            // aparece, nao depois do clique: era isso que deixava o exemplo de
+            // telefone preso na tela durante a pergunta seguinte.
+            esperarBotao();
+
             messageContainer.querySelectorAll('.dynamic-button').forEach(btn => {
                 btn.addEventListener('click', () => {
                     qualificationData.roofType = btn.dataset.roof;
+                    atualizarLeitura();
                     addUserMessage(btn.dataset.roof);
                     showQualificationResult();
                 });
@@ -1282,6 +1677,14 @@
     // Step 6: Show result and save to Supabase
     const showQualificationResult = async () => {
         const savingsImage = 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=500';
+
+        // Funil encerrado: a caixa volta a aceitar conversa livre. Sem isto ela
+        // seguiria pedindo "Escolha uma opcao acima" sem haver opcao na tela.
+        qualificationStep = 0;
+        esperarTexto();
+        // O resultado completo entra na conversa logo abaixo: manter o
+        // painel seria repetir a mesma informacao ocupando espaco.
+        fecharLeitura();
 
         // Save to Supabase
         const saved = await saveLeadToSupabase(qualificationData);
@@ -1407,6 +1810,7 @@
                 return;
             }
             qualificationData.email = trimmedMessage;
+            atualizarLeitura();
             addUserMessage(trimmedMessage);
             messageTextarea.value = '';
             askPhone();
@@ -1418,16 +1822,25 @@
             if (!validatePhone(trimmedMessage)) {
                 addUserMessage(trimmedMessage);
                 setTimeout(() => {
+                    const digitados = soDigitos(trimmedMessage).length;
+                    const motivo = digitados < 10
+                        ? 'Faltam dígitos — preciso do DDD mais o número.'
+                        : digitados > 11
+                            ? 'Vieram dígitos a mais. Confira o número.'
+                            : 'Esse número não parece válido. Confira o DDD.';
                     addBotMessage(`
-                        <p>❌ Telefone inválido! Por favor, digite no formato correto.</p>
-                        <p class="chat-hint">Exemplo: (11) 91234-5678 ou (11) 1234-5678</p>
+                        <p>Hmm, ${motivo}</p>
+                        <p class="chat-hint">Pode digitar do jeito que preferir: 11912345678, (11) 91234-5678 ou 11 91234 5678.</p>
                     `);
                 }, 300);
                 messageTextarea.value = '';
                 return;
             }
-            qualificationData.phone = trimmedMessage;
-            addUserMessage(trimmedMessage);
+            // Guarda normalizado: o CRM recebe sempre "(11) 91234-5678",
+            // independente de como foi digitado.
+            qualificationData.phone = formatarTelefone(trimmedMessage);
+            atualizarLeitura();
+            addUserMessage(qualificationData.phone);
             messageTextarea.value = '';
             askFamilySize();
             return;
@@ -1546,5 +1959,18 @@
 
     // Adjust textarea size on input
     messageTextarea.addEventListener('input', autoResizeTextarea);
+
+    // Formatacao ao vivo do telefone. Nao bloqueia tecla nenhuma: aceita colar,
+    // aceita apagar, e so reescreve quando o texto ganha digito novo. O cursor
+    // vai para o fim porque a mascara so cresce a direita.
+    messageTextarea.addEventListener('input', () => {
+        if (!modoTelefone) return;
+        const bruto = messageTextarea.value;
+        const formatado = formatarParcial(bruto);
+        if (formatado !== bruto) {
+            messageTextarea.value = formatado;
+            messageTextarea.setSelectionRange(formatado.length, formatado.length);
+        }
+    });
 
 })();
