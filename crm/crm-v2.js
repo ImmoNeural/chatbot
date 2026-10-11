@@ -1957,67 +1957,155 @@ function renderPropostas() {
     const container = document.getElementById('propostas-grid');
     if (!container) return;
 
-    container.innerHTML = propostas.map(proposta => {
+    // Ordena por valor: a proposta de R$ 1,2 milhao e a que decide o mes, e
+    // nao faz sentido ela aparecer embaixo de uma de R$ 20 mil so porque foi
+    // cadastrada depois.
+    const lista = [...propostas].sort(
+        (a, b) => (parseFloat(b.valor_final) || 0) - (parseFloat(a.valor_final) || 0)
+    );
+
+    // Resumo da carteira. O vendedor abre esta tela para saber quanto esta na
+    // rua, e esse numero nao existia em lugar nenhum: ele tinha de somar os
+    // cards com o olho.
+    const aguardando = lista.filter(p => ['enviada', 'visualizada'].includes(p.status));
+    const totalRua = aguardando.reduce((s, p) => s + (parseFloat(p.valor_final) || 0), 0);
+    const aceitas = lista.filter(p => p.status === 'aceita');
+    const totalAceito = aceitas.reduce((s, p) => s + (parseFloat(p.valor_final) || 0), 0);
+
+    const resumo = `
+        <div class="propostas-resumo fio">
+            <div class="propostas-resumo__item">
+                <span class="propostas-resumo__rotulo">Na rua</span>
+                <span class="propostas-resumo__valor num">${formatCurrency(totalRua)}</span>
+                <span class="propostas-resumo__nota num">${aguardando.length} aguardando resposta</span>
+            </div>
+            <div class="propostas-resumo__item">
+                <span class="propostas-resumo__rotulo">Fechado</span>
+                <span class="propostas-resumo__valor num cor-ok">${formatCurrency(totalAceito)}</span>
+                <span class="propostas-resumo__nota num">${aceitas.length} aceitas</span>
+            </div>
+            <div class="propostas-resumo__item">
+                <span class="propostas-resumo__rotulo">Conversão</span>
+                <span class="propostas-resumo__valor num">${lista.length ? Math.round(aceitas.length / lista.length * 100) : 0}%</span>
+                <span class="propostas-resumo__nota num">${lista.length} propostas no total</span>
+            </div>
+        </div>`;
+
+    const cards = lista.map(proposta => {
+        const vista = !!proposta.data_visualizacao;
+        const diasDesde = proposta.created_at
+            ? Math.floor((Date.now() - new Date(proposta.created_at).getTime()) / 86400000)
+            : null;
+        // Validade padrao de 15 dias, como no schema. Proposta vencida sem
+        // resposta e a que mais precisa de telefonema, e antes nada na tela
+        // dizia isso.
+        const validade = proposta.validade_dias || 15;
+        const vencida = diasDesde !== null && diasDesde > validade
+            && ['enviada', 'visualizada'].includes(proposta.status);
+
+        const economia = parseFloat(proposta.economia_mensal_prevista) || 0;
+        const payback = parseInt(proposta.payback_meses) || 0;
+
         return `
-            <div class="module-card p-6">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h4 class="font-bold tinta-1">${proposta.numero_proposta}</h4>
-                        <p class="text-sm tinta-2">${proposta.oportunidades?.leads?.nome || 'Lead sem nome'}</p>
+            <article class="proposta-card module-card ${vencida ? 'proposta-card--vencida' : ''}">
+                <header class="proposta-card__topo">
+                    <div class="proposta-card__id">
+                        <span class="proposta-card__numero num">${proposta.numero_proposta}</span>
+                        <span class="proposta-card__lead">${proposta.oportunidades?.leads?.nome || 'Lead sem nome'}</span>
                     </div>
                     ${badgeStatus(proposta.status)}
-                </div>
+                </header>
 
-                <div class="space-y-2 mb-4 text-sm">
-                    <div class="flex justify-between">
-                        <span class="tinta-2">Potência:</span>
-                        <span class="num font-semibold tinta-1">${proposta.potencia_total_kwp} kWp</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="tinta-2">Módulos:</span>
-                        <span class="num font-semibold tinta-1">${proposta.num_modulos} un</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="tinta-2">Valor:</span>
-                        <span class="num font-semibold tinta-1">${formatCurrency(proposta.valor_final)}</span>
-                    </div>
-                </div>
+                <p class="proposta-card__valor num">${formatCurrency(proposta.valor_final)}</p>
 
-                <div class="flex gap-2">
-                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="botao-primario flex-1 py-2 text-sm">
-                        <i class="fas fa-eye mr-1"></i> Visualizar
+                <dl class="proposta-card__specs">
+                    <div><dt>Potência</dt><dd class="num">${proposta.potencia_total_kwp || 0} kWp</dd></div>
+                    <div><dt>Módulos</dt><dd class="num">${proposta.num_modulos || 0}</dd></div>
+                    ${economia ? `<div><dt>Economia</dt><dd class="num">${formatCurrency(economia)}/mês</dd></div>` : ''}
+                    ${payback ? `<div><dt>Payback</dt><dd class="num">${(payback / 12).toFixed(1)} anos</dd></div>` : ''}
+                </dl>
+
+                <p class="proposta-card__rastro">
+                    ${vencida
+                        ? `<span class="chip chip-parado"><i class="fas fa-hourglass-half"></i> Vencida há ${diasDesde - validade} dias</span>`
+                        : vista
+                            ? `<span class="chip chip-ok"><i class="fas fa-eye"></i> Vista em ${formatDate(proposta.data_visualizacao)}</span>`
+                            : `<span class="chip"><i class="fas fa-paper-plane"></i> Ainda não aberta</span>`}
+                </p>
+
+                <footer class="proposta-card__acoes">
+                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="botao-primario">
+                        <i class="fas fa-eye" aria-hidden="true"></i> Abrir
+                    </button>
+                    <button onclick="copiarLinkProposta('${proposta.token_rastreio}')" class="botao-secundario" title="Copiar o link para enviar ao cliente">
+                        <i class="fas fa-link" aria-hidden="true"></i> Link
                     </button>
                     ${proposta.arquivo_pdf_url ? `
-                        <a href="${proposta.arquivo_pdf_url}" target="_blank" class="flex-1 botao-secundario text-center py-2 text-sm">
-                            <i class="fas fa-file-pdf mr-1"></i> PDF
-                        </a>
-                    ` : ''}
-                    <button onclick="copiarLinkProposta('${proposta.token_rastreio}')" class="flex-1 botao-secundario py-2 text-sm">
-                        <i class="fas fa-link mr-1"></i> Copiar Link
-                    </button>
-                </div>
+                        <a href="${proposta.arquivo_pdf_url}" target="_blank" rel="noopener" class="botao-secundario">
+                            <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+                        </a>` : ''}
+                </footer>
+            </article>`;
+    }).join('');
 
-                ${proposta.data_visualizacao ? `
-                    <p class="text-xs tinta-3 mt-3">
-                        <i class="fas fa-eye"></i> Visualizada em ${formatDate(proposta.data_visualizacao)}
-                    </p>
-                ` : ''}
-            </div>
-        `;
-    }).join('') || '<p class="tinta-3 col-span-3 text-center py-8">Nenhuma proposta encontrada</p>';
+    container.innerHTML = lista.length
+        ? resumo + `<div class="propostas-lista">${cards}</div>`
+        : `<div class="estado-vazio fio">
+               <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
+               <p><strong>Nenhuma proposta ainda.</strong></p>
+               <p class="tinta-3">As propostas aparecem aqui assim que você fechar uma oportunidade no kanban.</p>
+           </div>`;
+}
+
+// Monta o link publico da proposta. Antes isto recortava a URL ate a ultima
+// barra: aberto em /crm (sem barra final) o recorte parava no dominio e o
+// link saia como /proposta.html, que nao existe. Com pathname a conta e feita
+// sobre o caminho, e query string e ancora nao entram no meio.
+function linkDaProposta(token) {
+    const dir = window.location.pathname.replace(/[^/]*$/, '');
+    return `${window.location.origin}${dir}proposta.html?t=${encodeURIComponent(token)}`;
 }
 
 function abrirProposta(token) {
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const url = `${baseUrl}proposta.html?t=${token}`;
-    window.open(url, '_blank');
+    const janela = window.open(linkDaProposta(token), '_blank', 'noopener');
+    // O navegador bloqueia popup quando o clique nao e reconhecido como gesto
+    // do usuario. Sem este aviso, clicar em "Visualizar" nao fazia nada e nao
+    // explicava nada.
+    if (!janela) {
+        showNotification('O navegador bloqueou a nova aba. Libere os pop-ups deste site.', 'error');
+    }
 }
 
-function copiarLinkProposta(token) {
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const url = `${baseUrl}proposta.html?t=${token}`;
-    navigator.clipboard.writeText(url);
-    showNotification('Link copiado para área de transferência!', 'success');
+async function copiarLinkProposta(token) {
+    const url = linkDaProposta(token);
+
+    // navigator.clipboard so existe em contexto seguro: funciona em https e em
+    // localhost, mas NAO em http://192.168.x.x, que e como a equipe costuma
+    // abrir o CRM na rede do escritorio. Antes a promessa era ignorada, entao
+    // o toast dizia "copiado" sem ter copiado nada.
+    try {
+        if (!navigator.clipboard) throw new Error('sem_clipboard');
+        await navigator.clipboard.writeText(url);
+        showNotification('Link copiado.', 'success');
+        return;
+    } catch (e) {
+        // Caminho antigo, que funciona fora de contexto seguro.
+        try {
+            const campo = document.createElement('textarea');
+            campo.value = url;
+            campo.setAttribute('readonly', '');
+            campo.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+            document.body.appendChild(campo);
+            campo.select();
+            const deu = document.execCommand('copy');
+            document.body.removeChild(campo);
+            if (deu) { showNotification('Link copiado.', 'success'); return; }
+        } catch (e2) { /* cai no aviso abaixo */ }
+
+        // Nem um nem outro: mostra o link para copiar a mao, em vez de mentir.
+        showNotification('Não consegui copiar. O link é: ' + url, 'error');
+        console.warn('[crm] cópia bloqueada. Link da proposta:', url);
+    }
 }
 
 // =========================================

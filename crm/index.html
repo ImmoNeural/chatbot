@@ -66,7 +66,10 @@
             /* Status — reservados, nunca reutilizados como serie.
                Usados como FUNDO com texto branco em cima (par medido). */
             --ok:      #1B7A4B;     /* 5,34:1 com branco */
-            --atencao: #9A6209;     /* 5,09:1 */
+            --atencao: #9A6209;
+            /* Ambar para superficie escura: o --atencao normal mede 1,59:1
+               sobre a sidebar e some. Este passo mede 3,76:1. */
+            --atencao-sobre-escuro: #F69D0E;     /* 5,09:1 */
             --grave:   #B3421C;     /* 5,66:1 */
             --critico: #A3231F;     /* 7,45:1 */
             --info:    #1F5F8B;     /* 6,84:1 */
@@ -1364,6 +1367,193 @@
            item "Ajuda" do menu), entao nao ha mais nada fixo no canto para
            cobrir a ultima linha das listas. */
         main { padding-bottom: 32px; }
+
+        /* Quando a aba de atendimento abre a direita, o conteudo encolhe em vez
+           de ficar por baixo dela. O widget anuncia o estado em
+           <html class="sunbotic-aberto"> e a largura em --sunbotic-largura; a
+           decisao de encolher e desta pagina, que e quem sabe o que cabe.
+           A transicao acompanha a da aba (.32s) para os dois se moverem juntos. */
+        main,
+        #sidebar {
+            transition: margin-right .32s cubic-bezier(.32,.72,0,1),
+                        width .32s cubic-bezier(.32,.72,0,1);
+        }
+
+        /* Item de acao do menu. Precisa da propria cor porque nao leva
+           .nav-link — e e de .nav-link que vem a tinta clara da sidebar.
+           Sem isto ele nascia em tinta escura sobre o verde, ilegivel.
+           O fio a esquerda o separa dos modulos: ele abre um painel, nao
+           navega para uma tela. */
+        .sidebar .menu-acao {
+            color: var(--ink-sobre-marca);
+            /* --atencao mede 1,59:1 sobre a sidebar escura, ou seja, quase
+               invisivel. Este passo mais claro do mesmo ambar mede 3,76:1 e
+               cumpre o piso de 3:1 para elemento nao textual. */
+            border-left: 3px solid var(--atencao-sobre-escuro);
+            padding-left: 9px;
+        }
+
+        .sidebar .menu-acao:hover {
+            background: rgba(255, 255, 255, .12);
+        }
+
+        /* ===== Propostas ===== */
+
+        .propostas-resumo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 0;
+            background: var(--card);
+            border-radius: var(--raio);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .propostas-resumo__item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 14px 18px;
+            border-left: 2px solid var(--rule);
+        }
+
+        .propostas-resumo__item:first-child { border-left: 0; }
+
+        .propostas-resumo__rotulo {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+
+        .propostas-resumo__valor {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--ink-1);
+            line-height: 1.1;
+        }
+
+        .propostas-resumo__nota { font-size: 11px; color: var(--ink-3); }
+
+        .propostas-lista {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 16px;
+        }
+
+        .proposta-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Fio ambar no topo da proposta vencida: o cartao que precisa de
+           telefonema hoje nao pode ser igual aos outros. */
+        .proposta-card--vencida { border-top: 3px solid var(--atencao); }
+
+        .proposta-card__topo {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .proposta-card__id { min-width: 0; }
+
+        .proposta-card__numero {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            color: var(--ink-3);
+        }
+
+        .proposta-card__lead {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink-1);
+            overflow-wrap: break-word;
+        }
+
+        /* O valor e o que decide a conversa. Em display, sozinho na linha, ele
+           para de disputar espaco com o rotulo — era ali que "R$ 1.250.000,00"
+           encostava em "Valor:" e os dois viravam um borrao. */
+        .proposta-card__valor {
+            font-family: var(--fonte-titulo);
+            font-size: 26px;
+            font-weight: 600;
+            line-height: 1.05;
+            color: var(--ink-1);
+            margin: 0;
+        }
+
+        .proposta-card__specs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px 14px;
+            margin: 0;
+            padding-top: 10px;
+            border-top: 2px solid var(--rule);
+        }
+
+        .proposta-card__specs div { display: flex; flex-direction: column; min-width: 0; }
+
+        .proposta-card__specs dt {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+        }
+
+        .proposta-card__specs dd {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink-1);
+            white-space: nowrap;
+        }
+
+        .proposta-card__rastro { margin: 0; }
+
+        .proposta-card__acoes {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 10px;
+        }
+
+        .proposta-card__acoes > * {
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 7px 10px;
+            font-size: 12px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .estado-vazio {
+            background: var(--card);
+            border-radius: var(--raio);
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--ink-2);
+        }
+
+        .estado-vazio i { font-size: 28px; color: var(--ink-3); display: block; margin-bottom: 12px; }
+        .estado-vazio p { margin: 0 0 4px; }
+
+        html.sunbotic-aberto main {
+            margin-right: var(--sunbotic-largura, 440px);
+        }
+
+        /* Em tela estreita a aba ocupa tudo: empurrar jogaria o conteudo para
+           fora. Ali ela volta a ser sobreposicao, que e o certo no celular. */
+        @media (max-width: 900px) {
+            html.sunbotic-aberto main { margin-right: 0; }
+        }
     </style>
 
     <script>
@@ -1467,11 +1657,14 @@
                      canto da tela: num sistema que ja tem navegacao, o botao
                      flutuante so serve para cobrir conteudo. Sem .nav-link de
                      proposito — ele nao e um modulo e nao deve ganhar o estado
-                     ativo que o showModule distribui. -->
+                     ativo que o showModule distribui.
+                     O rotulo nomeia o que a ferramenta FAZ (estimar a economia
+                     em cinco perguntas) em vez de "Ajuda", que nao promete
+                     nada e por isso ninguem clica. -->
                 <a href="#" onclick="event.preventDefault(); window.SunboticChat?.alternar()"
-                   class="flex items-center gap-3 px-3 py-2 hover:bg-white/10 transition rounded-lg">
-                    <i class="fas fa-comment-dots w-5" aria-hidden="true"></i>
-                    <span>Ajuda</span>
+                   class="menu-acao flex items-center gap-3 px-3 py-2 transition rounded-lg">
+                    <i class="fas fa-calculator w-5" aria-hidden="true"></i>
+                    <span>Faça um orçamento</span>
                 </a>
 
                 <div class="mt-5 pt-5" style="border-top: 2px solid rgba(255,255,255,0.18);">
@@ -1730,7 +1923,7 @@
              MODULO 4 — PROPOSTAS
              ============================================================= -->
         <div id="module-propostas" class="module hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="propostas-grid">
+            <div id="propostas-grid">
                 <!-- Propostas inseridas via JS -->
             </div>
         </div>

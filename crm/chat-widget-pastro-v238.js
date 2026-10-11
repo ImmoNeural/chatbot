@@ -156,13 +156,14 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            /* Papel, nao faixa de marca. A barra solida era o maior bloco de
-               cor da tela e empurrava tudo o mais para segundo plano. */
-            background: var(--card);
-            color: var(--ink-1);
+            /* Verde escuro com tinta branca. E a unica faixa de marca do
+               painel, e marca a identidade logo na primeira olhada; o resto
+               da aba continua em papel. Branco sobre --brand-700 mede 8,09:1. */
+            background: var(--brand-700);
+            color: var(--ink-sobre-marca);
             position: relative;
             flex-shrink: 0;
-            border-bottom: 2px solid var(--rule);
+            border-bottom: 0;
         }
 
         /* O chip branco existe para logo de cliente, que pode vir em qualquer
@@ -172,10 +173,8 @@
         .chat-assist-widget .chat-header-logo {
             width: auto;
             max-width: 104px;
-            height: 26px;
+            height: 24px;
             object-fit: contain;
-            /* Sem chip: o cabecalho agora e branco, entao a moldura clara
-               virava um retangulo visivel em volta de nada. */
             background: transparent;
             padding: 0;
             flex: 0 0 auto;
@@ -184,7 +183,7 @@
         .chat-assist-widget .chat-header-title {
             font-size: 14px;
             font-weight: 700;
-            color: var(--ink-1);
+            color: var(--ink-sobre-marca);
             letter-spacing: -0.01em;
             flex: 1;
             min-width: 0;
@@ -203,11 +202,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Discreto: fechar nao e a acao principal de um painel de
-               atendimento, e nao precisa de chip de marca para ser achado. */
             background: transparent;
-            border: 2px solid var(--rule);
-            color: var(--ink-2);
+            border: 2px solid var(--ink-sobre-marca-2);
+            color: var(--ink-sobre-marca);
             border-radius: var(--chat-radius-sm);
             font-size: 18px;
             line-height: 1;
@@ -216,9 +213,8 @@
         }
 
         .chat-assist-widget .chat-close-btn:hover {
-            background: var(--sunken);
-            border-color: var(--ink-3);
-            color: var(--ink-1);
+            background: rgba(255,255,255,.14);
+            border-color: var(--ink-sobre-marca);
         }
 
         .chat-assist-widget .chat-body {
@@ -1080,13 +1076,13 @@
            e seu proprio fundo e --brand-700: o anel media 1,00:1, ou seja,
            invisivel. Branco sobre --brand-700 mede 8,09:1. */
         .chat-assist-widget .chat-close-btn:focus-visible {
-            outline-color: var(--brand-600);
+            outline-color: var(--ink-sobre-marca);
         }
     `;
     document.head.appendChild(widgetStyles);
 
     // Default configuration - Sunbotic Theme
-    const LOGO_PADRAO = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23297A72' stroke-width='3' stroke-linecap='round'%3E%3Ccircle cx='24' cy='24' r='8' fill='%23297A72' stroke='none'/%3E%3Cpath d='M24 6v5M24 37v5M6 24h5M37 24h5M11.2 11.2l3.5 3.5M33.3 33.3l3.5 3.5M36.8 11.2l-3.5 3.5M14.7 33.3l-3.5 3.5'/%3E%3C/g%3E%3C/svg%3E";
+    const LOGO_PADRAO = "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round'%3E%3Ccircle cx='24' cy='24' r='8' fill='%23ffffff' stroke='none'/%3E%3Cpath d='M24 6v5M24 37v5M6 24h5M37 24h5M11.2 11.2l3.5 3.5M33.3 33.3l3.5 3.5M36.8 11.2l-3.5 3.5M14.7 33.3l-3.5 3.5'/%3E%3C/g%3E%3C/svg%3E";
 
     const defaultSettings = {
         webhook: { url: '', route: '' },
@@ -2469,16 +2465,31 @@
             startChat();
             isChatInitialized = true;
         }
+        anunciarEstado();
     });
 
     // Porta de entrada para quem nao usa o botao flutuante: a propria pagina
     // abre a aba a partir do seu menu.
+    // Anuncia o estado da aba no <html>, junto da largura dela. A pagina que
+    // hospeda decide o que fazer com isso: o CRM encolhe o conteudo para a
+    // esquerda em vez de ficar por baixo. O widget nao mexe no layout alheio
+    // por conta propria — so ele nao sabe o que pode encolher sem quebrar.
+    const anunciarEstado = () => {
+        const aberta = chatWindow.classList.contains('visible');
+        document.documentElement.classList.toggle('sunbotic-aberto', aberta);
+        if (aberta) {
+            const l = Math.round(chatWindow.getBoundingClientRect().width);
+            document.documentElement.style.setProperty('--sunbotic-largura', l + 'px');
+        }
+    };
+
     window.SunboticChat = {
         abrir() {
             chatWindow.classList.add('visible');
             if (!isChatInitialized) { startChat(); isChatInitialized = true; }
+            anunciarEstado();
         },
-        fechar() { chatWindow.classList.remove('visible'); },
+        fechar() { chatWindow.classList.remove('visible'); anunciarEstado(); },
         alternar() {
             chatWindow.classList.contains('visible') ? this.fechar() : this.abrir();
         },
@@ -2501,7 +2512,10 @@
     document.addEventListener('scroll', aoRolar, { passive: true, capture: true });
 
     // Close chat window
-    chatWindow.querySelector('.chat-close-btn').addEventListener('click', () => chatWindow.classList.remove('visible'));
+    chatWindow.querySelector('.chat-close-btn').addEventListener('click', () => {
+        chatWindow.classList.remove('visible');
+        anunciarEstado();
+    });
 
     // Send message on button click
     sendButton.addEventListener('click', () => submitMessage(messageTextarea.value));
