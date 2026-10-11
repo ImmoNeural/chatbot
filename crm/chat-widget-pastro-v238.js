@@ -1481,6 +1481,331 @@
     };
 
     // Function to show the dynamic buttons for different doubt topics
+    // =================================================================
+    // BASE DE CONHECIMENTO LOCAL
+    // =================================================================
+    // As 22 duvidas sao perguntas fixas com respostas fixas. Depender de um
+    // servico externo para responder "o que e energia solar" significa que,
+    // toda vez que ele cair, o cliente que so queria o basico bate num erro
+    // — foi exatamente o que aconteceu. Aqui as respostas viajam junto com o
+    // widget: funcionam offline, respondem na hora e nao tem como quebrar.
+    //
+    // Numeros conferem com a calculadora do CRM (crm/calculadora-solar.js) e
+    // com a Lei 14.300/2022, o marco legal da geracao distribuida.
+    const BASE_DUVIDAS = {
+        'Energia Solar': {
+            titulo: 'O que é energia solar',
+            // Sem "o que e" nem "como funciona": elas aparecem em quase toda
+            // pergunta e levavam tudo para o topico generico.
+            palavras: ['energia solar', 'solar', 'fotovoltaica', 'fotovoltaico', 'placa solar', 'painel solar'],
+            resposta: `
+                <p>É eletricidade gerada a partir da luz do sol. As placas no telhado convertem a luz em corrente contínua, e o inversor transforma essa corrente em corrente alternada — a mesma que sai das tomadas da sua casa.</p>
+                <p>O que sobra vai para a rede da concessionária e volta como <strong>crédito</strong> na sua conta. Por isso o sistema funciona de dia e você continua com luz à noite.</p>
+                <p class="chat-hint">No Brasil a irradiação varia de 4,6 kWh/m²/dia em Santa Catarina a 5,9 no Rio Grande do Norte — mesmo as regiões menos ensolaradas rendem mais que a média da Alemanha, que é líder mundial no setor.</p>`,
+            relacionados: ['Sistema Fotovoltaico', 'Compensação Energia', 'Retorno Investimento'],
+        },
+        'Sistema Fotovoltaico': {
+            titulo: 'Como funciona o sistema',
+            palavras: ['sistema fotovoltaico', 'fotovoltaico', 'como funciona o sistema', 'gera energia'],
+            resposta: `
+                <p>São quatro etapas:</p>
+                <p><strong>1.</strong> As placas captam a luz e geram corrente contínua.<br>
+                <strong>2.</strong> O inversor converte para corrente alternada, 127V ou 220V.<br>
+                <strong>3.</strong> A energia abastece a casa na hora em que é gerada.<br>
+                <strong>4.</strong> O excedente vai para a rede e vira crédito.</p>
+                <p>Não há bateria no sistema mais comum (on-grid). A própria rede funciona como se fosse a bateria.</p>`,
+            relacionados: ['Componentes Solares', 'Off-grid, On-grid e Híbrido', 'Falta de Energia'],
+        },
+        'Componentes Solares': {
+            titulo: 'O que compõe o sistema',
+            palavras: ['componentes', 'equipamentos', 'placa', 'modulo', 'inversor', 'string box', 'estrutura'],
+            resposta: `
+                <p><strong>Módulos</strong> — as placas. Hoje são comuns os de 550 a 580 Wp, com 25 anos de garantia de desempenho.</p>
+                <p><strong>Inversor</strong> — o cérebro. Converte a corrente e monitora a geração. É o componente que mais trabalha, e o primeiro a ser trocado.</p>
+                <p><strong>Estrutura de fixação</strong> — fixa as placas no telhado, dimensionada para a carga de vento da região.</p>
+                <p><strong>String box e proteções</strong> — disjuntores e dispositivos contra surto, que protegem o sistema e a casa.</p>
+                <p><strong>Cabeamento e aterramento</strong> — dimensionados para a corrente do sistema.</p>`,
+            relacionados: ['Vida Útil', 'Manutenção Sistema', 'Espaço da Instalação'],
+        },
+        'Benefícios Solares': {
+            titulo: 'Quais são os benefícios',
+            palavras: ['beneficio', 'vantagem', 'vantagens', 'por que instalar', 'vale a pena'],
+            resposta: `
+                <p><strong>Conta de luz menor</strong> — a redução chega a 95% do consumo. Os 5% restantes são o custo de disponibilidade, que a concessionária cobra de todo cliente conectado à rede.</p>
+                <p><strong>Proteção contra aumento de tarifa</strong> — a tarifa sobe todo ano; a luz do sol não.</p>
+                <p><strong>Valorização do imóvel</strong> — um imóvel com sistema instalado vende por mais e mais rápido.</p>
+                <p><strong>Previsibilidade</strong> — você troca uma conta variável por um investimento com retorno calculável.</p>`,
+            relacionados: ['Retorno Investimento', 'Conta Luz', 'Incentivos Fiscais'],
+        },
+        'Vida Útil': {
+            titulo: 'Quanto tempo dura',
+            palavras: ['vida util', 'durabilidade', 'quanto tempo dura', 'quanto dura', 'garantia', 'durar'],
+            resposta: `
+                <p><strong>Módulos: 25 a 30 anos.</strong> A garantia de fábrica é de 25 anos, assegurando pelo menos 80% da potência original no fim desse período. A perda é de cerca de 0,5% ao ano.</p>
+                <p><strong>Inversor: 10 a 15 anos.</strong> Costuma ser trocado uma vez ao longo da vida do sistema, e esse custo já deve estar previsto no cálculo de retorno.</p>
+                <p>A estrutura de fixação, em alumínio e inox, acompanha a vida das placas.</p>`,
+            relacionados: ['Manutenção Sistema', 'Retorno Investimento', 'Clima e Sujeira'],
+        },
+        'Retorno Investimento': {
+            titulo: 'Qual o retorno',
+            palavras: ['retorno', 'investimento', 'roi', 'vale a pena', 'economia', 'quanto economizo'],
+            resposta: `
+                <p>O sistema se paga entre <strong>4 e 7 anos</strong>, conforme o consumo, a tarifa da sua concessionária e a irradiação da sua cidade.</p>
+                <p>Depois disso, são mais de 18 anos de energia praticamente gratuita. Num horizonte de 25 anos, o retorno costuma ficar entre três e cinco vezes o valor investido.</p>
+                <p class="chat-hint">Posso estimar o seu caso agora: são cinco perguntas rápidas.</p>`,
+            relacionados: ['Tempo de Payback', 'Conta Luz', 'Benefícios Solares'],
+        },
+        'Conta Luz': {
+            titulo: 'O que acontece com a conta',
+            palavras: ['conta de luz', 'conta', 'fatura', 'zerar', 'zera', 'quanto fica', 'conta vai'],
+            resposta: `
+                <p>A conta não zera, mas cai muito. Sobra sempre o <strong>custo de disponibilidade</strong>, que é o mínimo cobrado de quem está ligado à rede:</p>
+                <p>Monofásico: 30 kWh<br>Bifásico: 50 kWh<br>Trifásico: 100 kWh</p>
+                <p>Também continuam a iluminação pública e os tributos. Na prática, uma conta de R$ 600 costuma cair para algo entre R$ 50 e R$ 90.</p>`,
+            relacionados: ['Compensação Energia', 'Créditos por Residência', 'Retorno Investimento'],
+        },
+        'Manutenção Sistema': {
+            titulo: 'Qual a manutenção',
+            palavras: ['manutencao', 'limpeza', 'limpar', 'lavar', 'cuidado', 'cuidados', 'precisa de manutencao'],
+            resposta: `
+                <p>Pouca. <strong>Limpeza das placas duas vezes por ano</strong>, com água e pano macio, resolve na maioria dos casos — em região de muita poeira ou maresia, três ou quatro vezes.</p>
+                <p>Uma <strong>inspeção elétrica anual</strong> verifica conexões, aterramento e proteções.</p>
+                <p>O inversor avisa sozinho quando algo sai do normal, pelo aplicativo. Não há peça móvel no sistema, e é por isso que ele exige tão pouco.</p>`,
+            relacionados: ['Clima e Sujeira', 'Vida Útil', 'Componentes Solares'],
+        },
+        'Compensação Energia': {
+            titulo: 'Como funciona a compensação',
+            palavras: ['compensacao', 'credito', 'creditos', 'injetar', 'excedente', 'sobra'],
+            resposta: `
+                <p>O que você gera e não consome na hora vai para a rede e vira crédito em kWh.</p>
+                <p>Esses créditos <strong>valem por 60 meses</strong> e abatem o consumo dos meses seguintes. É assim que a energia gerada ao meio-dia paga o chuveiro das sete da noite.</p>
+                <p>A regra está na <strong>Lei 14.300/2022</strong>, o marco legal da geração distribuída.</p>`,
+            relacionados: ['Créditos por Residência', 'Conta Luz', 'Incentivos Fiscais'],
+        },
+        'Tipos de Sistemas': {
+            titulo: 'Quais os tipos de sistema',
+            palavras: ['tipos de sistema', 'tipos', 'qual sistema'],
+            resposta: `
+                <p><strong>On-grid</strong> — ligado à rede, sem bateria. É o mais comum e o de melhor retorno.</p>
+                <p><strong>Off-grid</strong> — isolado, com baterias. Para onde não chega rede elétrica.</p>
+                <p><strong>Híbrido</strong> — ligado à rede e com bateria. Mantém a casa com energia na falta de luz, mas custa bem mais.</p>`,
+            relacionados: ['Off-grid, On-grid e Híbrido', 'Falta de Energia', 'Retorno Investimento'],
+        },
+        'Espaço da Instalação': {
+            titulo: 'Quanto espaço preciso',
+            palavras: ['espaco', 'area', 'quantos metros', 'metros de telhado', 'tamanho', 'cabe', 'quantas placas'],
+            resposta: `
+                <p>Cada módulo de 550 Wp ocupa cerca de <strong>2,3 m²</strong>. Com os espaçamentos necessários, conte <strong>6 a 8 m² por kWp</strong> instalado.</p>
+                <p>Um sistema residencial de 5 kWp, que atende uma conta de aproximadamente R$ 600, pede algo entre 30 e 40 m² de telhado livre.</p>
+                <p>Não precisa ser uma única água do telhado: dá para dividir entre faces diferentes.</p>`,
+            relacionados: ['Impacto Posição', 'Componentes Solares', 'Sistema Fotovoltaico'],
+        },
+        'Falta de Energia': {
+            titulo: 'Funciona na falta de luz',
+            palavras: ['falta de energia', 'falta de luz', 'falta luz', 'falta energia', 'apagao', 'queda de energia', 'sem luz', 'sem energia', 'cai a luz', 'acabar a luz', 'blecaute'],
+            resposta: `
+                <p><strong>O sistema on-grid desliga junto com a rede.</strong> Isso é exigência de segurança, chamada anti-ilhamento: se continuasse gerando, mandaria energia para o cabo da rua e poria em risco quem estiver trabalhando no poste.</p>
+                <p>Para manter a casa funcionando na queda de luz é preciso sistema <strong>híbrido com bateria</strong>, que encarece bastante o projeto.</p>
+                <p class="chat-hint">É a dúvida mais comum, e vale saber disso antes de fechar.</p>`,
+            relacionados: ['Off-grid, On-grid e Híbrido', 'Tipos de Sistemas'],
+        },
+        'Off-grid, On-grid e Híbrido': {
+            titulo: 'Off-grid, on-grid e híbrido',
+            palavras: ['off grid', 'on grid', 'hibrido', 'bateria', 'baterias'],
+            resposta: `
+                <p><strong>On-grid</strong> — ligado à rede, sem bateria. Melhor custo-benefício, e é o que 95% das instalações usam. Não funciona na falta de luz.</p>
+                <p><strong>Off-grid</strong> — totalmente isolado, com banco de baterias. Para sítios e áreas sem rede. Custa de duas a três vezes mais.</p>
+                <p><strong>Híbrido</strong> — ligado à rede e com bateria de reserva. Mantém circuitos essenciais na queda de luz. Entre 40% e 80% mais caro que o on-grid.</p>`,
+            relacionados: ['Falta de Energia', 'Tipos de Sistemas', 'Retorno Investimento'],
+        },
+        'Clima e Sujeira': {
+            titulo: 'Chuva, nuvem e sujeira',
+            palavras: ['chuva', 'chove', 'nublado', 'nuvem', 'sujeira', 'sujo', 'poeira', 'clima', 'inverno', 'granizo', 'tempo fechado'],
+            resposta: `
+                <p><strong>Dia nublado</strong> — gera menos, entre 10% e 25% do normal, mas não para. O dimensionamento já considera a média anual, com os dias bons e os ruins.</p>
+                <p><strong>Chuva</strong> — ajuda: lava as placas.</p>
+                <p><strong>Poeira e fezes de pássaro</strong> — podem tirar até 20% da geração se acumularem. Daí a limpeza semestral.</p>
+                <p><strong>Granizo</strong> — os módulos são testados para granizo de 25 mm a 80 km/h.</p>`,
+            relacionados: ['Manutenção Sistema', 'Impacto Posição', 'Vida Útil'],
+        },
+        'Tempo de Payback': {
+            titulo: 'Em quanto tempo se paga',
+            palavras: ['payback', 'quanto tempo se paga', 'se paga', 'prazo'],
+            resposta: `
+                <p>Entre <strong>4 e 7 anos</strong> na maior parte do Brasil. O que mais mexe nesse prazo:</p>
+                <p><strong>Tarifa da concessionária</strong> — quanto mais cara, mais rápido o retorno.<br>
+                <strong>Irradiação da sua cidade</strong> — o Nordeste rende cerca de 20% mais que o Sul.<br>
+                <strong>Orientação do telhado</strong> — face norte é a ideal.<br>
+                <strong>Forma de pagamento</strong> — à vista encurta; financiado alonga, mas a parcela costuma ficar próxima da conta de luz que você deixa de pagar.</p>`,
+            relacionados: ['Retorno Investimento', 'Impacto Posição', 'Conta Luz'],
+        },
+        'Créditos por Residência': {
+            titulo: 'Créditos em outro imóvel',
+            palavras: ['credito em outro', 'outro imovel', 'segunda casa', 'autoconsumo remoto', 'transferir credito', 'no sitio', 'sitio', 'chacara', 'outra casa', 'segundo imovel', 'usar os creditos'],
+            resposta: `
+                <p>Sim. Os créditos podem abater a conta de <strong>outros imóveis do mesmo titular</strong>, na mesma área de concessão. É o autoconsumo remoto.</p>
+                <p>Serve para quem tem casa e sítio, ou casa e ponto comercial: o sistema fica onde o telhado é melhor, e os créditos abatem onde o consumo é maior.</p>
+                <p>A divisão entre as unidades é informada à concessionária e pode ser ajustada depois.</p>`,
+            relacionados: ['Compensação Energia', 'Conta Luz', 'Incentivos Fiscais'],
+        },
+        'Incentivos Fiscais': {
+            titulo: 'Incentivos e isenções',
+            palavras: ['incentivo', 'isencao', 'imposto', 'icms', 'financiamento', 'desconto'],
+            resposta: `
+                <p><strong>ICMS</strong> — a maioria dos estados isenta o imposto sobre a energia compensada, pelo Convênio ICMS 16/2015.</p>
+                <p><strong>Lei 14.300/2022</strong> — quem conectou até janeiro de 2023 mantém a regra antiga até 2045. Para novos projetos há cobrança gradual do Fio B, já considerada nos nossos cálculos.</p>
+                <p><strong>Financiamento</strong> — há linhas específicas para energia solar, com carência e prazos longos.</p>
+                <p class="chat-hint">As regras variam por estado. Nosso especialista confirma o que vale no seu caso.</p>`,
+            relacionados: ['Compensação Energia', 'Retorno Investimento', 'Conta Luz'],
+        },
+        'Impacto Posição': {
+            titulo: 'Posição e inclinação do telhado',
+            palavras: ['posicao', 'orientacao', 'inclinacao', 'norte', 'sul', 'leste', 'oeste', 'sombra'],
+            resposta: `
+                <p><strong>Face norte</strong> é a ideal no Brasil, e rende 100% do previsto.</p>
+                <p><strong>Leste ou oeste</strong> perdem de 10% a 15% — ainda muito viável.</p>
+                <p><strong>Face sul</strong> perde de 20% a 30%, e às vezes compensa com mais placas.</p>
+                <p><strong>Inclinação</strong> ideal é próxima da latitude da cidade. Telhado praticamente plano acumula mais sujeira e pede limpeza mais frequente.</p>
+                <p><strong>Sombra</strong> é o que mais atrapalha: uma árvore ou caixa d'água sobre uma única placa derruba a geração de toda a série.</p>`,
+            relacionados: ['Espaço da Instalação', 'Clima e Sujeira', 'Tempo de Payback'],
+        },
+        'Estação de Recarga': {
+            titulo: 'Estação de recarga',
+            palavras: ['estacao de recarga', 'carregador', 'wallbox', 'carregar carro'],
+            resposta: `
+                <p>É o ponto de recarga para carro elétrico, instalado na garagem. O modelo residencial mais comum é o <strong>wallbox de 7,4 kW</strong>, que carrega a bateria completa em cerca de 8 horas — uma noite.</p>
+                <p>A instalação pede circuito próprio, com disjuntor e proteção dedicados. Vale avaliar junto com o sistema solar: a recarga aumenta o consumo e muda o dimensionamento.</p>`,
+            relacionados: ['Recarga Solar', 'O que é eletromobilidade?', 'Benefícios Eletromobilidade'],
+        },
+        'Recarga Solar': {
+            titulo: 'Carregar o carro com sol',
+            palavras: ['recarga solar', 'carregar com solar', 'carro eletrico solar', 'carregar meu carro', 'carregar o carro', 'carregar carro'],
+            resposta: `
+                <p>Sim, e é a combinação de melhor retorno que existe hoje. Um carro elétrico roda cerca de <strong>6 km por kWh</strong>: 1.000 km por mês consomem aproximadamente 170 kWh.</p>
+                <p>Com tarifa de R$ 0,85, esses 1.000 km custariam cerca de R$ 145 na rede — e saem praticamente de graça se vierem do seu próprio sistema.</p>
+                <p>Na prática, basta acrescentar de 1,5 a 2 kWp ao projeto para cobrir o carro.</p>`,
+            relacionados: ['Estação de Recarga', 'Benefícios Eletromobilidade', 'Retorno Investimento'],
+        },
+        'O que é eletromobilidade?': {
+            titulo: 'O que é eletromobilidade',
+            palavras: ['eletromobilidade', 'carro eletrico', 'veiculo eletrico'],
+            resposta: `
+                <p>É o transporte movido a eletricidade no lugar de combustível: carros, motos, ônibus e utilitários elétricos, mais a infraestrutura de recarga que os sustenta.</p>
+                <p>A ligação com a energia solar é direta — o carro elétrico só é realmente limpo e barato se a eletricidade que o move também for.</p>`,
+            relacionados: ['Benefícios Eletromobilidade', 'Recarga Solar', 'Estação de Recarga'],
+        },
+        'Benefícios Eletromobilidade': {
+            titulo: 'Benefícios do carro elétrico',
+            palavras: ['beneficio carro eletrico', 'vantagem eletrico', 'economia carro'],
+            resposta: `
+                <p><strong>Custo por quilômetro</strong> — cerca de R$ 0,14 contra R$ 0,70 de um carro a combustão. Cinco vezes menos.</p>
+                <p><strong>Manutenção</strong> — sem troca de óleo, filtro, correia ou embreagem. O freio dura muito mais, porque a frenagem regenerativa poupa as pastilhas.</p>
+                <p><strong>IPVA</strong> — vários estados dão isenção ou desconto.</p>
+                <p><strong>Com energia solar</strong> — o custo por quilômetro cai praticamente a zero.</p>`,
+            relacionados: ['Recarga Solar', 'Estação de Recarga', 'O que é eletromobilidade?'],
+        },
+    };
+
+    // Normaliza para comparar: sem acento, minusculo, sem pontuacao. Quem
+    // digita no chat escreve "nao", "ENERGIA SOLAR?" e "fotovoltáico" — tudo
+    // isso precisa cair no mesmo lugar.
+    const normalizar = (t) => (t || '')
+        .toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    // Procura o topico que melhor responde a uma pergunta escrita a mao.
+    // Pontua por palavra-chave encontrada, dando peso maior as expressoes
+    // longas: "falta de energia" vale mais que "energia" sozinha, senao
+    // quase tudo cairia no topico generico.
+    const acharDuvida = (texto) => {
+        const alvo = normalizar(texto);
+        if (alvo.length < 3) return null;
+
+        let melhor = null, melhorNota = 0;
+        for (const [chave, item] of Object.entries(BASE_DUVIDAS)) {
+            let nota = 0;
+            for (const palavra of item.palavras) {
+                const p = normalizar(palavra);
+                if (alvo.includes(p)) nota += p.split(' ').length * 2 + p.length / 10;
+            }
+            // O proprio nome do topico tambem conta.
+            if (alvo.includes(normalizar(chave))) nota += 6;
+            if (nota > melhorNota) { melhorNota = nota; melhor = chave; }
+        }
+        // 2,5 deixa passar uma palavra unica e especifica ("limpar",
+        // "nublado", "payback"), que vale 2 + o comprimento dela / 10, e
+        // ainda barra o acerto por coincidencia. Abaixo disso, responder
+        // errado e pior do que admitir que nao entendeu.
+        return melhorNota >= 2.5 ? melhor : null;
+    };
+
+    // Responde um topico da base, com os relacionados como proximo passo.
+    const responderDuvida = (chave) => {
+        const item = BASE_DUVIDAS[chave];
+        if (!item) return false;
+
+        setTimeout(() => {
+            const relacionados = (item.relacionados || [])
+                .filter(r => BASE_DUVIDAS[r])
+                .map(r => `<button class="dynamic-button" data-topic="${r}">${BASE_DUVIDAS[r].titulo}</button>`)
+                .join('');
+
+            const container = addBotMessage(`
+                ${item.resposta}
+                <p class="chat-hint" style="margin-top:10px">Quer saber mais sobre:</p>
+                <div class="dynamic-buttons-container">
+                    ${relacionados}
+                    <button class="dynamic-button" data-duvida-acao="simular">${icone('economia')}<span>Calcular minha economia</span></button>
+                </div>
+            `);
+
+            // Os relacionados continuam respondendo da base; o botao de
+            // simular entra no funil.
+            container.querySelectorAll('[data-topic]').forEach(b => {
+                b.addEventListener('click', () => {
+                    addUserMessage(BASE_DUVIDAS[b.dataset.topic].titulo);
+                    responderDuvida(b.dataset.topic);
+                });
+            });
+            container.querySelector('[data-duvida-acao="simular"]')?.addEventListener('click', () => {
+                addUserMessage('Quero calcular minha economia');
+                startQualificationFunnel();
+            });
+        }, 420);
+
+        return true;
+    };
+
+    // Quando nao da para responder: nao inventa. Oferece os caminhos que
+    // funcionam de verdade — o funil, a lista de duvidas e o WhatsApp.
+    const naoEntendi = (texto) => {
+        setTimeout(() => {
+            const container = addBotMessage(`
+                <p>Não encontrei uma resposta pronta para isso.</p>
+                <p class="chat-hint">Posso ajudar de outras formas:</p>
+                <div class="dynamic-buttons-container">
+                    <button class="dynamic-button" data-nao-acao="simular">${icone('economia')}<span>Calcular minha economia</span></button>
+                    <button class="dynamic-button" data-nao-acao="duvidas">${icone('duvida')}<span>Ver todas as dúvidas</span></button>
+                    <button class="dynamic-button" data-nao-acao="whatsapp">${icone('conversa')}<span>Falar com a equipe</span></button>
+                </div>
+            `);
+            container.querySelector('[data-nao-acao="simular"]')?.addEventListener('click', () => {
+                addUserMessage('Quero calcular minha economia');
+                startQualificationFunnel();
+            });
+            container.querySelector('[data-nao-acao="duvidas"]')?.addEventListener('click', () => {
+                addUserMessage('Ver todas as dúvidas');
+                showDoubtTopics();
+            });
+            container.querySelector('[data-nao-acao="whatsapp"]')?.addEventListener('click', () => {
+                window.open('https://wa.me/4901799044322', '_blank');
+            });
+        }, 420);
+    };
+
     const showDoubtTopics = () => {
         const botFollowUpContainer = document.createElement('div');
         botFollowUpContainer.className = 'message-container bot-message';
@@ -1520,10 +1845,14 @@
         messagesContainer.appendChild(botFollowUpContainer);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-        // Add event listeners to the new dynamic buttons
+        // Responde da base local. Antes isto chamava submitMessage, que
+        // mandava a pergunta para um servico externo: com o servico fora do
+        // ar, os 22 topicos pararam todos de funcionar de uma vez.
         botFollowUpContainer.querySelectorAll('.dynamic-button').forEach(btn => {
             btn.addEventListener('click', () => {
-                submitMessage(btn.dataset.topic);
+                const topico = btn.dataset.topic;
+                addUserMessage(BASE_DUVIDAS[topico] ? BASE_DUVIDAS[topico].titulo : topico);
+                if (!responderDuvida(topico)) naoEntendi(topico);
             });
         });
     };
@@ -2030,6 +2359,29 @@
             messagesContainer.appendChild(typingIndicator);
         }
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Sem servico de conversa configurado, a base local e a unica fonte
+        // de resposta — e, mesmo com servico, responder do que ja esta aqui e
+        // instantaneo e nao pode falhar. So o que a base nao cobre vai para a
+        // rede.
+        const daBase = acharDuvida(trimmedMessage);
+        if (daBase) {
+            if (typingIndicator && typingIndicator.parentNode) {
+                messagesContainer.removeChild(typingIndicator);
+            }
+            isWaitingForResponse = false;
+            responderDuvida(daBase);
+            return;
+        }
+
+        if (!settings.webhook.url) {
+            if (typingIndicator && typingIndicator.parentNode) {
+                messagesContainer.removeChild(typingIndicator);
+            }
+            isWaitingForResponse = false;
+            naoEntendi(trimmedMessage);
+            return;
+        }
 
         // Prepare data for webhook
         const formData = new FormData();

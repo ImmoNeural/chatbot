@@ -356,7 +356,13 @@
     <script>
         window.ChatWidgetConfig = {
             webhook: {
-                url: 'https://pastro83.app.n8n.cloud/webhook/2951cf43-2103-415e-8b36-f73c345753a3/chat',
+                // Vazio de proposito: o fluxo do n8n que respondia aqui nao
+                // existe mais. Com a URL vazia o widget responde pela base de
+                // conhecimento embutida, que cobre as 22 duvidas e nao depende
+                // de servico nenhum. Para religar uma conversa com IA no
+                // futuro, basta por a URL de volta: a base continua atendendo
+                // primeiro e so o que ela nao cobre vai para a rede.
+                url: '',
                 route: 'general'
             },
             // IMPORTANTE: empresa_id necessário para RLS multi-tenant
