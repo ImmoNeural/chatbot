@@ -1259,8 +1259,7 @@
     // Create header HTML
     const headerHTML = `
         <div class="chat-header">
-            <img class="chat-header-logo" src="${settings.branding.logo}" alt="${settings.branding.name}"
-                 onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23297A72' stroke-width='3' stroke-linecap='round'%3E%3Ccircle cx='24' cy='24' r='8' fill='%23297A72' stroke='none'/%3E%3Cpath d='M24 6v5M24 37v5M6 24h5M37 24h5M11.2 11.2l3.5 3.5M33.3 33.3l3.5 3.5M36.8 11.2l-3.5 3.5M14.7 33.3l-3.5 3.5'/%3E%3C/g%3E%3C/svg%3E'http://www.w3.org/2000/svg\' viewBox=\'0 0 160 40\'%3E%3Cg fill=\'%23ffffff\'%3E%3Ccircle cx=\'20\' cy=\'20\' r=\'7\'/%3E%3Cg stroke=\'%23ffffff\' stroke-width=\'2.4\' stroke-linecap=\'round\'%3E%3Cpath d=\'M20 4v4M20 32v4M4 20h4M32 20h4M8.7 8.7l2.8 2.8M28.5 28.5l2.8 2.8M31.3 8.7l-2.8 2.8M11.5 28.5l-2.8 2.8\'/%3E%3C/g%3E%3Ctext x=\'44\' y=\'26\' font-family=\'Inter,system-ui,sans-serif\' font-size=\'17\' font-weight=\'700\'%3ESunbotic%3C/text%3E%3C/g%3E%3C/svg%3E'">
+            <img class="chat-header-logo" src="${settings.branding.logo}" alt="${settings.branding.name}">
             <span class="chat-header-title">${settings.branding.name}</span>
             <button class="chat-close-btn">×</button>
         </div>
@@ -1318,6 +1317,18 @@
     `;
 
     chatWindow.innerHTML = headerHTML + chatInterfaceHTML;
+
+    // Fallback do logo ligado por JavaScript, nao por atributo onerror no HTML:
+    // a data URI da marca contem aspas simples (xmlns='...') e elas fechavam a
+    // string do atributo antes da hora, deixando o handler invalido. Em JS nao
+    // ha conflito de aspas. Serve para quando quem embute o widget configurar
+    // uma URL de logo que nao existe mais — foi exatamente o que aconteceu.
+    const logoEl = chatWindow.querySelector('.chat-header-logo');
+    if (logoEl) {
+        logoEl.addEventListener('error', () => {
+            if (logoEl.getAttribute('src') !== LOGO_PADRAO) logoEl.src = LOGO_PADRAO;
+        });
+    }
 
     // Create launcher button
     const launchButton = document.createElement('button');
