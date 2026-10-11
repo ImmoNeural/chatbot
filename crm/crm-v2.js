@@ -849,21 +849,18 @@ function renderRecentLeads() {
         .filter(l => l.origem === 'chatbot')
         .slice(0, 5);
 
+    // Uma linha so. Antes nome e e-mail vinham empilhados e o badge com a
+    // data empilhavam do outro lado: duas colunas de duas linhas cada, o que
+    // dava 74px por lead. Numa tira de cinco leads isso e meia tela gasta em
+    // ar. Agora cada campo tem sua coluna e a linha fecha em 44px.
     container.innerHTML = recentLeads.map(lead => `
-        <div class="flex items-center justify-between p-4 sup-recuo rounded-lg linha transition cursor-pointer" onclick="openLeadModal('${lead.id}')">
-            <div class="flex items-center gap-3">
-                <div class="avatar-marca w-10 h-10 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div>
-                    <p class="font-semibold tinta-1">${lead.nome || lead.email}</p>
-                    <p class="text-sm tinta-2">${lead.email}</p>
-                </div>
-            </div>
-            <div class="text-right">
-                ${badgeStatus(lead.status)}
-                <p class="num text-xs tinta-3 mt-1">${formatDate(lead.created_at)}</p>
-            </div>
+        <div class="lead-recente linha" onclick="openLeadModal('${lead.id}')" role="button" tabindex="0"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLeadModal('${lead.id}')}">
+            <span class="avatar-marca lead-recente__avatar" aria-hidden="true"><i class="fas fa-user"></i></span>
+            <span class="lead-recente__nome">${lead.nome || lead.email}</span>
+            <span class="lead-recente__email tinta-2">${lead.email || ''}</span>
+            <span class="lead-recente__status">${badgeStatus(lead.status)}</span>
+            <span class="lead-recente__data num tinta-3">${formatDate(lead.created_at)}</span>
         </div>
     `).join('') || '<p class="tinta-3 text-center py-8">Nenhum lead recente do chatbot</p>';
 }
@@ -1954,107 +1951,67 @@ function showTab(tabName) {
 // PROPOSTAS
 // =========================================
 function renderPropostas() {
-    const container = document.getElementById('propostas-grid');
-    if (!container) return;
+    // Cartelas de numero, no mesmo padrao de Instalados. O vendedor abre esta
+    // tela para saber quanto esta na rua, e esse total nao existia em lugar
+    // nenhum: ele somava as linhas com o olho.
+    const aguardando = propostas.filter(p => ['enviada', 'visualizada'].includes(p.status));
+    const aceitas = propostas.filter(p => p.status === 'aceita');
+    const soma = lista => lista.reduce((s, p) => s + (parseFloat(p.valor_final) || 0), 0);
 
-    // Ordena por valor: a proposta de R$ 1,2 milhao e a que decide o mes, e
-    // nao faz sentido ela aparecer embaixo de uma de R$ 20 mil so porque foi
-    // cadastrada depois.
-    const lista = [...propostas].sort(
-        (a, b) => (parseFloat(b.valor_final) || 0) - (parseFloat(a.valor_final) || 0)
-    );
+    marcarComoNumero('propostas-na-rua', formatCurrency(soma(aguardando)));
+    marcarComoNumero('propostas-fechado', formatCurrency(soma(aceitas)));
+    marcarComoNumero('propostas-conversao',
+        (propostas.length ? Math.round(aceitas.length / propostas.length * 100) : 0) + '%');
 
-    // Resumo da carteira. O vendedor abre esta tela para saber quanto esta na
-    // rua, e esse numero nao existia em lugar nenhum: ele tinha de somar os
-    // cards com o olho.
-    const aguardando = lista.filter(p => ['enviada', 'visualizada'].includes(p.status));
-    const totalRua = aguardando.reduce((s, p) => s + (parseFloat(p.valor_final) || 0), 0);
-    const aceitas = lista.filter(p => p.status === 'aceita');
-    const totalAceito = aceitas.reduce((s, p) => s + (parseFloat(p.valor_final) || 0), 0);
+    const tbody = document.getElementById('propostas-table-body');
+    if (!tbody) return;
 
-    const resumo = `
-        <div class="propostas-resumo fio">
-            <div class="propostas-resumo__item">
-                <span class="propostas-resumo__rotulo">Na rua</span>
-                <span class="propostas-resumo__valor num">${formatCurrency(totalRua)}</span>
-                <span class="propostas-resumo__nota num">${aguardando.length} aguardando resposta</span>
-            </div>
-            <div class="propostas-resumo__item">
-                <span class="propostas-resumo__rotulo">Fechado</span>
-                <span class="propostas-resumo__valor num cor-ok">${formatCurrency(totalAceito)}</span>
-                <span class="propostas-resumo__nota num">${aceitas.length} aceitas</span>
-            </div>
-            <div class="propostas-resumo__item">
-                <span class="propostas-resumo__rotulo">Conversão</span>
-                <span class="propostas-resumo__valor num">${lista.length ? Math.round(aceitas.length / lista.length * 100) : 0}%</span>
-                <span class="propostas-resumo__nota num">${lista.length} propostas no total</span>
-            </div>
-        </div>`;
-
-    const cards = lista.map(proposta => {
-        const vista = !!proposta.data_visualizacao;
-        const diasDesde = proposta.created_at
+    tbody.innerHTML = ordenarLista(propostas, 'propostas').map(proposta => {
+        const dias = proposta.created_at
             ? Math.floor((Date.now() - new Date(proposta.created_at).getTime()) / 86400000)
             : null;
         // Validade padrao de 15 dias, como no schema. Proposta vencida sem
-        // resposta e a que mais precisa de telefonema, e antes nada na tela
-        // dizia isso.
+        // resposta e a que precisa de telefonema hoje, e nada na tela dizia.
         const validade = proposta.validade_dias || 15;
-        const vencida = diasDesde !== null && diasDesde > validade
+        const vencida = dias !== null && dias > validade
             && ['enviada', 'visualizada'].includes(proposta.status);
 
-        const economia = parseFloat(proposta.economia_mensal_prevista) || 0;
-        const payback = parseInt(proposta.payback_meses) || 0;
+        const rastreio = vencida
+            ? chipStatus('chip-parado', 'fa-hourglass-half', `Vencida há ${dias - validade}d`)
+            : proposta.data_visualizacao
+                ? chipStatus('chip-ok', 'fa-eye', `Vista ${formatDate(proposta.data_visualizacao)}`)
+                : chipStatus('chip-neutro', 'fa-paper-plane', 'Não aberta');
 
         return `
-            <article class="proposta-card module-card ${vencida ? 'proposta-card--vencida' : ''}">
-                <header class="proposta-card__topo">
-                    <div class="proposta-card__id">
-                        <span class="proposta-card__numero num">${proposta.numero_proposta}</span>
-                        <span class="proposta-card__lead">${proposta.oportunidades?.leads?.nome || 'Lead sem nome'}</span>
-                    </div>
-                    ${badgeStatus(proposta.status)}
-                </header>
-
-                <p class="proposta-card__valor num">${formatCurrency(proposta.valor_final)}</p>
-
-                <dl class="proposta-card__specs">
-                    <div><dt>Potência</dt><dd class="num">${proposta.potencia_total_kwp || 0} kWp</dd></div>
-                    <div><dt>Módulos</dt><dd class="num">${proposta.num_modulos || 0}</dd></div>
-                    ${economia ? `<div><dt>Economia</dt><dd class="num">${formatCurrency(economia)}/mês</dd></div>` : ''}
-                    ${payback ? `<div><dt>Payback</dt><dd class="num">${(payback / 12).toFixed(1)} anos</dd></div>` : ''}
-                </dl>
-
-                <p class="proposta-card__rastro">
-                    ${vencida
-                        ? `<span class="chip chip-parado"><i class="fas fa-hourglass-half"></i> Vencida há ${diasDesde - validade} dias</span>`
-                        : vista
-                            ? `<span class="chip chip-ok"><i class="fas fa-eye"></i> Vista em ${formatDate(proposta.data_visualizacao)}</span>`
-                            : `<span class="chip"><i class="fas fa-paper-plane"></i> Ainda não aberta</span>`}
-                </p>
-
-                <footer class="proposta-card__acoes">
-                    <button onclick="abrirProposta('${proposta.token_rastreio}')" class="botao-primario">
-                        <i class="fas fa-eye" aria-hidden="true"></i> Abrir
+        <tr class="linha ${vencida ? 'linha--atencao' : ''}">
+            <td class="px-6 py-4">
+                <p class="num font-semibold tinta-1">${proposta.numero_proposta}</p>
+                <p class="num text-sm tinta-3">${proposta.created_at ? formatDate(proposta.created_at) : ''}</p>
+            </td>
+            <td class="px-6 py-4">
+                <p class="font-semibold tinta-1">${proposta.oportunidades?.leads?.nome || 'Lead sem nome'}</p>
+                <p class="text-sm tinta-2">${proposta.num_modulos || 0} módulos</p>
+            </td>
+            <td class="px-6 py-4 num num-dir font-semibold tinta-1">${proposta.potencia_total_kwp || 0} kWp</td>
+            <td class="px-6 py-4 num num-dir font-semibold tinta-1">${formatCurrency(proposta.valor_final)}</td>
+            <td class="px-6 py-4">${badgeStatus(proposta.status)}</td>
+            <td class="px-6 py-4">${rastreio}</td>
+            <td class="px-6 py-4">
+                <div class="flex gap-1">
+                    <button class="botao-acao" onclick="abrirProposta('${proposta.token_rastreio}')" title="Abrir a proposta do cliente">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
                     </button>
-                    <button onclick="copiarLinkProposta('${proposta.token_rastreio}')" class="botao-secundario" title="Copiar o link para enviar ao cliente">
-                        <i class="fas fa-link" aria-hidden="true"></i> Link
+                    <button class="botao-acao" onclick="copiarLinkProposta('${proposta.token_rastreio}')" title="Copiar o link para enviar ao cliente">
+                        <i class="fas fa-link" aria-hidden="true"></i>
                     </button>
                     ${proposta.arquivo_pdf_url ? `
-                        <a href="${proposta.arquivo_pdf_url}" target="_blank" rel="noopener" class="botao-secundario">
-                            <i class="fas fa-file-pdf" aria-hidden="true"></i> PDF
+                        <a class="botao-acao" href="${proposta.arquivo_pdf_url}" target="_blank" rel="noopener" title="Baixar o PDF">
+                            <i class="fas fa-file-pdf" aria-hidden="true"></i>
                         </a>` : ''}
-                </footer>
-            </article>`;
-    }).join('');
-
-    container.innerHTML = lista.length
-        ? resumo + `<div class="propostas-lista">${cards}</div>`
-        : `<div class="estado-vazio fio">
-               <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
-               <p><strong>Nenhuma proposta ainda.</strong></p>
-               <p class="tinta-3">As propostas aparecem aqui assim que você fechar uma oportunidade no kanban.</p>
-           </div>`;
+                </div>
+            </td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhuma proposta encontrada</td></tr>';
 }
 
 // Monta o link publico da proposta. Antes isto recortava a URL ate a ultima
@@ -2680,13 +2637,18 @@ function setupEventListeners() {
 // uma COPIA, porque a ordem dos arrays globais e usada por kanban, fita e KPIs.
 const ordemTabela = {
     leads: { chave: null, dir: 1 },
-    instalados: { chave: null, dir: 1 }
+    instalados: { chave: null, dir: 1 },
+    propostas: { chave: null, dir: 1 }
 };
 
 const CHAVES_ORDENACAO = {
     consumo: lead => parseFloat(lead.consumo_mensal) || 0,
     score: lead => parseFloat(lead.lead_score) || 0,
-    valor: cliente => parseFloat(cliente.valor_final_negociado) || 0
+    // Aceita os dois nomes: instalados guardam valor_final_negociado e
+    // propostas guardam valor_final. Sem isto a ordenacao por valor na tabela
+    // de propostas comparava zero com zero, sem erro nenhum na tela.
+    valor: item => parseFloat(item.valor_final_negociado ?? item.valor_final) || 0,
+    potencia: item => parseFloat(item.potencia_total_kwp ?? item.potencia_instalada_kwp) || 0
 };
 
 function ordenarLista(lista, tabela) {
@@ -2707,7 +2669,11 @@ function configurarOrdenacao() {
         th.dataset.ordenacaoLigada = '1';
 
         th.addEventListener('click', () => {
-            const tabela = th.closest('table')?.id === 'tabela-instalados' ? 'instalados' : 'leads';
+            // Mapeia o id da tabela para a chave de estado. Sem a entrada de
+            // propostas, ordemTabela[tabela] vinha undefined e o
+            // destructuring logo abaixo derrubava o modulo.
+            const porId = { 'tabela-instalados': 'instalados', 'tabela-propostas': 'propostas' };
+            const tabela = porId[th.closest('table')?.id] || 'leads';
             const estado = ordemTabela[tabela];
             const chave = th.dataset.ordenavel;
 
@@ -2721,6 +2687,8 @@ function configurarOrdenacao() {
 
             if (tabela === 'instalados') {
                 renderInstalados();
+            } else if (tabela === 'propostas') {
+                renderPropostas();
             } else if (filtroDeLeadsAtivo()) {
                 filterLeads();
             } else {

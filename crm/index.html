@@ -1386,6 +1386,11 @@
            navega para uma tela. */
         .sidebar .menu-acao {
             color: var(--ink-sobre-marca);
+            /* Mesma tipografia do .nav-link: o item fica lado a lado com os
+               outros e qualquer diferenca de corpo ou peso le como erro. */
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--raio);
             /* --atencao mede 1,59:1 sobre a sidebar escura, ou seja, quase
                invisivel. Este passo mais claro do mesmo ambar mede 3,76:1 e
                cumpre o piso de 3:1 para elemento nao textual. */
@@ -1397,141 +1402,73 @@
             background: rgba(255, 255, 255, .12);
         }
 
-        /* ===== Propostas ===== */
-
-        .propostas-resumo {
+        /* ===== Leads recentes do chatbot =====
+           Grade de cinco colunas numa linha so. O e-mail sai de baixo do nome
+           e ganha a propria coluna, a direita: alinhado, ele se varre com o
+           olho de cima a baixo, e a linha cai de 74px para 44px. */
+        .lead-recente {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 0;
-            background: var(--card);
+            /* minmax(0, ...) nas duas colunas flexiveis, nao 1fr puro: 1fr
+               equivale a minmax(auto, 1fr) e o minimo automatico e o
+               min-content. Como cada linha e um grid proprio, um nome mais
+               longo alargava a coluna SO daquela linha e os e-mails saiam
+               desalinhados de linha para linha. Com minimo zero as colunas
+               ficam proporcionais a largura, que e igual em todas. */
+            /* Todas as colunas deterministicas. minmax(0, ...) nas flexiveis
+               porque 1fr equivale a minmax(auto, 1fr) e o minimo automatico e
+               o min-content: como cada linha e um grid proprio, um nome mais
+               longo alargava a coluna so daquela linha. E a coluna de status
+               tem largura fixa porque "Novo" e "Nao Qualificado" tem larguras
+               bem diferentes, e com auto cada linha caia num lugar. */
+            grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1.4fr) 132px 88px;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 12px;
             border-radius: var(--raio);
-            margin-bottom: 20px;
-            overflow: hidden;
+            background: var(--sunken);
+            cursor: pointer;
+            margin-bottom: 6px;
         }
 
-        .propostas-resumo__item {
+        .lead-recente:last-child { margin-bottom: 0; }
+
+        .lead-recente__avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: 14px 18px;
-            border-left: 2px solid var(--rule);
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
         }
 
-        .propostas-resumo__item:first-child { border-left: 0; }
-
-        .propostas-resumo__rotulo {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: var(--ink-3);
-        }
-
-        .propostas-resumo__valor {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--ink-1);
-            line-height: 1.1;
-        }
-
-        .propostas-resumo__nota { font-size: 11px; color: var(--ink-3); }
-
-        .propostas-lista {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: 16px;
-        }
-
-        .proposta-card {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* Fio ambar no topo da proposta vencida: o cartao que precisa de
-           telefonema hoje nao pode ser igual aos outros. */
-        .proposta-card--vencida { border-top: 3px solid var(--atencao); }
-
-        .proposta-card__topo {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .proposta-card__id { min-width: 0; }
-
-        .proposta-card__numero {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .04em;
-            color: var(--ink-3);
-        }
-
-        .proposta-card__lead {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--ink-1);
-            overflow-wrap: break-word;
-        }
-
-        /* O valor e o que decide a conversa. Em display, sozinho na linha, ele
-           para de disputar espaco com o rotulo — era ali que "R$ 1.250.000,00"
-           encostava em "Valor:" e os dois viravam um borrao. */
-        .proposta-card__valor {
-            font-family: var(--fonte-titulo);
-            font-size: 26px;
-            font-weight: 600;
-            line-height: 1.05;
-            color: var(--ink-1);
-            margin: 0;
-        }
-
-        .proposta-card__specs {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px 14px;
-            margin: 0;
-            padding-top: 10px;
-            border-top: 2px solid var(--rule);
-        }
-
-        .proposta-card__specs div { display: flex; flex-direction: column; min-width: 0; }
-
-        .proposta-card__specs dt {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            color: var(--ink-3);
-        }
-
-        .proposta-card__specs dd {
-            margin: 0;
+        .lead-recente__nome {
             font-size: 13px;
             font-weight: 600;
             color: var(--ink-1);
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .proposta-card__rastro { margin: 0; }
-
-        .proposta-card__acoes {
-            display: flex;
-            gap: 8px;
-            margin-top: auto;
-            padding-top: 10px;
-        }
-
-        .proposta-card__acoes > * {
-            flex: 1 1 0;
-            min-width: 0;
-            padding: 7px 10px;
+        .lead-recente__email {
             font-size: 12px;
-            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        /* Badge encostado a direita da propria coluna: assim a borda direita
+           dos badges forma uma linha, em vez de cada um comecar num ponto. */
+        .lead-recente__status { text-align: right; }
+        .lead-recente__data { font-size: 11px; text-align: right; }
+
+        /* Em tela estreita nao ha largura para cinco colunas: o e-mail sai,
+           porque nome e status decidem se o vendedor abre o lead. */
+        @media (max-width: 900px) {
+            .lead-recente { grid-template-columns: 32px 1fr auto; }
+            .lead-recente__email,
+            .lead-recente__data { display: none; }
         }
 
         .estado-vazio {
@@ -1923,8 +1860,42 @@
              MODULO 4 — PROPOSTAS
              ============================================================= -->
         <div id="module-propostas" class="module hidden">
-            <div id="propostas-grid">
-                <!-- Propostas inseridas via JS -->
+            <!-- Mesma estrutura de Instalados: tres cartelas de numero e
+                 uma tabela. Os dois modulos respondem a mesma pergunta
+                 ("o que esta em andamento e quanto vale"), entao nao ha
+                 motivo para lerem diferente. -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                <div class="module-card cartela-numero">
+                    <div class="figura-display" id="propostas-na-rua">R$ 0</div>
+                    <p class="rotulo">Na rua</p>
+                </div>
+                <div class="module-card cartela-numero">
+                    <div class="figura-display" id="propostas-fechado">R$ 0</div>
+                    <p class="rotulo">Fechado</p>
+                </div>
+                <div class="module-card cartela-numero">
+                    <div class="figura-display" id="propostas-conversao">0%</div>
+                    <p class="rotulo">Conversão</p>
+                </div>
+            </div>
+
+            <div class="module-card tabela-rolagem">
+                <table class="tabela" id="tabela-propostas">
+                    <thead>
+                        <tr>
+                            <th>Proposta</th>
+                            <th>Cliente</th>
+                            <th class="num" data-ordenavel="potencia">Potência</th>
+                            <th class="num" data-ordenavel="valor">Valor</th>
+                            <th>Status</th>
+                            <th>Rastreio</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="propostas-table-body">
+                        <!-- Inserido via JS -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
