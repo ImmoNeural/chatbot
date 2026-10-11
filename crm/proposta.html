@@ -824,11 +824,14 @@
             <p class="estado__texto">Carregando proposta...</p>
         </div>
 
-        <!-- Error -->
+        <!-- Error. O titulo e a explicacao sao preenchidos por mostrarErro():
+             "nao encontrei esta proposta" e "nao consegui falar com o
+             servidor" sao problemas diferentes, e so o segundo melhora se o
+             cliente tentar de novo daqui a pouco. -->
         <div id="error" class="estado hidden fade-in" role="alert">
-            <p class="chip chip--critico"><i class="fas fa-exclamation-circle" aria-hidden="true"></i>Link inválido</p>
-            <h2 class="estado__titulo">Proposta não encontrada</h2>
-            <p class="estado__texto">O link pode estar incompleto ou já ter expirado.</p>
+            <p class="chip chip--critico"><i class="fas fa-exclamation-circle" aria-hidden="true"></i><span id="erro-chip">Link inválido</span></p>
+            <h2 class="estado__titulo" id="erro-titulo">Proposta não encontrada</h2>
+            <p class="estado__texto" id="erro-detalhe">O link pode estar incompleto ou já ter expirado.</p>
             <p class="estado__texto">Fale com quem enviou a proposta ou entre em contato:
                 <a href="tel:+5511999999999">+55 11 99999-9999</a></p>
         </div>
@@ -1005,23 +1008,71 @@
         // Configuração Supabase
         const SUPABASE_URL = 'https://zralzmgsdmwispfvgqvy.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyYWx6bWdzZG13aXNwZnZncXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MzA1NTYsImV4cCI6MjA3OTQwNjU1Nn0.lAarNVapj0c6A-1ix6PISUya0wMcRzruta1GECtwDD8';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // A biblioteca do Supabase vem de CDN. Quando ela nao carrega — rede
+        // caida, bloqueador de anuncios, proxy de empresa — window.supabase e
+        // undefined e esta linha lancava TypeError NO MEIO do script. Tudo
+        // que vinha depois, inclusive o listener que esconde o spinner, nunca
+        // chegava a rodar: a pagina ficava girando "Carregando proposta..."
+        // para sempre, sem uma palavra de explicacao em lugar nenhum. Era
+        // exatamente a queixa do cliente, e o pior defeito possivel numa
+        // pagina que vai para a mao de quem esta decidindo uma compra.
+        let supabase = null;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (err) {
+            console.error('Biblioteca do Supabase nao carregou:', err);
+        }
 
         let propostaAtual = null;
 
-        // Carregar proposta ao abrir página
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('t');
+        // Promessa com prazo. Sem isto, uma chamada que nunca responde (DNS
+        // pendurado, captive portal de wi-fi de hotel) deixa o spinner
+        // girando ate o cliente desistir — que e a mesma tela do defeito
+        // acima, por outro motivo.
+        function comPrazo(promessa, ms, oque) {
+            return Promise.race([
+                promessa,
+                new Promise((_, rejeitar) =>
+                    setTimeout(() => rejeitar(new Error('tempo esgotado: ' + oque)), ms))
+            ]);
+        }
 
-            if (!token) {
+        // O script fica no fim do body, entao normalmente ainda da tempo de
+        // registrar o listener. Mas se o documento ja estiver pronto quando
+        // esta linha rodar, DOMContentLoaded nao dispara mais e a pagina
+        // nunca sairia do spinner. readyState cobre os dois casos.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', iniciar);
+        } else {
+            iniciar();
+        }
+
+        async function iniciar() {
+            try {
+                const token = new URLSearchParams(window.location.search).get('t');
+
+                // 'undefined' chega como texto quando o CRM monta o link a
+                // partir de uma proposta sem token_rastreio.
+                if (!token || token === 'undefined' || token === 'null') {
+                    mostrarErro('Link incompleto',
+                        'Este endereço não traz o identificador da proposta. Peça o link de novo a quem o enviou.');
+                    return;
+                }
+
+                if (!supabase) {
+                    mostrarErro('Sem conexão',
+                        'Não consegui carregar os componentes da página. Verifique a conexão e recarregue.',
+                        'Falha de conexão');
+                    return;
+                }
+
+                await carregarProposta(token);
+                await registrarVisualizacao(token);
+            } catch (err) {
+                console.error('Erro ao iniciar a pagina:', err);
                 mostrarErro();
-                return;
             }
-
-            await carregarProposta(token);
-            await registrarVisualizacao(token);
-        });
+        }
 
         async function carregarProposta(token) {
             try {
@@ -1029,30 +1080,49 @@
                 // o banco devolve no maximo a proposta deste token. A tabela
                 // 'propostas' nao fica acessivel pela chave anon publica, que
                 // esta visivel no codigo desta pagina.
-                const { data, error } = await supabase
-                    .rpc('get_proposta_publica', { p_token: token });
+                const { data, error } = await comPrazo(
+                    supabase.rpc('get_proposta_publica', { p_token: token }),
+                    15000, 'busca da proposta');
 
-                if (error || !data) {
+                if (error) {
                     console.error('Erro ao buscar proposta:', error);
+                    mostrarErro('Não consegui buscar a proposta',
+                        'O servidor respondeu com um erro. Tente de novo em alguns minutos.',
+                        'Erro do servidor');
+                    return;
+                }
+
+                // Uma funcao SQL declarada como RETURNS TABLE chega aqui como
+                // ARRAY, nao como objeto. Sem esta linha a pagina abria com
+                // todos os campos em branco — pior que um erro, porque
+                // parecia uma proposta de verdade, zerada.
+                const proposta = Array.isArray(data) ? data[0] : data;
+
+                if (!proposta) {
                     mostrarErro();
                     return;
                 }
 
-                propostaAtual = data;
-                renderizarProposta(data);
+                propostaAtual = proposta;
+                renderizarProposta(proposta);
 
             } catch (err) {
                 console.error('Erro ao carregar proposta:', err);
-                mostrarErro();
+                mostrarErro('Não consegui carregar a proposta',
+                    'A conexão demorou demais ou falhou. Verifique a internet e recarregue a página.',
+                    'Falha de conexão');
             }
         }
 
         async function registrarVisualizacao(token) {
             try {
                 // Chamar função do Supabase para registrar
-                const { error } = await supabase.rpc('registrar_visualizacao_proposta', {
-                    p_token: token
-                });
+                // Com prazo e sem await bloqueante na pagina: marcar "foi
+                // vista" e util para o vendedor, mas nao e motivo para
+                // segurar a proposta na frente do cliente.
+                const { error } = await comPrazo(
+                    supabase.rpc('registrar_visualizacao_proposta', { p_token: token }),
+                    8000, 'registro de visualizacao');
 
                 if (error) {
                     console.error('Erro ao registrar visualização:', error);
@@ -1066,37 +1136,65 @@
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('proposta-container').classList.remove('hidden');
 
-            // Preencher dados
-            document.getElementById('numero-proposta').textContent = proposta.numero_proposta;
-            document.getElementById('potencia').textContent = `${proposta.potencia_total_kwp} kWp`;
-            document.getElementById('num-modulos').textContent = `${proposta.num_modulos} módulos`;
-            document.getElementById('marca-modulos').textContent = proposta.marca_modulos || 'Padrão Premium';
-            document.getElementById('tipo-inversor').textContent = proposta.tipo_inversor || 'Inversor de Alta Eficiência';
+            // Cada campo escrito por aqui. Antes era getElementById(...).textContent
+            // direto: um unico id ausente lancava TypeError no meio da funcao e
+            // a proposta abria pela metade, com o resto dos campos em "---".
+            // Um campo faltando e um campo faltando; nao pode derrubar os
+            // outros vinte.
+            const escrever = (id, valor) => {
+                const el = document.getElementById(id);
+                if (!el) { console.warn('[proposta] elemento ausente:', id); return; }
+                el.textContent = valor;
+            };
 
-            // Valores
-            document.getElementById('valor-final').textContent = formatCurrency(proposta.valor_final);
-            document.getElementById('economia-mensal').textContent = formatCurrency(proposta.economia_mensal_prevista);
-            document.getElementById('payback-meses').textContent = proposta.payback_meses || Math.round((proposta.valor_final / proposta.economia_mensal_prevista));
+            const num = v => (v == null || isNaN(v)) ? null : Number(v);
 
-            const economia25anos = proposta.economia_25_anos || (proposta.economia_mensal_prevista * 12 * 25);
-            document.getElementById('economia-25anos').textContent = formatCurrency(economia25anos);
+            escrever('numero-proposta', proposta.numero_proposta || '---');
+            escrever('potencia', num(proposta.potencia_total_kwp) != null
+                ? `${proposta.potencia_total_kwp} kWp` : '—');
+            escrever('num-modulos', num(proposta.num_modulos) != null
+                ? `${proposta.num_modulos} módulos` : '—');
+            escrever('marca-modulos', proposta.marca_modulos || 'Padrão Premium');
+            escrever('tipo-inversor', proposta.tipo_inversor || 'Inversor de Alta Eficiência');
+
+            escrever('valor-final', formatCurrency(proposta.valor_final));
+            escrever('economia-mensal', formatCurrency(proposta.economia_mensal_prevista));
+
+            // Payback calculado na mao divide por economia mensal: com economia
+            // zero ou nula isso dava Infinity ou NaN impresso na proposta do
+            // cliente.
+            const economiaMensal = num(proposta.economia_mensal_prevista) || 0;
+            const payback = num(proposta.payback_meses)
+                || (economiaMensal > 0 ? Math.round(proposta.valor_final / economiaMensal) : null);
+            escrever('payback-meses', payback != null ? payback : '—');
+
+            const economia25anos = num(proposta.economia_25_anos)
+                || (economiaMensal > 0 ? economiaMensal * 12 * 25 : 0);
+            escrever('economia-25anos', formatCurrency(economia25anos));
 
             // CO2 evitado (estimativa: 0.5 ton CO2 por kWp/ano)
-            const co2 = (proposta.potencia_total_kwp * 0.5).toFixed(1);
-            document.getElementById('co2-evitado').textContent = `${co2} ton`;
+            const kwp = num(proposta.potencia_total_kwp);
+            escrever('co2-evitado', kwp != null ? `${(kwp * 0.5).toFixed(1)} ton` : '—');
 
             // Desconto
             if (proposta.desconto_percentual && proposta.desconto_percentual > 0) {
-                document.getElementById('desconto-container').classList.remove('hidden');
-                document.getElementById('valor-original').textContent = formatCurrency(proposta.valor_total);
-                document.getElementById('desconto-percent').textContent = `${proposta.desconto_percentual}%`;
+                const caixa = document.getElementById('desconto-container');
+                if (caixa) caixa.classList.remove('hidden');
+                escrever('valor-original', formatCurrency(proposta.valor_total));
+                escrever('desconto-percent', `${proposta.desconto_percentual}%`);
             }
 
-            // Validade
-            document.getElementById('validade-dias').textContent = proposta.validade_dias || 15;
+            escrever('validade-dias', proposta.validade_dias || 15);
         }
 
-        function mostrarErro() {
+        function mostrarErro(titulo, detalhe, chip) {
+            const escrever = (id, texto) => {
+                const el = document.getElementById(id);
+                if (el && texto) el.textContent = texto;
+            };
+            escrever('erro-chip', chip);
+            escrever('erro-titulo', titulo);
+            escrever('erro-detalhe', detalhe);
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('error').classList.remove('hidden');
         }

@@ -3574,11 +3574,23 @@ async function calcularSistema() {
 function renderResultadosSimulador(resultado) {
     const { localizacao, dimensionamento, propostas } = resultado;
 
-    // Localização
+    // Localização. Quando o servico de CEP esta fora, a calculadora deduz o
+    // estado pela faixa do CEP e segue — mas a tela precisa dizer isso, porque
+    // nesse caso a irradiacao e a media do estado inteiro, nao a do municipio.
+    const lugar = [localizacao.cidade, localizacao.estado].filter(Boolean).join(' - ');
     document.getElementById('sim-localizacao').textContent =
-        `${localizacao.cidade} - ${localizacao.estado} | ${localizacao.bairro}`;
+        (localizacao.bairro ? `${lugar} | ${localizacao.bairro}` : lugar)
+        + (localizacao.aproximado ? '  (estimado pela faixa do CEP)' : '');
+
+    // O adjetivo acompanha o numero. Antes estava escrito "excelente" fixo no
+    // texto: 3,9 kWh/m²/dia aparecia como excelente do mesmo jeito.
+    const irr = parseFloat(localizacao.irradiacao) || 0;
+    const qualidade = irr >= 5.5 ? 'excelente para energia solar'
+        : irr >= 4.8 ? 'muito boa para energia solar'
+        : irr >= 4.2 ? 'boa para energia solar'
+        : 'dentro da média nacional';
     document.getElementById('sim-irradiacao').textContent =
-        `☀️ Irradiação Solar: ${localizacao.irradiacao} kWh/m²/dia (excelente para energia solar!)`;
+        `☀️ Irradiação solar: ${irr.toFixed(2)} kWh/m²/dia (${qualidade})`;
 
     // Renderizar as 3 propostas
     const container = document.getElementById('propostas-container');

@@ -192,12 +192,66 @@ const MARGENS_LUCRO = {
 // 4. FUNÇÕES DE BUSCA DE LOCALIZAÇÃO
 // =========================================
 
+// Faixas de CEP por estado (alocacao dos Correios). A unica coisa que o
+// dimensionamento precisa do CEP e a UF, porque e ela que escolhe a
+// irradiacao. Com esta tabela o calculo funciona sem internet nenhuma; o
+// viacep passa a ser um complemento, que acrescenta cidade e bairro.
+//
+// Antes, qualquer falha de rede fazia buscarCEP devolver null e a
+// calculadora dizer "CEP invalido" para um CEP perfeitamente valido --
+// culpando o usuario por um problema que nao era dele.
+const FAIXAS_CEP_UF = [
+    [1000000, 19999999, 'SP'], [20000000, 28999999, 'RJ'], [29000000, 29999999, 'ES'],
+    [30000000, 39999999, 'MG'], [40000000, 48999999, 'BA'], [49000000, 49999999, 'SE'],
+    [50000000, 56999999, 'PE'], [57000000, 57999999, 'AL'], [58000000, 58999999, 'PB'],
+    [59000000, 59999999, 'RN'], [60000000, 63999999, 'CE'], [64000000, 64999999, 'PI'],
+    [65000000, 65999999, 'MA'], [66000000, 68899999, 'PA'], [68900000, 68999999, 'AP'],
+    [69000000, 69299999, 'AM'], [69300000, 69389999, 'RR'], [69400000, 69899999, 'AM'],
+    [69900000, 69999999, 'AC'], [70000000, 72799999, 'DF'], [72800000, 72999999, 'GO'],
+    [73000000, 73699999, 'DF'], [73700000, 76799999, 'GO'], [76800000, 76999999, 'RO'],
+    [77000000, 77995999, 'TO'], [78000000, 78899999, 'MT'], [78900000, 78999999, 'RO'],
+    [79000000, 79999999, 'MS'], [80000000, 87999999, 'PR'], [88000000, 89999999, 'SC'],
+    [90000000, 99999999, 'RS']
+];
+
+function ufPelaFaixaDeCep(cepLimpo) {
+    const n = parseInt(cepLimpo, 10);
+    if (!Number.isFinite(n)) return null;
+    const faixa = FAIXAS_CEP_UF.find(([ini, fim]) => n >= ini && n <= fim);
+    return faixa ? faixa[2] : null;
+}
+
 async function buscarCEP(cep) {
+    const cepLimpo = String(cep || '').replace(/\D/g, '');
+
+    // Um CEP brasileiro tem 8 digitos. Isto o viacep nem precisa conferir.
+    if (cepLimpo.length !== 8) return null;
+
+    const porFaixa = () => {
+        const uf = ufPelaFaixaDeCep(cepLimpo);
+        if (!uf) return null;
+        return {
+            cep: cepLimpo.replace(/(\d{5})(\d{3})/, '$1-$2'),
+            logradouro: '',
+            bairro: '',
+            cidade: '',
+            estado: uf,
+            irradiacao: IRRADIACAO_POR_ESTADO[uf] || 5.0,
+            // A tela precisa dizer que a localizacao saiu da faixa do CEP, e
+            // nao da consulta: o numero de irradiacao e do estado inteiro.
+            aproximado: true
+        };
+    };
+
     try {
-        const cepLimpo = cep.replace(/\D/g, '');
         const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+
+        // 400/500 do servico: nao e CEP errado, e servico fora.
+        if (!response.ok) return porFaixa();
+
         const data = await response.json();
 
+        // Aqui sim o servico respondeu que este CEP nao existe.
         if (data.erro) return null;
 
         return {
@@ -206,11 +260,13 @@ async function buscarCEP(cep) {
             bairro: data.bairro,
             cidade: data.localidade,
             estado: data.uf,
-            irradiacao: IRRADIACAO_POR_ESTADO[data.uf] || 5.0
+            irradiacao: IRRADIACAO_POR_ESTADO[data.uf] || 5.0,
+            aproximado: false
         };
     } catch (error) {
-        console.error('Erro ao buscar CEP:', error);
-        return null;
+        // Rede caida, DNS, CORS, bloqueador. O calculo continua pela faixa.
+        console.warn('[calculadora] viacep indisponivel, usando a faixa do CEP:', error.message);
+        return porFaixa();
     }
 }
 
@@ -870,6 +926,7 @@ if (typeof window !== 'undefined') {
 
         // Funções auxiliares
         buscarCEP,
+        ufPelaFaixaDeCep,
         calcularDimensionamento,
         selecionarMelhoresPlacas,
         selecionarInversor,
