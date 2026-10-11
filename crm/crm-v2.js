@@ -11,6 +11,96 @@ const supabaseClient = window.supabaseClient || window.supabase.createClient(SUP
 window.supabaseClient = supabaseClient;
 
 // =========================================
+// EMPRESA DO USUARIO LOGADO
+// =========================================
+// Depois do lockdown de RLS, toda tabela do CRM e isolada por
+//     WITH CHECK (empresa_id = get_user_empresa_id())
+// e, em SQL, NULL = <uuid> nao e falso: e NULL, e o INSERT e recusado. Como
+// nenhuma das quinze chamadas de insert deste arquivo preenchia empresa_id,
+// depois do lockdown TODA criacao parou: lead novo, tarefa, interacao,
+// proposta gerada pelo simulador, cliente instalado. Aparecia como "new row
+// violates row-level security policy" no console e, na tela de Propostas,
+// como uma proposta que o CRM dizia ter salvo e que nunca chegava na lista.
+//
+// Em vez de repetir o campo em quinze lugares (e esquecer no decimo sexto),
+// ele entra no unico caminho por onde todos passam: o proprio client.
+const VERSAO_CRM = '12';
+
+let perfilUsuario = null;
+
+const TABELAS_COM_EMPRESA = new Set([
+    'leads', 'oportunidades', 'propostas', 'interacoes', 'tarefas',
+    'clientes_instalados', 'instalacao', 'mensagens_whatsapp',
+    'notificacoes', 'log_atividades'
+]);
+
+function empresaAtual() {
+    return perfilUsuario?.empresa_id || null;
+}
+
+function comEmpresa(valores) {
+    const empresa = empresaAtual();
+    if (!empresa) return valores;
+    const marcar = linha => (linha && typeof linha === 'object' && linha.empresa_id == null)
+        ? { ...linha, empresa_id: empresa }
+        : linha;
+    return Array.isArray(valores) ? valores.map(marcar) : marcar(valores);
+}
+
+if (!supabaseClient.__carimboEmpresa) {
+    supabaseClient.__carimboEmpresa = true;
+    const fromOriginal = supabaseClient.from.bind(supabaseClient);
+    supabaseClient.from = (tabela) => {
+        const q = fromOriginal(tabela);
+        if (!TABELAS_COM_EMPRESA.has(tabela)) return q;
+        // insert e upsert vem do prototipo do query builder; atribuir aqui
+        // apenas sombreia a versao original nesta instancia.
+        if (typeof q.insert === 'function') {
+            const insertOriginal = q.insert.bind(q);
+            q.insert = (valores, opcoes) => insertOriginal(comEmpresa(valores), opcoes);
+        }
+        if (typeof q.upsert === 'function') {
+            const upsertOriginal = q.upsert.bind(q);
+            q.upsert = (valores, opcoes) => upsertOriginal(comEmpresa(valores), opcoes);
+        }
+        return q;
+    };
+}
+
+// =========================================
+// FALHA DE CARGA VISIVEL
+// =========================================
+// Antes, qualquer falha (RLS, sessao expirada, rede) terminava num
+// console.error e a tabela mostrava "Nenhuma proposta encontrada". Para quem
+// usa, "nenhuma" e "nao consegui ler" sao a mesma tela — e a diferenca e
+// enorme: a primeira se resolve cadastrando, a segunda nao se resolve nunca.
+const errosDeCarga = {};
+
+function escaparHtml(texto) {
+    return String(texto ?? '').replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function registrarCarga(tabela, error) {
+    if (error) errosDeCarga[tabela] = error.message || error.details || String(error);
+    else delete errosDeCarga[tabela];
+}
+
+function linhaDeTabelaVazia(colunas, tabela, textoVazio) {
+    const erro = errosDeCarga[tabela];
+    if (!erro) {
+        return `<tr><td colspan="${colunas}" class="text-center py-8 tinta-3">${textoVazio}</td></tr>`;
+    }
+    return `<tr><td colspan="${colunas}" class="text-center py-8">
+        <p class="font-semibold" style="color:var(--critico)">
+            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+            Não consegui carregar estes dados.
+        </p>
+        <p class="text-sm tinta-2 mt-1">${escaparHtml(erro)}</p>
+    </td></tr>`;
+}
+
+// =========================================
 // SISTEMA DE DESIGN "PAPEL E MESA" — TOKENS
 // =========================================
 // Este arquivo gera metade da interface por template string, e template string
@@ -309,8 +399,11 @@ async function iniciarCrm() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('crmApp').classList.remove('hidden');
 
-    await loadAllData();
+    // O perfil vem primeiro: ele carrega o empresa_id que o carimbo de
+    // inserts usa, e sem ele a primeira criacao da sessao seria recusada
+    // pelo RLS.
     await loadCurrentUser();
+    await loadAllData();
     initializeKanban();
     setupEventListeners();
 
@@ -366,27 +459,45 @@ async function loadAllData() {
 }
 
 async function loadCurrentUser() {
-    try {
-        // Buscar primeiro usuário ativo (para demo)
-        const { data, error } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('ativo', true)
-            .limit(1)
-            .single();
+    // Esta funcao lia a tabela legada 'users' pegando o PRIMEIRO ativo "para
+    // demo": mostrava o nome de outra pessoa no rodape da barra lateral e,
+    // sobretudo, nao trazia empresa_id — o campo sem o qual nenhum insert
+    // passa pelo RLS. O perfil certo esta em 'usuarios', amarrado ao
+    // auth.uid() de quem entrou.
+    const nomeEl = document.getElementById('user-name');
+    const papelEl = document.getElementById('user-role');
 
-        if (data) {
-            document.getElementById('user-name').textContent = data.nome || 'Vendedor';
-            document.getElementById('user-role').textContent = data.role === 'gestor' ? 'Gestor' : 'Vendedor';
-        } else {
-            // Valores padrão se não houver usuário
-            document.getElementById('user-name').textContent = 'Demo User';
-            document.getElementById('user-role').textContent = 'Vendedor';
+    try {
+        if (!currentUser?.id) throw new Error('sem sessao ativa');
+
+        const { data, error } = await supabaseClient
+            .from('usuarios')
+            .select('id, nome, email, role, empresa_id')
+            .eq('id', currentUser.id)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        perfilUsuario = data || null;
+
+        if (nomeEl) nomeEl.textContent = data?.nome || currentUser.email || 'Vendedor';
+        if (papelEl) papelEl.textContent = data?.role === 'gestor' ? 'Gestor' : 'Vendedor';
+
+        if (!empresaAtual()) {
+            // Sem empresa vinculada o CRM nem le (as policies de SELECT
+            // comparam com get_user_empresa_id e devolvem lista vazia) nem
+            // escreve. Dizer isso na entrada e melhor que falhar no primeiro
+            // "salvar" e deixar a pessoa achando que o dado foi gravado.
+            console.error('[crm] login sem empresa_id em public.usuarios:', currentUser.id,
+                '— rode crm/migrations/fix_user_empresa_binding.sql');
+            showNotification(
+                'Seu login não está vinculado a uma empresa: o CRM não vai listar nem salvar nada.',
+                'danger');
         }
     } catch (error) {
         console.error('Erro ao carregar usuário:', error);
-        document.getElementById('user-name').textContent = 'Vendedor';
-        document.getElementById('user-role').textContent = 'Vendedor';
+        if (nomeEl) nomeEl.textContent = currentUser?.email || 'Vendedor';
+        if (papelEl) papelEl.textContent = 'Vendedor';
     }
 }
 
@@ -396,6 +507,9 @@ async function loadLeads() {
         .select('*')
         .order('created_at', { ascending: false });
 
+    // registrarCarga guarda o motivo para a tabela poder dizer na tela o que
+    // falhou, em vez de mostrar "nenhum registro" para um erro de leitura.
+    registrarCarga('leads', error);
     if (error) {
         console.error('Erro ao carregar leads:', error);
         return;
@@ -423,6 +537,9 @@ async function loadOportunidades() {
         .neq('etapa', 'concluida')  // Excluir oportunidades concluídas (clientes instalados)
         .order('data_ultima_atualizacao', { ascending: false });
 
+    // registrarCarga guarda o motivo para a tabela poder dizer na tela o que
+    // falhou, em vez de mostrar "nenhum registro" para um erro de leitura.
+    registrarCarga('oportunidades', error);
     if (error) {
         console.error('Erro ao carregar oportunidades:', error);
         return;
@@ -445,6 +562,9 @@ async function loadPropostas() {
         .order('created_at', { ascending: false })
         .limit(50);
 
+    // registrarCarga guarda o motivo para a tabela poder dizer na tela o que
+    // falhou, em vez de mostrar "nenhum registro" para um erro de leitura.
+    registrarCarga('propostas', error);
     if (error) {
         console.error('Erro ao carregar propostas:', error);
         return;
@@ -463,6 +583,9 @@ async function loadInstalados() {
         `)
         .order('data_instalacao', { ascending: false });
 
+    // registrarCarga guarda o motivo para a tabela poder dizer na tela o que
+    // falhou, em vez de mostrar "nenhum registro" para um erro de leitura.
+    registrarCarga('instalados', error);
     if (error) {
         console.error('Erro ao carregar instalados:', error);
         return;
@@ -561,6 +684,7 @@ async function loadTarefas() {
         .eq('status', 'pendente')
         .order('data_vencimento', { ascending: true });
 
+    registrarCarga('tarefas', error);
     if (error) {
         console.error('Erro ao carregar tarefas:', error);
         return;
@@ -1301,7 +1425,7 @@ function renderLeadsTable() {
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhum lead encontrado</td></tr>';
+    `).join('') || linhaDeTabelaVazia(7, 'leads', 'Nenhum lead encontrado');
 }
 
 // =========================================
@@ -1960,8 +2084,12 @@ function renderPropostas() {
 
     marcarComoNumero('propostas-na-rua', formatCurrency(soma(aguardando)));
     marcarComoNumero('propostas-fechado', formatCurrency(soma(aceitas)));
+    // Conversao conta so o que chegou ao cliente: rascunho e trabalho em
+    // aberto na mesa do vendedor, nao proposta recusada, e no denominador
+    // derrubava o indice de quem simplesmente tinha coisa em andamento.
+    const enviadas = propostas.filter(p => p.status !== 'rascunho');
     marcarComoNumero('propostas-conversao',
-        (propostas.length ? Math.round(aceitas.length / propostas.length * 100) : 0) + '%');
+        (enviadas.length ? Math.round(aceitas.length / enviadas.length * 100) : 0) + '%');
 
     const tbody = document.getElementById('propostas-table-body');
     if (!tbody) return;
@@ -1976,11 +2104,13 @@ function renderPropostas() {
         const vencida = dias !== null && dias > validade
             && ['enviada', 'visualizada'].includes(proposta.status);
 
-        const rastreio = vencida
-            ? chipStatus('chip-parado', 'fa-hourglass-half', `Vencida há ${dias - validade}d`)
-            : proposta.data_visualizacao
-                ? chipStatus('chip-ok', 'fa-eye', `Vista ${formatDate(proposta.data_visualizacao)}`)
-                : chipStatus('chip-neutro', 'fa-paper-plane', 'Não aberta');
+        const rastreio = proposta.status === 'rascunho'
+            ? chipStatus('chip-neutro', 'fa-pen', 'Não enviada')
+            : vencida
+                ? chipStatus('chip-parado', 'fa-hourglass-half', `Vencida há ${dias - validade}d`)
+                : proposta.data_visualizacao
+                    ? chipStatus('chip-ok', 'fa-eye', `Vista ${formatDate(proposta.data_visualizacao)}`)
+                    : chipStatus('chip-neutro', 'fa-paper-plane', 'Não aberta');
 
         return `
         <tr class="linha ${vencida ? 'linha--atencao' : ''}">
@@ -2011,7 +2141,7 @@ function renderPropostas() {
                 </div>
             </td>
         </tr>`;
-    }).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhuma proposta encontrada</td></tr>';
+    }).join('') || linhaDeTabelaVazia(7, 'propostas', 'Nenhuma proposta encontrada');
 }
 
 // Monta o link publico da proposta. Antes isto recortava a URL ate a ultima
@@ -2111,7 +2241,7 @@ function renderInstalados() {
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhum cliente instalado</td></tr>';
+    `).join('') || linhaDeTabelaVazia(7, 'instalados', 'Nenhum cliente instalado');
 }
 
 // =========================================
@@ -2400,6 +2530,12 @@ function atualizarFitaOperacao() {
     escreverNaFita('fita-ativos', String(kpis.oportunidades_ativas ?? oportunidades.length));
     escreverNaFita('fita-parados', String(parados), parados > 0 ? 'fita__valor--atencao' : '');
     escreverNaFita('fita-atrasadas', String(atrasadas), atrasadas > 0 ? 'fita__valor--critico' : '');
+
+    // A versao do codigo que o navegador esta de fato executando. Sem isto,
+    // "nao funciona" e indistinguivel de "o navegador me serviu o arquivo de
+    // ontem", e os dois foram confundidos varias vezes. Agora qualquer print
+    // de tela responde a pergunta.
+    escreverNaFita('fita-versao', VERSAO_CRM);
     atualizarSyncDaFita();
 }
 
@@ -2484,7 +2620,8 @@ function formatStatus(status) {
         visualizada: 'Visualizada',
         aceita: 'Aceita',
         recusada: 'Recusada',
-        revisao: 'Em Revisão'
+        revisao: 'Em Revisão',
+        rascunho: 'Rascunho'
     };
     return statusMap[status] || status;
 }
@@ -2762,7 +2899,7 @@ function renderFilteredLeadsTable(filteredLeads) {
                 </button>
             </td>
         </tr>
-    `).join('') || '<tr><td colspan="7" class="text-center py-8 tinta-3">Nenhum lead encontrado</td></tr>';
+    `).join('') || linhaDeTabelaVazia(7, 'leads', 'Nenhum lead encontrado');
 }
 
 function showNewLeadModal() {

@@ -1701,6 +1701,16 @@
                     <span class="fita__rotulo">Sync</span>
                     <span class="fita__valor" id="fita-sync">00:00</span>
                 </div>
+                <!-- Versao do codigo que o navegador esta rodando. Vive aqui
+                     porque e o unico lugar presente em todo print de tela:
+                     serve para separar "nao funciona" de "o navegador serviu
+                     o arquivo de ontem". O crm-v2.js preenche a partir de
+                     VERSAO_CRM, que precisa subir junto com o ?v= das tags
+                     de script no fim deste arquivo. -->
+                <div class="fita__item">
+                    <span class="fita__rotulo">Versão</span>
+                    <span class="fita__valor num" id="fita-versao">—</span>
+                </div>
                 <span class="fita__regua" id="fita-regua" aria-hidden="true"></span>
             </div>
         </div>
@@ -2423,10 +2433,11 @@
     <!-- O ?v= existe porque o navegador guarda estes arquivos em cache e
          continua executando a versao antiga depois de um git pull: o arquivo
          novo esta no disco e a tela nao muda. Suba este numero sempre que
-         mexer no JS. -->
-    <script src="./chat-widget-pastro-v238.js?v=11"></script>
+         mexer no JS, e suba VERSAO_CRM (crm-v2.js) junto: e ele que aparece
+         na fita, e so serve se os dois contarem a mesma historia. -->
+    <script src="./chat-widget-pastro-v238.js?v=12"></script>
 
     <!-- JavaScript CRM -->
-    <script src="./crm-v2.js?v=11"></script>
+    <script src="./crm-v2.js?v=12"></script>
 </body>
 </html>
