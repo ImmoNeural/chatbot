@@ -93,8 +93,8 @@
             /* Altura com teto em vez de fixa: a altura travada estourava a
                viewport em notebook baixo e em celular na horizontal. A 1a
                declaracao e o fallback de quem nao tem dvh. */
-            height: min(640px, calc(100vh - 108px)) !important;
-            height: min(640px, calc(100dvh - 108px)) !important;
+            height: min(780px, calc(100vh - 104px)) !important;
+            height: min(780px, calc(100dvh - 104px)) !important;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
             /* Elevacao por fio de 2px: 1px a 1,2:1 desaparece em monitor
@@ -140,8 +140,8 @@
            automatico e o chip se ajusta ao que recebe. */
         .chat-assist-widget .chat-header-logo {
             width: auto;
-            max-width: 128px;
-            height: 40px;
+            max-width: 110px;
+            height: 28px;
             border-radius: var(--chat-radius-sm);
             object-fit: contain;
             background: var(--card);
@@ -279,7 +279,9 @@
 
         .chat-assist-widget .chat-bubble {
             max-width: 95%;
-            padding: 14px 16px;
+            /* 14/16 numa fonte de 13px dava uma moldura maior que o texto que
+               ela emoldura. 10/13 mantem o ar sem a bolha parecer vazia. */
+            padding: 10px 13px;
             margin: 0;
             border-radius: var(--chat-radius-lg);
             word-wrap: break-word;
@@ -289,7 +291,11 @@
             display: block;
             align-items: flex-start;
             gap: 8px;
-            white-space: pre-line;
+            /* 'normal', nao 'pre-line': com pre-line cada quebra do template
+               string virava uma linha de verdade e a bolha ganhava 80px de
+               nada. O texto livre do n8n preserva seus paragrafos pelo <br>
+               que renderMarkdown insere. */
+            white-space: normal;
         }
 
         .chat-assist-widget .chat-bubble.user-bubble {
@@ -382,6 +388,10 @@
             display: flex;
             flex-direction: column;
             max-width: calc(100% - 40px);
+            /* Sem isto a coluna encolhia ate o conteudo e a bolha do usuario
+               saia com 175px, quebrando "cliente@exemplo.com" no meio da
+               palavra. O minimo garante que um e-mail comum caiba numa linha. */
+            min-width: min(240px, 100%);
         }
 
         .chat-assist-widget .typing-indicator {
@@ -455,23 +465,23 @@
            sobrevive ao 0fr e eram exatamente ele os 22px que restavam
            (10 em cima + 12 embaixo). */
         .chat-assist-widget .leitura-interna {
-            padding: 0 14px;
+            padding: 0 12px;
             transition: padding .45s cubic-bezier(.4,0,.2,1);
         }
 
         .chat-assist-widget .leitura-solar.ativa .leitura-interna {
-            padding: 10px 14px 12px;
+            padding: 6px 12px 8px;
         }
 
         .chat-assist-widget .leitura-ceu {
             position: relative;
-            height: 46px;
-            margin-bottom: 8px;
+            height: 30px;
+            margin-bottom: 4px;
         }
 
         .chat-assist-widget .leitura-arco {
             width: 100%;
-            height: 46px;
+            height: 30px;
             display: block;
             overflow: visible;
         }
@@ -516,9 +526,9 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 14px;
-            height: 14px;
-            margin: -7px 0 0 -7px;
+            width: 11px;
+            height: 11px;
+            margin: -5.5px 0 0 -5.5px;
             border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, #F6C96B 0%, var(--atencao) 70%);
             box-shadow: 0 0 0 3px rgba(154, 98, 9, .16), 0 0 14px rgba(246, 201, 107, .55);
@@ -581,7 +591,7 @@
         }
 
         .chat-assist-widget .chat-controls {
-            padding: 12px;
+            padding: 8px 10px;
             flex-shrink: 0;
             background: var(--chat-color-surface);
             border-top: 2px solid var(--rule);
@@ -628,7 +638,7 @@
 
         .chat-assist-widget .chat-textarea {
             flex: 1;
-            padding: 12px 14px;
+            padding: 9px 12px;
             border: 2px solid var(--rule);
             border-radius: var(--chat-radius-md);
             background: var(--chat-color-surface);
@@ -637,8 +647,8 @@
             font-family: inherit;
             font-size: 13px;
             line-height: 1.5;
-            max-height: 120px;
-            min-height: 48px;
+            max-height: 104px;
+            min-height: 38px;
             box-sizing: border-box;
             transition: var(--chat-transition);
         }
@@ -656,8 +666,8 @@
         }
 
         .chat-assist-widget .chat-submit {
-            width: 48px;
-            height: 48px;
+            width: 38px;
+            height: 38px;
             background-color: var(--chat-button-primary);
             border: 2px solid var(--brand-700);
             border-radius: var(--chat-radius-md);
@@ -724,18 +734,24 @@
             white-space: nowrap;
         }
 
+        /* Antes era uma faixa de 47px com borda propria so para a assinatura.
+           Num widget de 780px de altura isso e 6% da janela gasto em credito.
+           Agora e uma linha fina sem borda, encostada na caixa de entrada. */
         .chat-assist-widget .chat-footer {
-            padding: 10px;
+            padding: 0 10px 5px;
+            font-size: 10px;
             text-align: center;
             background: var(--chat-color-surface);
-            border-top: 2px solid var(--rule);
             flex-shrink: 0;
         }
 
         .chat-assist-widget .chat-footer-link {
-            color: var(--brand-600);
+            /* Em --brand-600 o credito tinha o mesmo peso visual dos links da
+               conversa e puxava o olho para o rodape. Tinta suave resolve, e
+               --ink-3 mede 5,23:1, bem acima do minimo. */
+            color: var(--ink-3);
             text-decoration: none;
-            font-size: 12px;
+            font-size: 10px;
             transition: var(--chat-transition);
             font-family: inherit;
         }
@@ -760,8 +776,40 @@
             color: #ffffff;
         }
 
+        /* O navegador da 1em de margem a <p>, o que numa bolha de chat abre
+           um vao do tamanho de uma linha inteira entre frases da MESMA fala.
+           O espacamento passa a ser menor que a linha, nao maior. */
+        .chat-assist-widget .chat-bubble p {
+            margin: 0 0 6px;
+        }
+
+        .chat-assist-widget .chat-bubble p:last-child { margin-bottom: 0; }
+
+        .chat-assist-widget .chat-bubble .chat-hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--ink-3);
+        }
+
+        /* E-mail longo quebrava no meio da palavra ("cliente@exemplo.co / m").
+           break-word so quebra quando nao ha alternativa. */
+        .chat-assist-widget .chat-bubble,
+        .chat-assist-widget .chat-bubble p {
+            overflow-wrap: break-word;
+            word-break: normal;
+        }
+
         .chat-assist-widget .chat-image {
             max-width: 100%;
+            /* Teto de altura com recorte pelo centro: a foto e apoio, nao
+               conteudo. Sem o teto ela saia com ~230px numa bolha de 340px,
+               mais alta que a propria pergunta, e empurrava o texto para
+               fora da tela. Recortar preserva o assunto da foto; encolher
+               deixaria a bolha com faixas vazias dos lados. */
+            max-height: 104px;
+            object-fit: cover;
+            object-position: center;
+            width: 100%;
             border-radius: var(--chat-radius-sm);
             margin-top: 8px;
             display: block;
@@ -900,10 +948,18 @@
         }
 
         .solar-panel-image {
+            width: 100%;
             max-width: 100%;
+            /* Teto com recorte pelo centro: a foto e apoio da pergunta, nao
+               conteudo. Sem ele a imagem ficava mais alta que o texto e
+               empurrava a pergunta para fora da area visivel. */
+            max-height: 96px;
+            object-fit: cover;
+            object-position: center;
             border-radius: var(--chat-radius-sm);
-            margin: 12px 0;
+            margin: 0 0 8px;
             border: 2px solid var(--rule);
+            display: block;
         }
 
         @media (max-width: 480px) {
@@ -932,8 +988,11 @@
             .chat-assist-widget .chat-window {
                 width: 416px !important;
                 max-width: calc(100vw - 32px) !important;
-                height: min(640px, calc(100vh - 108px)) !important;
-                height: min(640px, calc(100dvh - 108px)) !important;
+                /* Acompanha o teto da regra base: a pergunta vem com foto de
+                   apoio mais texto, e a 640px a area de mensagens ficava com
+                   396px — menos do que uma unica pergunta precisa. */
+                height: min(780px, calc(100vh - 104px)) !important;
+                height: min(780px, calc(100dvh - 104px)) !important;
                 top: auto !important;
                 left: auto !important;
                 bottom: 88px !important;
@@ -971,7 +1030,9 @@
             // do ar e o cabecalho ficava com icone de imagem quebrada. Data URI
             // nao depende de servidor nenhum e nao tem como falhar.
             logo: LOGO_PADRAO,
-            name: 'Sunbotic 🌞 Energia Solar',
+            // Sem emoji no titulo: o logo ao lado ja e um sol, e emoji
+            // muda de desenho em cada sistema operacional.
+            name: 'Sunbotic Energia Solar',
             welcomeText: 'Olá! Como posso ajudá-lo hoje?',
             responseTimeText: 'Responde em segundos',
             poweredBy: { text: 'Powered by Neureka AI', link: 'https://neureka-ai.com' }
@@ -1165,10 +1226,10 @@
             <div class="leitura-solar" aria-live="polite">
               <div class="leitura-interna">
                 <div class="leitura-ceu">
-                    <svg class="leitura-arco" viewBox="0 0 240 46" aria-hidden="true">
-                        <path class="leitura-trilha" d="M12 42 A 198 198 0 0 1 228 42" />
-                        <path class="leitura-percorrido" d="M12 42 A 198 198 0 0 1 228 42" />
-                        <line class="leitura-horizonte" x1="0" y1="42.5" x2="240" y2="42.5" />
+                    <svg class="leitura-arco" viewBox="0 0 240 30" aria-hidden="true">
+                        <path class="leitura-trilha" d="M12 26 A 302 302 0 0 1 228 26" />
+                        <path class="leitura-percorrido" d="M12 26 A 302 302 0 0 1 228 26" />
+                        <line class="leitura-horizonte" x1="0" y1="26.5" x2="240" y2="26.5" />
                     </svg>
                     <span class="leitura-sol" aria-hidden="true"></span>
                 </div>
@@ -1256,7 +1317,11 @@
         return text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/^- (.*)$/gm, '<li>$1</li>');
+            .replace(/^- (.*)$/gm, '<li>$1</li>')
+            // A bolha nao preserva mais quebra de linha por CSS, entao a
+            // quebra do texto livre vira <br> aqui. Sem isto a resposta do
+            // n8n chegaria como um paragrafo unico e corrido.
+            .replace(/\n/g, '<br>');
     };
 
     // Bot avatar SVG inline
@@ -1285,11 +1350,24 @@
                     ${imageHTML}
                     ${content}
                 </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
         `;
         messagesContainer.appendChild(messageContainer);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // A rolagem acima acontece ANTES de a foto carregar, quando a bolha
+        // ainda nao tem a altura final: quando a imagem chega, ela empurra o
+        // texto para baixo e a pergunta nova nasce cortada no rodape. Rolar de
+        // novo no onload resolve. O onerror tambem rola, senao uma imagem que
+        // falha deixa a conversa parada no lugar errado.
+        const foto = messageContainer.querySelector('.solar-panel-image');
+        if (foto && !foto.complete) {
+            const rolar = () => { messagesContainer.scrollTop = messagesContainer.scrollHeight; };
+            foto.addEventListener('load', rolar, { once: true });
+            foto.addEventListener('error', rolar, { once: true });
+        }
+
         return messageContainer;
     };
 
@@ -1303,7 +1381,7 @@
                 <div class="chat-bubble user-bubble">
                     <p>${text}</p>
                 </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
         `;
@@ -1357,7 +1435,7 @@
                         <button class="dynamic-button" data-topic="Benefícios Eletromobilidade">Benefícios Eletromobilidade</button>
                     </div>
                 </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
         `;
         messagesContainer.appendChild(botFollowUpContainer);
@@ -1710,7 +1788,7 @@
                             <button class="action-button green-button schedule-btn">📅 Agende aqui</button>
                         </div>
                     </div>
-                    <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                    <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
             `;
 
@@ -1753,7 +1831,7 @@
                         <button class="action-button yellow-button" data-action="Dúvida">Tenho dúvidas</button>
                     </div>
                 </div>
-                <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
         `;
         messagesContainer.appendChild(welcomeContainer);
@@ -1856,7 +1934,7 @@
                     <div class="chat-bubble user-bubble">
                         <p>${renderImages(trimmedMessage)}</p>
                     </div>
-                    <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                    <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
             `;
@@ -1906,7 +1984,7 @@
                     <div class="chat-bubble bot-bubble">
                         <p>${processedResponse}</p>
                     </div>
-                    <span class="timestamp">${new Date().toLocaleString('pt-BR')}</span>
+                    <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
             `;
             messagesContainer.appendChild(botMessageContainer);
@@ -1953,7 +2031,7 @@
     // Auto-resize textarea height based on content
     function autoResizeTextarea() {
         messageTextarea.style.height = 'auto';
-        const newHeight = Math.min(messageTextarea.scrollHeight, 120);
+        const newHeight = Math.min(messageTextarea.scrollHeight, 104);
         messageTextarea.style.height = `${newHeight}px`;
     }
 
