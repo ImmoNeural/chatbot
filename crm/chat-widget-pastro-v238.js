@@ -34,6 +34,10 @@
             --brand-500: #3B9287;
             --brand-600: #297A72;
             --brand-700: #1A5952;
+            /* Tinte de marca para fundo de bolha: --ink-1 sobre ele mede
+               12,9:1, entao a resposta do usuario fica legivel sem precisar
+               de um bloco de cor cheia. */
+            --tinte-marca: #E7F0EE;
 
             /* Tinta: nenhum token de texto abaixo de 4,5:1 em nenhuma
                superficie do widget, inclusive placeholder e timestamp. */
@@ -86,15 +90,24 @@
 
         .chat-assist-widget .chat-window {
             position: fixed;
-            bottom: 88px;
+            top: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            left: auto !important;
             z-index: 10000;
-            width: 416px !important;
-            max-width: calc(100vw - 32px) !important;
-            /* Altura com teto em vez de fixa: a altura travada estourava a
-               viewport em notebook baixo e em celular na horizontal. A 1a
-               declaracao e o fallback de quem nao tem dvh. */
-            height: min(780px, calc(100vh - 104px)) !important;
-            height: min(780px, calc(100dvh - 104px)) !important;
+            width: 440px !important;
+            max-width: 100vw !important;
+            /* Aba encostada na direita, do topo ao rodape. A janela flutuante
+               brigava por altura com a pagina; a aba entrega a tela inteira a
+               conversa, que e o que o funil precisa para mostrar a foto e a
+               pergunta juntas. */
+            height: 100vh !important;
+            height: 100dvh !important;
+            border-radius: 0 !important;
+            border-left: 2px solid var(--rule) !important;
+            border-top: 0 !important;
+            border-right: 0 !important;
+            border-bottom: 0 !important;
             background: var(--chat-color-surface);
             border-radius: var(--chat-radius-lg);
             /* Elevacao por fio de 2px: 1px a 1,2:1 desaparece em monitor
@@ -103,35 +116,53 @@
             overflow: hidden;
             display: none;
             flex-direction: column;
-            transition: var(--chat-transition);
+            /* Desliza da borda, como gaveta. O scale de janela flutuante
+               ficava estranho num painel encostado na lateral: o que entra
+               pela direita deve vir da direita, nao crescer do centro. */
+            transition: transform .32s cubic-bezier(.32,.72,0,1), opacity .22s ease;
             opacity: 0;
-            transform: translateY(20px) scale(0.85);
+            transform: translateX(100%);
         }
 
-        .chat-assist-widget .chat-window.right-side {
-            right: 20px;
-        }
-
+        /* A posicao e sempre a direita: numa aba de altura inteira, colar na
+           esquerda brigaria com a navegacao de quase todo site. As classes
+           continuam existindo porque o JS as aplica. */
+        .chat-assist-widget .chat-window.right-side,
         .chat-assist-widget .chat-window.left-side {
-            left: 20px;
+            right: 0;
+            left: auto;
         }
 
         .chat-assist-widget .chat-window.visible {
             display: flex;
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: translateX(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .chat-assist-widget .chat-window { transition: opacity .15s ease; transform: none; }
+        }
+
+        /* Icone sempre alinhado ao texto que acompanha e nunca encolhido
+           pelo flex: emoji nao permitia nenhuma das duas coisas. */
+        .chat-assist-widget .ico {
+            flex: 0 0 auto;
+            vertical-align: -0.18em;
+            display: inline-block;
         }
 
         .chat-assist-widget .chat-header {
-            padding: 16px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            background: linear-gradient(135deg, var(--chat-color-primary) 0%, var(--chat-color-secondary) 100%);
-            color: #ffffff;
+            gap: 10px;
+            /* Papel, nao faixa de marca. A barra solida era o maior bloco de
+               cor da tela e empurrava tudo o mais para segundo plano. */
+            background: var(--card);
+            color: var(--ink-1);
             position: relative;
             flex-shrink: 0;
-            border-bottom: 2px solid var(--brand-700);
+            border-bottom: 2px solid var(--rule);
         }
 
         /* O chip branco existe para logo de cliente, que pode vir em qualquer
@@ -140,48 +171,54 @@
            automatico e o chip se ajusta ao que recebe. */
         .chat-assist-widget .chat-header-logo {
             width: auto;
-            max-width: 110px;
-            height: 28px;
-            border-radius: var(--chat-radius-sm);
+            max-width: 104px;
+            height: 26px;
             object-fit: contain;
-            background: var(--card);
-            padding: 4px 8px;
+            /* Sem chip: o cabecalho agora e branco, entao a moldura clara
+               virava um retangulo visivel em volta de nada. */
+            background: transparent;
+            padding: 0;
+            flex: 0 0 auto;
         }
 
         .chat-assist-widget .chat-header-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink-1);
+            letter-spacing: -0.01em;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .chat-assist-widget .chat-close-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            /* Chip solido: o branco sobre vidro translucido media 3,46:1. */
-            background: var(--brand-700);
-            /* rgba(255,255,255,0.45) media 2,99:1 e nao servia de segunda pista
-               (o piso de indicador e 3:1). Solido mede 8,09:1. */
-            border: 2px solid var(--ink-sobre-marca-2, #CFE3DF);
-            color: #ffffff;
-            cursor: pointer;
-            padding: 0;
+            position: static;
+            transform: none;
+            margin-left: auto;
+            flex: 0 0 auto;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: var(--chat-transition);
+            /* Discreto: fechar nao e a acao principal de um painel de
+               atendimento, e nao precisa de chip de marca para ser achado. */
+            background: transparent;
+            border: 2px solid var(--rule);
+            color: var(--ink-2);
+            border-radius: var(--chat-radius-sm);
             font-size: 18px;
             line-height: 1;
-            border-radius: var(--chat-radius-full);
-            width: 28px;
-            height: 28px;
+            cursor: pointer;
+            transition: var(--chat-transition);
         }
 
         .chat-assist-widget .chat-close-btn:hover {
-            background: var(--ink-1);
-            border-color: #ffffff;
-            transform: translateY(-50%) scale(1.1);
+            background: var(--sunken);
+            border-color: var(--ink-3);
+            color: var(--ink-1);
         }
 
         .chat-assist-widget .chat-body {
@@ -278,15 +315,17 @@
         .chat-assist-widget .chat-status-info .chat-status-label { color: var(--info); }
 
         .chat-assist-widget .chat-bubble {
-            max-width: 95%;
+            max-width: 100%;
             /* 14/16 numa fonte de 13px dava uma moldura maior que o texto que
                ela emoldura. 10/13 mantem o ar sem a bolha parecer vazia. */
-            padding: 10px 13px;
+            /* 8/12: a resposta do usuario tem uma linha. Com 10/13 a
+               moldura somava 20px de altura a um texto de 20px. */
+            padding: 8px 12px;
             margin: 0;
             border-radius: var(--chat-radius-lg);
             word-wrap: break-word;
             font-size: 13px;
-            line-height: 1.5;
+            line-height: 1.45;
             position: relative;
             display: block;
             align-items: flex-start;
@@ -299,11 +338,16 @@
         }
 
         .chat-assist-widget .chat-bubble.user-bubble {
-            background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-700) 100%);
-            color: #ffffff;
+            /* Tinte claro em vez de gradiente solido: a resposta do usuario e
+               curta (um e-mail, um telefone) e nao precisa de um bloco de cor
+               do tamanho de um botao para se distinguir. O fio a esquerda ja
+               separa quem fala. */
+            background: var(--tinte-marca);
+            color: var(--ink-1);
             align-self: flex-end;
-            border: 2px solid var(--brand-700);
-            border-bottom-right-radius: 4px;
+            border: 0;
+            border-right: 3px solid var(--brand-600);
+            border-radius: var(--chat-radius-md);
         }
 
         .chat-assist-widget .chat-bubble.user-bubble .chat-figure,
@@ -312,11 +356,12 @@
         }
 
         .chat-assist-widget .chat-bubble.bot-bubble {
-            background: var(--chat-bubble-bg);
+            background: var(--card);
             color: var(--chat-bubble-text);
             align-self: flex-start;
-            border: 2px solid var(--rule);
-            border-bottom-left-radius: 4px;
+            border: 0;
+            border-left: 3px solid var(--rule);
+            border-radius: var(--chat-radius-md);
         }
 
         .chat-assist-widget .message-icon {
@@ -330,15 +375,26 @@
         }
 
         .chat-assist-widget .bot-avatar {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--chat-avatar-primary) 0%, var(--chat-avatar-secondary) 100%);
+            /* Contorno em vez de disco cheio: o avatar se repete em toda fala,
+               e um disco de marca a cada mensagem soma mais area de cor do que
+               qualquer outro elemento da tela. */
+            background: var(--card);
+            border: 2px solid var(--rule);
+            color: var(--brand-600);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            margin-top: 4px;
+            margin-top: 2px;
+        }
+
+        .chat-assist-widget .bot-avatar svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor;
         }
 
         .chat-assist-widget .bot-avatar svg {
@@ -387,10 +443,9 @@
         .chat-assist-widget .message-content {
             display: flex;
             flex-direction: column;
-            max-width: calc(100% - 40px);
-            /* Sem isto a coluna encolhia ate o conteudo e a bolha do usuario
-               saia com 175px, quebrando "cliente@exemplo.com" no meio da
-               palavra. O minimo garante que um e-mail comum caiba numa linha. */
+            /* Sem o avatar do usuario, so a fala do bot desconta a coluna
+               do avatar dele. A do usuario usa a largura inteira. */
+            max-width: calc(100% - 36px);
             min-width: min(240px, 100%);
         }
 
@@ -837,6 +892,8 @@
 
         /* Base = acao secundaria. Papel, nao matiz: um primario cheio por
            bloco e os demais em papel com fio de 2px. */
+        .action-button .ico { color: currentColor; }
+
         .action-button {
             flex: 1 1 calc(50% - 4px);
             min-width: 96px;
@@ -917,27 +974,38 @@
         }
 
         .dynamic-button {
-            padding: 8px 10px;
+            /* Icone e rotulo numa linha, com o icone fixo a esquerda: assim
+               as opcoes formam uma coluna de icones alinhada, que se varre
+               com o olho mais rapido do que texto solto. */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 11px;
             border: 2px solid var(--rule);
             border-radius: var(--chat-radius-md);
             background-color: var(--card);
             color: var(--ink-1);
             cursor: pointer;
             font-family: var(--fonte-texto);
-            font-weight: 400;
+            font-weight: 500;
             font-size: 13px;
             line-height: 1.3;
-            transition: all 0.2s ease;
+            transition: border-color .18s ease, background-color .18s ease, color .18s ease;
             text-align: left;
             flex: 0 0 48%;
             box-sizing: border-box;
         }
 
+        /* O icone fica em tinta suave ate a opcao ser apontada: antes do
+           toque ele e orientacao, nao enfase. */
+        .dynamic-button .ico { color: var(--ink-3); transition: color .18s ease; }
+
         .dynamic-button:hover {
-            background-color: var(--brand-600);
-            border-color: var(--brand-700);
-            color: #ffffff;
+            border-color: var(--brand-600);
+            background-color: var(--tinte-marca);
         }
+
+        .dynamic-button:hover .ico { color: var(--brand-600); }
 
         /* Opcao de consumo e de contagem de pessoas: numero e decisao, entao
            entra em Atkinson tabular com digito alinhado. */
@@ -963,42 +1031,25 @@
         }
 
         @media (max-width: 480px) {
+            /* No celular a aba e a tela inteira: meia tela num aparelho de
+               360px de largura nao serve para ler nem para digitar. */
             .chat-assist-widget .chat-window {
-                /* O teto antigo de 260px deixava a janela mais estreita que o
-                   proprio teclado do celular. */
-                width: calc(100vw - 24px) !important;
-                max-width: 420px !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
                 padding: 0 !important;
-                height: min(560px, calc(100vh - 104px)) !important;
-                height: min(560px, calc(100dvh - 104px)) !important;
-                bottom: 84px !important;
-                left: 50% !important;
-                right: auto !important;
-                transform: translateX(-50%) !important;
-                border-radius: var(--chat-radius-lg) !important;
+                border-left: 0 !important;
             }
 
-            .chat-assist-widget .chat-header-logo {
-                width: 96px;
-                height: 48px;
-            }
+            .chat-assist-widget .chat-header-logo { height: 26px; }
         }
 
         @media (min-width: 481px) {
+            /* A regra base ja monta a aba de altura inteira. Aqui so a
+               largura cresce em tela grande, com teto para nao virar meia
+               pagina num monitor ultralargo. */
             .chat-assist-widget .chat-window {
-                width: 416px !important;
-                max-width: calc(100vw - 32px) !important;
-                /* Acompanha o teto da regra base: a pergunta vem com foto de
-                   apoio mais texto, e a 640px a area de mensagens ficava com
-                   396px — menos do que uma unica pergunta precisa. */
-                height: min(780px, calc(100vh - 104px)) !important;
-                height: min(780px, calc(100dvh - 104px)) !important;
-                top: auto !important;
-                left: auto !important;
-                bottom: 88px !important;
-                right: 20px !important;
-                transform: none !important;
-                border-radius: var(--chat-radius-lg) !important;
+                width: min(440px, 38vw) !important;
+                min-width: 380px !important;
             }
         }
 
@@ -1015,7 +1066,7 @@
            e seu proprio fundo e --brand-700: o anel media 1,00:1, ou seja,
            invisivel. Branco sobre --brand-700 mede 8,09:1. */
         .chat-assist-widget .chat-close-btn:focus-visible {
-            outline-color: #ffffff;
+            outline-color: var(--brand-600);
         }
     `;
     document.head.appendChild(widgetStyles);
@@ -1324,6 +1375,38 @@
             .replace(/\n/g, '<br>');
     };
 
+
+    const ICONES = {
+        telhaCeramica: '<path d="M2 9 12 3l10 6"/><path d="M4 9v11h16V9"/><path d="M8 20v-6h8v6"/>',
+        fibrocimento:  '<path d="M3 8h18"/><path d="M3 8v12h18V8"/><path d="M7 8v12M12 8v12M17 8v12"/><path d="M3 8 6 4h12l3 4"/>',
+        metalico:      '<path d="M3 20 7 5h10l4 15"/><path d="M8 5 6 20M12 5v15M16 5l2 15"/>',
+        laje:          '<path d="M3 7h18v3H3z"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/>',
+        duvida:        '<circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4"/><path d="M12 17.6h.01"/>',
+        agenda:        '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h3v3H8z"/>',
+        pessoas:       '<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3.2 3.2 0 0 1 0 6"/><path d="M17 14.4A6 6 0 0 1 21 20"/>',
+        raio:          '<path d="M13 2 4.5 13.5H11l-1 8.5L18.5 10H12z"/>',
+        correio:       '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+        telefone:      '<path d="M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z"/>',
+        casa:          '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V21h14V9.8"/><path d="M9.5 21v-6h5v6"/>',
+        economia:      '<path d="M4 19V9M10 19V5M16 19v-7M4 19h16"/><path d="m14 8 3-3 3 3"/>',
+        conversa:      '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/>',
+        aceno:         '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/>',
+        alerta:        '<path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5h.01"/>',
+        confirma:      '<circle cx="12" cy="12" r="9"/><path d="m8 12.3 2.7 2.7L16 9.7"/>',
+        setaBaixo:     '<path d="M12 4v14"/><path d="m6 12.5 6 6 6-6"/>',
+        setaCima:      '<path d="M12 20V6"/><path d="m6 11.5 6-6 6 6"/>',
+        sol:           '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M5 5l1.8 1.8M17.2 17.2 19 19M19 5l-1.8 1.8M6.8 17.2 5 19"/>',
+    };
+
+    // tam em px; o traco acompanha para o peso optico nao mudar com o tamanho.
+    const icone = (nome, tam = 16) => {
+        const d = ICONES[nome];
+        if (!d) return '';
+        return `<svg class="ico" width="${tam}" height="${tam}" viewBox="0 0 24 24" fill="none" ` +
+               `stroke="currentColor" stroke-width="1.75" stroke-linecap="round" ` +
+               `stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
+    };
+
     // Bot avatar SVG inline
     const botAvatarHTML = `
         <div class="bot-avatar">
@@ -1383,7 +1466,6 @@
                 </div>
                 <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
-            <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
         `;
         messagesContainer.appendChild(userMessageContainer);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -1396,7 +1478,7 @@
 
         // Mostra mensagem confirmando
         addBotMessage(`
-            <p>📅 <strong>O calendário foi aberto em uma nova janela!</strong></p>
+            <p>${icone('agenda')} <strong>O calendário foi aberto numa nova janela.</strong></p>
             <p class="chat-hint">Escolha o melhor horário para sua reunião com nosso especialista.</p>
         `);
     };
@@ -1461,9 +1543,9 @@
 
         setTimeout(() => {
             addBotMessage(`
-                <p>Ótimo! Vou fazer algumas perguntas rápidas para entender melhor sua necessidade. ☀️</p>
+                <p>Ótimo. Vou fazer cinco perguntas rápidas para entender seu caso.</p>
                 <p><strong>Primeiro, qual é o seu e-mail?</strong></p>
-                <p class="chat-hint">Digite seu e-mail no campo abaixo 👇</p>
+                <p class="chat-hint">${icone('setaBaixo', 13)} Digite seu e-mail no campo abaixo</p>
             `, true, emailImage);
 
             esperarTexto("exemplo@email.com");
@@ -1485,7 +1567,7 @@
     // para nao sugerir uma resposta que o passo nem aceita.
     const esperarBotao = () => {
         modoTelefone = false;
-        messageTextarea.placeholder = "Escolha uma opção acima 👆";
+        messageTextarea.placeholder = "Escolha uma opção acima";
         messageTextarea.value = '';
     };
 
@@ -1728,11 +1810,11 @@
                 <p><strong>Que tipo de telhado você tem?</strong></p>
                 <p class="chat-hint">Escolha o tipo mais próximo do seu:</p>
                 <div class="dynamic-buttons-container">
-                    <button class="dynamic-button" data-roof="Cerâmica/Telha">🏠 Cerâmica/Telha</button>
-                    <button class="dynamic-button" data-roof="Fibrocimento">🏭 Fibrocimento</button>
-                    <button class="dynamic-button" data-roof="Metálico">🔩 Metálico</button>
-                    <button class="dynamic-button" data-roof="Laje">🏢 Laje</button>
-                    <button class="dynamic-button" data-roof="Não sei">❓ Não sei</button>
+                    <button class="dynamic-button" data-roof="Cerâmica/Telha">${icone('telhaCeramica')}<span>Cerâmica ou telha</span></button>
+                    <button class="dynamic-button" data-roof="Fibrocimento">${icone('fibrocimento')}<span>Fibrocimento</span></button>
+                    <button class="dynamic-button" data-roof="Metálico">${icone('metalico')}<span>Metálico</span></button>
+                    <button class="dynamic-button" data-roof="Laje">${icone('laje')}<span>Laje</span></button>
+                    <button class="dynamic-button" data-roof="Não sei">${icone('duvida')}<span>Não sei dizer</span></button>
                 </div>
             `, true, roofTypesImage);
 
@@ -1775,17 +1857,17 @@
                 <div class="message-content">
                     <div class="chat-bubble bot-bubble">
                         <img src="${savingsImage}" class="solar-panel-image" style="width: 100%;" alt="Economia">
-                        <p>🎉 <strong>Excelente! Com base nas informações fornecidas:</strong></p>
-                        <p>📧 E-mail: ${qualificationData.email}<br>
-                        📱 Telefone: <span class="chat-figure">${qualificationData.phone}</span><br>
-                        👥 Pessoas na casa: <span class="chat-figure">${qualificationData.familySize}</span><br>
-                        ⚡ Consumo mensal: <span class="chat-figure">${qualificationData.kwhConsumption}</span><br>
-                        🏠 Tipo de telhado: ${qualificationData.roofType}</p>
-                        <p>💰 <strong>Você tem potencial de reduzir até <span class="chat-figure-strong">90%</span> do valor da sua conta de luz!</strong></p>
+                        <p><strong>Pronto. Com base no que você informou:</strong></p>
+                        <p>${icone('correio', 14)} E-mail: ${qualificationData.email}<br>
+                        ${icone('telefone', 14)} Telefone: <span class="chat-figure">${qualificationData.phone}</span><br>
+                        ${icone('pessoas', 14)} Pessoas na casa: <span class="chat-figure">${qualificationData.familySize}</span><br>
+                        ${icone('raio', 14)} Consumo mensal: <span class="chat-figure">${qualificationData.kwhConsumption}</span><br>
+                        ${icone('casa', 14)} Tipo de telhado: ${qualificationData.roofType}</p>
+                        <p>${icone('economia', 14)} <strong>Você tem potencial de reduzir até <span class="chat-figure-strong">90%</span> do valor da sua conta de luz!</strong></p>
                         <p>A energia solar é perfeita para seu perfil de consumo. Com um sistema fotovoltaico adequado, você pode economizar milhares de reais por ano e ainda valorizar seu imóvel.</p>
-                        <p>🌟 <strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
+                        <p><strong>Próximo passo:</strong> Agende uma conversa com nosso especialista para fazer uma análise detalhada e personalizada do seu caso!</p>
                         <div class="action-buttons-container" style="margin-top: 15px;">
-                            <button class="action-button green-button schedule-btn">📅 Agende aqui</button>
+                            <button class="action-button green-button schedule-btn">${icone('agenda')}<span>Agendar conversa</span></button>
                         </div>
                     </div>
                     <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -1801,11 +1883,11 @@
                 scheduleBtn.disabled = true;
                 // Opacidade apagaria o texto; o estado vira rotulo legivel e
                 // a borda tracejada do CSS carrega o resto do recado.
-                scheduleBtn.textContent = '📅 Agendamento aberto';
+                scheduleBtn.innerHTML = icone('confirma') + '<span>Agendamento aberto</span>';
 
                 setTimeout(() => {
                     addBotMessage(`
-                        <p>📅 <strong>Escolha o melhor horário para você:</strong></p>
+                        <p>${icone('agenda')} <strong>Escolha o melhor horário para você:</strong></p>
                     `);
                     addCalendarToChat();
                 }, 500);
@@ -1823,7 +1905,7 @@
             ${botAvatarHTML}
             <div class="message-content">
                 <div class="chat-bubble bot-bubble">
-                    <p>Olá! 😊 Eu sou seu assistente virtual especializado em energia solar. Como posso te ajudar hoje?</p>
+                    <p>Olá. Sou o assistente da Sunbotic, especializado em energia solar. Como posso te ajudar hoje?</p>
                     <div class="action-buttons-container">
                         <button class="action-button blue-button" data-action="Qualificar">Quero economizar na luz</button>
                         <button class="action-button green-button" data-action="Agendamento">Agendar reunião</button>
@@ -1854,7 +1936,7 @@
                     addUserMessage('Falar com alguém');
                     setTimeout(() => {
                         addBotMessage(`
-                            <p>📱 Perfeito! Você será redirecionado para o nosso WhatsApp.</p>
+                            <p>${icone('conversa')} Perfeito. Você será levado ao nosso WhatsApp.</p>
                             <p>Nossa equipe está pronta para te atender!</p>
                         `);
                         setTimeout(() => {
@@ -1880,7 +1962,7 @@
                 addUserMessage(trimmedMessage);
                 setTimeout(() => {
                     addBotMessage(`
-                        <p>❌ E-mail inválido! Por favor, digite um e-mail válido.</p>
+                        <p>${icone('alerta')} Esse e-mail não parece válido. Confira e tente de novo.</p>
                         <p class="chat-hint">Exemplo: seunome@email.com</p>
                     `);
                 }, 300);
@@ -1936,7 +2018,6 @@
                     </div>
                     <span class="timestamp">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-                <img src="https://cdn-icons-png.flaticon.com/512/4202/4202836.png" class="message-icon" alt="Usuário">
             `;
             messagesContainer.appendChild(userMessageContainer);
 
@@ -1995,7 +2076,7 @@
             // Display error message in chat
             const errorMessage = document.createElement('div');
             errorMessage.className = 'message-container bot-message';
-            errorMessage.innerHTML = `<p class="chat-bubble bot-bubble"><span class="chat-status chat-status-erro"><span class="chat-status-label">⚠ Erro</span><span>Desculpe, ocorreu um erro. Tente novamente.</span></span></p>`;
+            errorMessage.innerHTML = `<p class="chat-bubble bot-bubble"><span class="chat-status chat-status-erro"><span class="chat-status-label">${icone('alerta')} Erro</span><span>Desculpe, ocorreu um erro. Tente novamente.</span></span></p>`;
             messagesContainer.appendChild(errorMessage);
         } finally {
             isWaitingForResponse = false;
