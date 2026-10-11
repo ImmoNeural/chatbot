@@ -377,24 +377,20 @@
         .chat-assist-widget .bot-avatar {
             width: 26px;
             height: 26px;
-            border-radius: 50%;
-            /* Contorno em vez de disco cheio: o avatar se repete em toda fala,
-               e um disco de marca a cada mensagem soma mais area de cor do que
-               qualquer outro elemento da tela. */
-            background: var(--card);
-            border: 2px solid var(--rule);
-            color: var(--brand-600);
+            /* Sem circulo: o sol ja tem forma propria, e os raios se perdiam
+               encostados na borda. O simbolo solto respira e marca a fala sem
+               virar mais uma caixa na tela. */
+            background: transparent;
+            border: 0;
+            /* Usa o token de avatar, nao --brand-600 direto: quem embute o
+               widget pode trocar a cor por window.ChatWidgetConfig sem
+               precisar editar o arquivo. */
+            color: var(--chat-avatar-primary);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .chat-assist-widget .bot-avatar svg {
-            width: 15px;
-            height: 15px;
-            fill: currentColor;
+            margin-top: 3px;
         }
 
         .chat-assist-widget .bot-avatar svg {
@@ -1408,12 +1404,13 @@
     };
 
     // Bot avatar SVG inline
+    // O marcador de quem fala e o sol da marca, nao um rosto de robo: ele se
+    // repete em toda fala, entao e o elemento mais visto do painel. Um robo
+    // generico de banco de icones nao diz nada sobre energia solar; o sol e o
+    // mesmo simbolo do cabecalho, do login e da leitura — a marca aparece onde
+    // o olho ja esta.
     const botAvatarHTML = `
-        <div class="bot-avatar">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5a2.5 2.5 0 0 0-2.5-2.5z"/>
-            </svg>
-        </div>
+        <div class="bot-avatar">${icone('sol', 18)}</div>
     `;
 
     // Function to add bot message
