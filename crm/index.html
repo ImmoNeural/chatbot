@@ -1359,6 +1359,12 @@
            banco nao devolve nada), mas a interface nao deve vazar.
            NAO REMOVER, NAO ENFRAQUECER. */
         .hidden { display: none !important; }
+
+        /* Folga para o lancador do chat, que e fixo no canto inferior direito
+           e tem 56px de altura mais 20px de margem. Sem isto ele cobre a
+           ultima linha de toda lista — e a ultima linha de "Leads recentes"
+           e justamente o lead que acabou de chegar. */
+        main { padding-bottom: 96px; }
     </style>
 
     <script>
