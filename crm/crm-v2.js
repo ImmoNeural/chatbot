@@ -24,7 +24,7 @@ window.supabaseClient = supabaseClient;
 //
 // Em vez de repetir o campo em quinze lugares (e esquecer no decimo sexto),
 // ele entra no unico caminho por onde todos passam: o proprio client.
-const VERSAO_CRM = '13';
+const VERSAO_CRM = '14';
 
 let perfilUsuario = null;
 

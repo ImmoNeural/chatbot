@@ -657,29 +657,30 @@
 
         .tabela tbody td .h-2 { height: 6px; }
 
-        /* Toda coluna numerica: Atkinson tabular, alinhada a direita,
-           alinhada no digito. Marcada por classe no th E por posicao, para
-           o alinhamento sobreviver a mudanca de template no JS. */
-        .tabela th.num, .tabela td.num { text-align: right; }
+        /* .num e .num-dir sao coisas diferentes, e misturar as duas era o
+           que desalinhava a tabela inteira:
 
-        #tabela-leads tbody td:nth-child(3),
-        #tabela-leads tbody td:nth-child(4),
-        #tabela-instalados tbody td:nth-child(4),
-        #tabela-instalados tbody td:nth-child(5),
-        #tabela-instalados tbody td:nth-child(6) {
-            font-family: var(--fonte-numero);
-            font-variant-numeric: tabular-nums;
-            text-align: right;
-        }
+             .num      -> figura tabular (Atkinson). Serve para qualquer
+                          coisa escrita em algarismos: numero de contrato,
+                          data, nota, dinheiro.
+             .num-dir  -> alinhado a direita. Serve so para GRANDEZA, o que
+                          se compara de cima a baixo na coluna: potencia,
+                          valor, consumo.
 
-        #tabela-instalados tbody td:nth-child(2),
-        #tabela-instalados tbody td:nth-child(3) {
-            font-family: var(--fonte-numero);
-            font-variant-numeric: tabular-nums;
-        }
+           Antes, .num fazia as duas, e por tabela CONT-2026-001 e 20/12/2025
+           apareciam encostados a direita embaixo de cabecalhos a esquerda.
+           Identificador e data nao sao grandeza: ninguem le uma coluna de
+           datas comparando a magnitude do dia.
 
-        /* A coluna de score hospeda a regua, nao um numero cru. */
-        #tabela-leads tbody td:nth-child(4) { text-align: left; }
+           A chave tambem deixou de ser a POSICAO da celula. As regras por
+           nth-child marcavam "a quarta coluna" — e quando a quarta coluna
+           mudava de conteudo, o alinhamento ficava na coluna errada. Era o
+           caso de NPS em Instalados: a regra alinhava a celula a direita,
+           o conteudo e um flex (nota + selo) que ignora text-align, e o
+           cabecalho ia para a direita sozinho, 165px longe do seu proprio
+           conteudo. Agora quem carrega a marca e a celula, no th e no td;
+           coluna que muda de lugar leva a classe junto. */
+        .tabela th.num-dir, .tabela td.num-dir { text-align: right; }
 
         .tabela-rolagem {
             max-height: calc(100vh - 210px);
@@ -693,6 +694,17 @@
         .tabela th[data-ordenavel]::after { content: ' \2195'; color: var(--ink-3); }
         .tabela th[aria-sort="ascending"]::after  { content: ' \2191'; color: var(--brand-600); }
         .tabela th[aria-sort="descending"]::after { content: ' \2193'; color: var(--brand-600); }
+
+        /* Em coluna alinhada a direita a seta passa para ANTES do rotulo.
+           Depois dele ela ocupa os ultimos ~10px da celula e empurra a
+           palavra para dentro: o cabecalho "VALOR" ficava 10px a esquerda da
+           borda onde todos os numeros da coluna encostam, e o olho le isso
+           como coluna torta. Antes do rotulo, rotulo e numeros dividem a
+           mesma borda direita. */
+        .tabela th.num-dir[data-ordenavel]::after  { content: none; }
+        .tabela th.num-dir[data-ordenavel]::before { content: '\2195\00a0'; color: var(--ink-3); }
+        .tabela th.num-dir[aria-sort="ascending"]::before  { content: '\2191\00a0'; color: var(--brand-600); }
+        .tabela th.num-dir[aria-sort="descending"]::before { content: '\2193\00a0'; color: var(--brand-600); }
 
         /* A regua de lead score (120px, tique de 1px nos 50 pontos, faixa
            por PALAVRA e denominador explicito) e montada e estilizada pelo
@@ -1852,7 +1864,7 @@
                         <tr>
                             <th>Lead</th>
                             <th>Tipo</th>
-                            <th class="num" data-ordenavel="consumo">Consumo</th>
+                            <th class="num num-dir" data-ordenavel="consumo">Consumo</th>
                             <th data-ordenavel="score">Score</th>
                             <th>Status</th>
                             <th>Vendedor</th>
@@ -1895,8 +1907,8 @@
                         <tr>
                             <th>Proposta</th>
                             <th>Cliente</th>
-                            <th class="num" data-ordenavel="potencia">Potência</th>
-                            <th class="num" data-ordenavel="valor">Valor</th>
+                            <th class="num num-dir" data-ordenavel="potencia">Potência</th>
+                            <th class="num num-dir" data-ordenavel="valor">Valor</th>
                             <th>Status</th>
                             <th>Rastreio</th>
                             <th>Ações</th>
@@ -1935,8 +1947,8 @@
                             <th>Cliente</th>
                             <th>Contrato</th>
                             <th>Instalação</th>
-                            <th class="num">Potência</th>
-                            <th class="num" data-ordenavel="valor">Valor</th>
+                            <th class="num num-dir">Potência</th>
+                            <th class="num num-dir" data-ordenavel="valor">Valor</th>
                             <th class="num">NPS</th>
                             <th>Ações</th>
                         </tr>
@@ -2443,7 +2455,7 @@
          novo esta no disco e a tela nao muda. Suba este numero sempre que
          mexer no JS, e suba VERSAO_CRM (crm-v2.js) junto: e ele que aparece
          na fita, e so serve se os dois contarem a mesma historia. -->
-    <script src="./chat-widget-pastro-v238.js?v=13"></script>
+    <script src="./chat-widget-pastro-v238.js?v=14"></script>
 
     <!-- Dimensionamento solar. Esta tag NUNCA existiu: o arquivo estava na
          pasta, definia window.CalculadoraSolarCompleta e nunca era carregado,
@@ -2451,9 +2463,9 @@
          completa nao carregada. Recarregue a pagina." — e recarregar nao
          resolvia nada, porque o problema nao era a carga, era a falta da tag.
          Vem antes do crm-v2.js so por clareza: quem e usado aparece primeiro. -->
-    <script src="./calculadora-solar-completa.js?v=13"></script>
+    <script src="./calculadora-solar-completa.js?v=14"></script>
 
     <!-- JavaScript CRM -->
-    <script src="./crm-v2.js?v=13"></script>
+    <script src="./crm-v2.js?v=14"></script>
 </body>
 </html>
